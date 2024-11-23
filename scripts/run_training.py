@@ -18,7 +18,7 @@ def run_training(agent_name, env_name, seed):
     env = environments.make(env_name)
 
     # Create and train the agent.
-    agent = agents.make(agent_name, training=True)
+    agent = agents.make(agent_name, training=True, learning_starts=200)
     agent.load()
     agent.train(env)
 
@@ -26,4 +26,4 @@ def run_training(agent_name, env_name, seed):
 if __name__ == "__main__":
 
     # Train a reinforcement learning agent on a gym environment.
-    run_training(agent_name="NoisyCDQN", env_name="ALE/Pong-v5", seed=0)
+    run_training(agent_name="QRDQN", env_name="ALE/Pong-v5", seed=0)

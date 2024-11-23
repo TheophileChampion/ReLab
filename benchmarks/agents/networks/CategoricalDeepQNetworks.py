@@ -70,14 +70,13 @@ class CategoricalDeepQNetwork(nn.Module):
         x = F.leaky_relu(self.conv2(x), 0.01)
         x = F.leaky_relu(self.conv3(x), 0.01)
         x = F.leaky_relu(self.fc1(x.view(batch_size, -1)), 0.01)
-        x = self.fc2(x)
-        log_probs = x.view(batch_size, self.n_atoms, self.n_actions)
+        log_probs = self.fc2(x).view(batch_size, self.n_atoms, self.n_actions)
         probs = log_probs.softmax(dim=1)
 
         # Compute all atoms.
         atoms = self.atoms.unsqueeze(0).repeat(batch_size, 1, 1)
 
-        # Return atoms and their associated log-probabilities.
+        # Return all atoms, their probabilities and log-probabilities.
         return atoms, probs, log_probs
 
     def q_values(self, x):
@@ -158,14 +157,13 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         x = F.leaky_relu(self.conv2(x), 0.01)
         x = F.leaky_relu(self.conv3(x), 0.01)
         x = F.leaky_relu(self.fc1(x.view(batch_size, -1)), 0.01)
-        x = self.fc2(x)
-        log_probs = x.view(batch_size, self.n_atoms, self.n_actions)
+        log_probs = self.fc2(x).view(batch_size, self.n_atoms, self.n_actions)
         probs = log_probs.softmax(dim=1)
 
         # Compute all atoms.
         atoms = self.atoms.unsqueeze(0).repeat(batch_size, 1, 1)
 
-        # Return atoms and their associated log-probabilities.
+        # Return all atoms, their probabilities and log-probabilities.
         return atoms, probs, log_probs
 
     def q_values(self, x):

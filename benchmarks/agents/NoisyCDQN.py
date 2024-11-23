@@ -1,7 +1,7 @@
 from benchmarks.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 
-class NoisyCategoricalDQN(DQN):
+class NoisyCDQN(DQN):
     """
     Implement the categorical Deep Q-Network agent [1] with noisy linear layers [2] from:
 

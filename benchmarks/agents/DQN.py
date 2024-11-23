@@ -6,7 +6,7 @@ from functools import partial
 from os.path import join
 
 import torch
-from torch.nn import SmoothL1Loss, MSELoss, CrossEntropyLoss
+from torch.nn import SmoothL1Loss, MSELoss, CrossEntropyLoss, HuberLoss
 
 import benchmarks
 from benchmarks.agents.AgentInterface import AgentInterface
@@ -19,6 +19,7 @@ from torch import optim
 import numpy as np
 
 from benchmarks.agents.networks.DuelingDeepQNetworks import DuelingDeepQNetwork, NoisyDuelingDeepQNetwork
+from benchmarks.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork
 
 
 class LossType(IntEnum):
@@ -30,6 +31,7 @@ class LossType(IntEnum):
     DDQN_MSE = 2  # Double Q-value loss with Mean Square Error
     DDQN_SL1 = 3  # Double Q-value loss with Smooth L1 norm
     KL_DIVERGENCE = 4  # Categorical DQN loss
+    QUANTILE_LOSS = 5  # Huber quantile loss
 
 
 class ReplayType(IntEnum):
@@ -50,6 +52,7 @@ class NetworkType(IntEnum):
     NOISY_DUELING = 3  # Dueling Deep Q-Network with noisy linear layer
     CATEGORICAL = 4  # Categorical Deep Q-network
     NOISY_CATEGORICAL = 5  # Categorical Deep Q-network with noisy linear layer
+    QUANTILE = 6  # Quantile Deep Q-network
 
 
 class DQN(AgentInterface):
@@ -61,7 +64,7 @@ class DQN(AgentInterface):
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000,
+        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=1.0,
         target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=1, v_min=None, v_max=None, training=True,
         replay_type=ReplayType.DEFAULT, loss_type=LossType.DQN_SL1, network_type=NetworkType.DEFAULT
     ):
@@ -72,6 +75,7 @@ class DQN(AgentInterface):
         :param buffer_size: the size of the replay buffer
         :param batch_size: the size of the batches sampled from the replay buffer
         :param learning_starts: the step at which learning starts
+        :param kappa: the kappa parameter of the quantile Huber loss see Equation (10) in QR-DQN paper
         :param target_update_interval: number of training steps between two synchronization of the target
         :param adam_eps: the epsilon parameter of the Adam optimizer
         :param n_actions: the number of actions available to the agent
@@ -94,6 +98,7 @@ class DQN(AgentInterface):
             LossType.DDQN_MSE: partial(self.double_q_learning_loss, loss_fc=MSELoss(reduction="none")),
             LossType.DDQN_SL1: partial(self.double_q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
             LossType.KL_DIVERGENCE: self.categorical_kl_divergence,
+            LossType.QUANTILE_LOSS: partial(self.quantile_loss, kappa=kappa),
         }
 
         # A dictionary of replay buffers.
@@ -110,6 +115,7 @@ class DQN(AgentInterface):
             NetworkType.NOISY_DUELING: NoisyDuelingDeepQNetwork,
             NetworkType.CATEGORICAL: CategoricalDeepQNetwork,
             NetworkType.NOISY_CATEGORICAL: NoisyCategoricalDeepQNetwork,
+            NetworkType.QUANTILE: QuantileDeepQNetwork,
         }
 
         # Store the agent's parameters.
@@ -119,6 +125,7 @@ class DQN(AgentInterface):
         self.batch_size = batch_size
         self.target_update_interval = target_update_interval
         self.learning_starts = learning_starts
+        self.kappa = kappa
         self.adam_eps = adam_eps
         self.n_atoms = n_atoms
         self.v_min = v_min
@@ -323,7 +330,7 @@ class DQN(AgentInterface):
         """
 
         # Compute the best actions at time t + 1.
-        next_atoms, next_probs, _ = self.value_net(next_obs)
+        next_atoms, next_probs, _ = self.target_net(next_obs)
         next_q_values = (next_atoms * next_probs).sum(dim=1)
         next_actions = torch.argmax(next_q_values, dim=1)
 
@@ -338,7 +345,7 @@ class DQN(AgentInterface):
         # Compute the projected distribution over returns.
         target_probs = torch.zeros_like(next_probs)
         for j in range(self.n_atoms):
-            atom = (next_atoms[:, j] - self.v_min) / self.value_net.delta_z
+            atom = (next_atoms[:, j] - self.v_min) / self.target_net.delta_z
             lower = torch.floor(atom).int()
             upper = torch.ceil(atom).int()
             target_probs[range(self.batch_size), lower] += next_probs[range(self.batch_size), j] * (upper - atom)
@@ -352,6 +359,49 @@ class DQN(AgentInterface):
         # Compute the categorical loss.
         loss_fc = CrossEntropyLoss(reduction="none")
         loss = loss_fc(log_probs, target_probs.detach())
+
+        # Report the loss obtained for each sampled transition for potential prioritization.
+        self.buffer.report(loss)
+
+        # Report the total loss of the batch.
+        return loss.mean()
+
+    def quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=0):
+        """
+        Compute the loss of the quantile regression algorithm.
+        :param obs: the observations at time t
+        :param actions: the actions at time t
+        :param rewards: the reward obtained when taking the actions while seeing the observations at time t
+        :param done: whether the episodes ended
+        :param next_obs: the observation at time t + 1
+        :param kappa: the kappa parameter of the quantile Huber loss see Equation (10) in QR-DQN paper
+        :return: the categorical loss
+        """
+
+        # Compute the best actions at time t + 1.
+        next_atoms, next_probs, _ = self.target_net(next_obs)
+        next_q_values = (next_atoms * next_probs).sum(dim=1)
+        next_actions = torch.argmax(next_q_values, dim=1)
+
+        # Compute the new atom positions using the Bellman update.
+        next_atoms = next_atoms[range(self.batch_size), :, next_actions.squeeze()]
+        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + self.gamma * next_atoms
+
+        # Compute the predicted atoms (canonical return).
+        atoms, _, _ = self.value_net(obs)
+        atoms = atoms[range(self.batch_size), :, actions.squeeze()]
+
+        # Compute the quantile Huber loss.
+        huber_loss = HuberLoss(reduction="none", delta=kappa)
+        loss = torch.zeros([self.batch_size]).to(self.device)
+        for i in range(self.n_atoms):
+            tau = (i + 0.5) / self.n_atoms
+            for j in range(self.n_atoms):
+                next_atom_j = next_atoms[:, j]
+                atom_i = atoms[:, i]
+                mask = torch.where(next_atom_j - atom_i > 0, 1.0, 0.0)
+                loss += torch.abs(tau - mask).to(self.device) * huber_loss(next_atom_j, atom_i) / kappa
+        loss /= self.n_atoms
 
         # Report the loss obtained for each sampled transition for potential prioritization.
         self.buffer.report(loss)
@@ -386,6 +436,7 @@ class DQN(AgentInterface):
         self.batch_size = checkpoint["batch_size"]
         self.target_update_interval = checkpoint["target_update_interval"]
         self.learning_starts = checkpoint["learning_starts"]
+        self.kappa = checkpoint["kappa"]
         self.adam_eps = checkpoint["adam_eps"]
         self.n_atoms = checkpoint["n_atoms"]
         self.v_min = checkpoint["v_min"]
@@ -437,6 +488,7 @@ class DQN(AgentInterface):
             "batch_size": self.batch_size,
             "target_update_interval": self.target_update_interval,
             "learning_starts": self.learning_starts,
+            "kappa": self.kappa,
             "adam_eps": self.adam_eps,
             "n_atoms": self.n_atoms,
             "v_min": self.v_min,
