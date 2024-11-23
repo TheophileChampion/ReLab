@@ -12,7 +12,7 @@ class DuelingDeepQNetwork(nn.Module):
     In International conference on machine learning. PMLR, 2016.
     """
 
-    def __init__(self, n_actions=18):
+    def __init__(self, n_actions=18, **_):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
@@ -20,9 +20,6 @@ class DuelingDeepQNetwork(nn.Module):
 
         # Call the parent constructor.
         super().__init__()
-
-        # Store the number of actions.
-        self.n_outputs = n_actions
 
         # 3 convolutional layers
         self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
@@ -44,13 +41,6 @@ class DuelingDeepQNetwork(nn.Module):
         torch.nn.init.kaiming_normal_(self.value.weight, nonlinearity='leaky_relu')
         torch.nn.init.kaiming_normal_(self.advantage.weight, nonlinearity='leaky_relu')
 
-    def n_actions(self):
-        """
-        Retrieve the number of actions available to the agent.
-        :return: the number of actions
-        """
-        return self.n_outputs
-
     def forward(self, x, return_all=False):
         """
         Perform the forward pass through the network.
@@ -74,6 +64,14 @@ class DuelingDeepQNetwork(nn.Module):
         q_values = value + advantages - advantages.mean()
         return (q_values, value, advantages) if return_all is True else q_values
 
+    def q_values(self, x):
+        """
+        Compute the Q-values for each action.
+        :param x: the observation
+        :return: the Q-values
+        """
+        return self(x)
+
 
 class NoisyDuelingDeepQNetwork(nn.Module):
     """
@@ -87,7 +85,7 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_actions=18):
+    def __init__(self, n_actions=18, **_):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
@@ -95,9 +93,6 @@ class NoisyDuelingDeepQNetwork(nn.Module):
 
         # Call the parent constructor.
         super().__init__()
-
-        # Store the number of actions.
-        self.n_outputs = n_actions
 
         # 3 convolutional layers
         self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
@@ -119,13 +114,6 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         torch.nn.init.kaiming_normal_(self.value.weight, nonlinearity='leaky_relu')
         torch.nn.init.kaiming_normal_(self.advantage.weight, nonlinearity='leaky_relu')
 
-    def n_actions(self):
-        """
-        Retrieve the number of actions available to the agent.
-        :return: the number of actions
-        """
-        return self.n_outputs
-
     def forward(self, x, return_all=False):
         """
         Perform the forward pass through the network.
@@ -148,3 +136,11 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         advantages = self.advantage(x)
         q_values = value + advantages - advantages.mean()
         return (q_values, value, advantages) if return_all is True else q_values
+
+    def q_values(self, x):
+        """
+        Compute the Q-values for each action.
+        :param x: the observation
+        :return: the Q-values
+        """
+        return self(x)

@@ -21,9 +21,6 @@ class DeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Store the number of actions.
-        self.n_outputs = n_actions
-
         # Create the layers.
         self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
@@ -38,13 +35,6 @@ class DeepQNetwork(nn.Module):
         torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
         torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
 
-    def n_actions(self):
-        """
-        Retrieve the number of actions available to the agent.
-        :return: the number of actions
-        """
-        return self.n_outputs
-
     def forward(self, x):
         """
         Perform the forward pass through the network.
@@ -58,6 +48,14 @@ class DeepQNetwork(nn.Module):
         x = F.leaky_relu(self.conv3(x), 0.01)
         x = F.leaky_relu(self.fc1(x.view(x.shape[0], -1)), 0.01)
         return self.fc2(x)
+
+    def q_values(self, x):
+        """
+        Compute the Q-values for each action.
+        :param x: the observation
+        :return: the Q-values
+        """
+        return self(x)
 
 
 class NoisyDeepQNetwork(nn.Module):
@@ -81,9 +79,6 @@ class NoisyDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Store the number of actions.
-        self.n_outputs = n_actions
-
         # Create the layers.
         self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
@@ -98,13 +93,6 @@ class NoisyDeepQNetwork(nn.Module):
         torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
         torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
 
-    def n_actions(self):
-        """
-        Retrieve the number of actions available to the agent.
-        :return: the number of actions
-        """
-        return self.n_outputs
-
     def forward(self, x):
         """
         Perform the forward pass through the network.
@@ -118,3 +106,11 @@ class NoisyDeepQNetwork(nn.Module):
         x = F.leaky_relu(self.conv3(x), 0.01)
         x = F.leaky_relu(self.fc1(x.view(x.shape[0], -1)), 0.01)
         return self.fc2(x)
+
+    def q_values(self, x):
+        """
+        Compute the Q-values for each action.
+        :param x: the observation
+        :return: the Q-values
+        """
+        return self(x)
