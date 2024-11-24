@@ -3,12 +3,15 @@ from benchmarks.agents.DuelingDQN import DuelingDQN
 from benchmarks.agents.DDQN import DDQN
 from benchmarks.agents.DQN import DQN
 from benchmarks.agents.DuelingDDQN import DuelingDDQN
+from benchmarks.agents.MDQN import MDQN
 from benchmarks.agents.NoisyCDQN import NoisyCDQN
 from benchmarks.agents.NoisyDDQN import NoisyDDQN
 from benchmarks.agents.NoisyDQN import NoisyDQN
 from benchmarks.agents.PrioritizedDDQN import PrioritizedDDQN
 from benchmarks.agents.PrioritizedDQN import PrioritizedDQN
-from benchmarks.agents.QRDQNs import QRDQN
+from benchmarks.agents.PrioritizedMDQN import PrioritizedMDQN
+from benchmarks.agents.QRDQN import QRDQN
+from benchmarks.agents.RainbowDQN import RainbowDQN
 
 
 def make(agent_name, **kwargs):
@@ -21,17 +24,20 @@ def make(agent_name, **kwargs):
 
     # The lists of all supported agents.
     agents = {
-        "DQN": DQN,
-        "DDQN": DDQN,
-        "CDQN": CDQN,
-        "QRDQN": QRDQN,
-        "NoisyDQN": NoisyDQN,
+        "PrioritizedMDQN": PrioritizedMDQN,
+        "PrioritizedDDQN": PrioritizedDDQN,
+        "PrioritizedDQN": PrioritizedDQN,
+        "DuelingDDQN": DuelingDDQN,
+        "DuelingDQN": DuelingDQN,
+        "RainbowDQN": RainbowDQN,
         "NoisyCDQN": NoisyCDQN,
         "NoisyDDQN": NoisyDDQN,
-        "DuelingDQN": DuelingDQN,
-        "DuelingDDQN": DuelingDDQN,
-        "PrioritizedDQN": PrioritizedDQN,
-        "PrioritizedDDQN": PrioritizedDDQN,
+        "NoisyDQN": NoisyDQN,
+        "QRDQN": QRDQN,
+        "DDQN": DDQN,
+        "CDQN": CDQN,
+        "MDQN": MDQN,
+        "DQN": DQN,
     }
 
     # Check if the agent is supported, raise an error if it isn't.

@@ -12,7 +12,7 @@ class DeepQNetwork(nn.Module):
     Human-level control through deep reinforcement learning. nature, 2015.
     """
 
-    def __init__(self, n_actions=18, **_):
+    def __init__(self, n_actions=18):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
@@ -29,11 +29,11 @@ class DeepQNetwork(nn.Module):
         self.fc2 = nn.Linear(1024, n_actions)
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
 
     def forward(self, x):
         """
@@ -70,7 +70,7 @@ class NoisyDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_actions=18, **_):
+    def __init__(self, n_actions=18):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
@@ -87,11 +87,11 @@ class NoisyDeepQNetwork(nn.Module):
         self.fc2 = NoisyLinear(1024, n_actions)
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
 
     def forward(self, x):
         """

@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 from datetime import datetime
 from enum import IntEnum
@@ -10,16 +11,15 @@ from torch.nn import SmoothL1Loss, MSELoss, CrossEntropyLoss, HuberLoss
 
 import benchmarks
 from benchmarks.agents.AgentInterface import AgentInterface
-from benchmarks.agents.memory.PrioritizedReplayBuffer import PrioritizedReplayBuffer
-from benchmarks.agents.memory.ReplayBuffer import ReplayBuffer
-from benchmarks.agents.memory.ReplayBufferInterface import Experience
+from benchmarks.agents.memory.ReplayBuffer import ReplayBuffer, Experience
 from benchmarks.agents.networks.CategoricalDeepQNetworks import CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork
 from benchmarks.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
 from torch import optim
 import numpy as np
 
 from benchmarks.agents.networks.DuelingDeepQNetworks import DuelingDeepQNetwork, NoisyDuelingDeepQNetwork
-from benchmarks.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork
+from benchmarks.agents.networks.QuantileDeepQNetwork import QuantileDeepQNetwork
+from benchmarks.agents.networks.RainbowDeepQNetwork import RainbowDeepQNetwork
 
 
 class LossType(IntEnum):
@@ -32,6 +32,7 @@ class LossType(IntEnum):
     DDQN_SL1 = 3  # Double Q-value loss with Smooth L1 norm
     KL_DIVERGENCE = 4  # Categorical DQN loss
     QUANTILE_LOSS = 5  # Huber quantile loss
+    RAINBOW = 6  # Rainbow loss
 
 
 class ReplayType(IntEnum):
@@ -40,6 +41,8 @@ class ReplayType(IntEnum):
     """
     DEFAULT = 0  # Standard replay buffer
     PRIORITIZED = 1  # Prioritized replay buffer
+    MULTISTEP = 2  # Multistep replay buffer (used in multistep Q-learning)
+    MULTISTEP_PRIORITIZED = 3  # Multistep prioritized replay buffer (used in multistep Q-learning)
 
 
 class NetworkType(IntEnum):
@@ -53,6 +56,7 @@ class NetworkType(IntEnum):
     CATEGORICAL = 4  # Categorical Deep Q-network
     NOISY_CATEGORICAL = 5  # Categorical Deep Q-network with noisy linear layer
     QUANTILE = 6  # Quantile Deep Q-network
+    RAINBOW = 7  # Rainbow Deep Q-network
 
 
 class DQN(AgentInterface):
@@ -64,9 +68,10 @@ class DQN(AgentInterface):
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=1.0,
+        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=None,
         target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=1, v_min=None, v_max=None, training=True,
-        replay_type=ReplayType.DEFAULT, loss_type=LossType.DQN_SL1, network_type=NetworkType.DEFAULT
+        n_steps=1, replay_type=ReplayType.DEFAULT, loss_type=LossType.DQN_SL1, network_type=NetworkType.DEFAULT,
+        omega=0.5, epsilon_schedule=None
     ):
         """
         Create a DQN agent.
@@ -80,43 +85,20 @@ class DQN(AgentInterface):
         :param adam_eps: the epsilon parameter of the Adam optimizer
         :param n_actions: the number of actions available to the agent
         :param n_atoms: the number of atoms used to approximate the distribution over returns
-        :param v_min: the minimum amount of returns (only used for categorical DQN)
-        :param v_max: the maximum amount of returns (only used for categorical DQN)
+        :param v_min: the minimum amount of returns (only used for distributional DQN)
+        :param v_max: the maximum amount of returns (only used for distributional DQN)
         :param training: True if the agent is being trained, False otherwise
+        :param n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
+        :param omega: the prioritization exponent
         :param replay_type: the type of replay buffer
         :param loss_type: the loss to use during gradient descent
         :param network_type: the network architecture to use for the value and target networks
+        :param epsilon_schedule: the schedule for the exploration parameter epsilon as a list of tuple, i.e.,
+            [(step_1, value_1), (step_2, value_2), ..., (step_n, value_n)]
         """
 
         # Call the parent constructor.
         super().__init__()
-
-        # A dictionary of loss functions.
-        self.losses = {
-            LossType.DQN_MSE: partial(self.q_learning_loss, loss_fc=MSELoss(reduction="none")),
-            LossType.DQN_SL1: partial(self.q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
-            LossType.DDQN_MSE: partial(self.double_q_learning_loss, loss_fc=MSELoss(reduction="none")),
-            LossType.DDQN_SL1: partial(self.double_q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
-            LossType.KL_DIVERGENCE: self.categorical_kl_divergence,
-            LossType.QUANTILE_LOSS: partial(self.quantile_loss, kappa=kappa),
-        }
-
-        # A dictionary of replay buffers.
-        self.buffers = {
-            ReplayType.DEFAULT: ReplayBuffer,
-            ReplayType.PRIORITIZED: PrioritizedReplayBuffer,
-        }
-
-        # A dictionary of value networks.
-        self.networks = {
-            NetworkType.DEFAULT: DeepQNetwork,
-            NetworkType.NOISY: NoisyDeepQNetwork,
-            NetworkType.DUELING: DuelingDeepQNetwork,
-            NetworkType.NOISY_DUELING: NoisyDuelingDeepQNetwork,
-            NetworkType.CATEGORICAL: CategoricalDeepQNetwork,
-            NetworkType.NOISY_CATEGORICAL: NoisyCategoricalDeepQNetwork,
-            NetworkType.QUANTILE: QuantileDeepQNetwork,
-        }
 
         # Store the agent's parameters.
         self.gamma = gamma
@@ -131,25 +113,28 @@ class DQN(AgentInterface):
         self.v_min = v_min
         self.v_max = v_max
         self.n_actions = n_actions
+        self.n_steps = n_steps
+        self.omega = omega
         self.replay_type = replay_type
         self.loss_type = loss_type
         self.network_type = network_type
         self.training = training
         self.epsilon_schedule = [
             (0, 1), (self.learning_starts, 1), (1e6, 0.1), (10e6, 0.01)
-        ]
+        ] if epsilon_schedule is None else epsilon_schedule
+
+        # A dictionary of loss functions, replay buffers and value networks.
+        self.losses = self.get_all_losses()
+        self.buffers = self.get_all_replay_buffers()
+        self.networks = self.get_all_value_networks()
 
         # Create the value network.
-        self.value_net = self.networks[self.network_type](
-            n_atoms=self.n_atoms, n_actions=self.n_actions, v_min=self.v_min, v_max=self.v_max
-        )
+        self.value_net = self.networks[self.network_type]()
         self.value_net.train(training)
         self.value_net.to(self.device)
 
         # Create the target network (copy value network's weights and avoid gradient computation).
-        self.target_net = self.networks[self.network_type](
-            n_atoms=self.n_atoms, n_actions=self.n_actions, v_min=self.v_min, v_max=self.v_max
-        )
+        self.target_net = self.networks[self.network_type]()
         self.target_net.train(training)
         self.target_net.to(self.device)
         self.update_target_network()
@@ -159,6 +144,49 @@ class DQN(AgentInterface):
         # Create the optimizer and replay buffer.
         self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
         self.buffer = self.buffers[self.replay_type](capacity=self.buffer_size)
+
+    def get_all_losses(self):
+        """
+        Retrieve the dictionary of all supported losses.
+        :return: the dictionary
+        """
+        return {
+            LossType.DQN_MSE: partial(self.q_learning_loss, loss_fc=MSELoss(reduction="none")),
+            LossType.DQN_SL1: partial(self.q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
+            LossType.DDQN_MSE: partial(self.double_q_learning_loss, loss_fc=MSELoss(reduction="none")),
+            LossType.DDQN_SL1: partial(self.double_q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
+            LossType.KL_DIVERGENCE: self.categorical_kl_divergence,
+            LossType.QUANTILE_LOSS: partial(self.quantile_loss, kappa=self.kappa),
+            LossType.RAINBOW: partial(self.rainbow_loss, omega=self.omega),
+        }
+
+    def get_all_replay_buffers(self):
+        """
+        Retrieve the dictionary of all supported replay buffers.
+        :return: the dictionary
+        """
+        return {
+            ReplayType.DEFAULT: ReplayBuffer,
+            ReplayType.PRIORITIZED: partial(ReplayBuffer, max_priority=1e9),
+            ReplayType.MULTISTEP: partial(ReplayBuffer, n_steps=self.n_steps, gamma=self.gamma),
+            ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, max_priority=1e9, n_steps=self.n_steps, gamma=self.gamma),
+        }
+
+    def get_all_value_networks(self):
+        """
+        Retrieve the dictionary of all supported value networks.
+        :return: the dictionary
+        """
+        return {
+            NetworkType.DEFAULT: partial(DeepQNetwork, n_actions=self.n_actions),
+            NetworkType.NOISY: partial(NoisyDeepQNetwork, n_actions=self.n_actions),
+            NetworkType.DUELING: partial(DuelingDeepQNetwork, n_actions=self.n_actions),
+            NetworkType.NOISY_DUELING: partial(NoisyDuelingDeepQNetwork, n_actions=self.n_actions),
+            NetworkType.CATEGORICAL: partial(CategoricalDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms, v_min=self.v_min, v_max=self.v_max),
+            NetworkType.NOISY_CATEGORICAL: partial(NoisyCategoricalDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms, v_min=self.v_min, v_max=self.v_max),
+            NetworkType.QUANTILE: partial(QuantileDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms),
+            NetworkType.RAINBOW: partial(RainbowDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms, v_min=self.v_min, v_max=self.v_max)
+        }
 
     def update_target_network(self):
         """
@@ -280,7 +308,7 @@ class DQN(AgentInterface):
 
         # Compute the Q-value loss.
         mask = torch.logical_not(done).float()
-        y = rewards + mask * self.gamma * next_values
+        y = rewards + mask * math.pow(self.gamma, self.n_steps) * next_values
         x = self.value_net.q_values(obs)[range(self.batch_size), actions.squeeze()]
         loss = loss_fc(x, y)
 
@@ -308,7 +336,7 @@ class DQN(AgentInterface):
 
         # Compute the Q-value loss.
         mask = torch.logical_not(done).float()
-        y = rewards + mask * self.gamma * next_values
+        y = rewards + mask * math.pow(self.gamma, self.n_steps) * next_values
         x = self.value_net.q_values(obs)[range(self.batch_size), actions.squeeze()]
         loss = loss_fc(x, y)
 
@@ -339,7 +367,7 @@ class DQN(AgentInterface):
         next_probs = next_probs[range(self.batch_size), :, next_actions.squeeze()]
 
         # Compute the new atom positions using the Bellman update.
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + self.gamma * next_atoms
+        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + math.pow(self.gamma, self.n_steps) * next_atoms
         next_atoms = torch.clamp(next_atoms, self.v_min, self.v_max)
 
         # Compute the projected distribution over returns.
@@ -366,7 +394,7 @@ class DQN(AgentInterface):
         # Report the total loss of the batch.
         return loss.mean()
 
-    def quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=0):
+    def quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
         """
         Compute the loss of the quantile regression algorithm.
         :param obs: the observations at time t
@@ -385,7 +413,7 @@ class DQN(AgentInterface):
 
         # Compute the new atom positions using the Bellman update.
         next_atoms = next_atoms[range(self.batch_size), :, next_actions.squeeze()]
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + self.gamma * next_atoms
+        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + math.pow(self.gamma, self.n_steps) * next_atoms
 
         # Compute the predicted atoms (canonical return).
         atoms, _, _ = self.value_net(obs)
@@ -405,6 +433,54 @@ class DQN(AgentInterface):
 
         # Report the loss obtained for each sampled transition for potential prioritization.
         self.buffer.report(loss)
+
+        # Report the total loss of the batch.
+        return loss.mean()
+
+    def rainbow_loss(self, obs, actions, rewards, done, next_obs, omega=0.5):
+        """
+        Compute the loss of the rainbow DQN.
+        :param obs: the observations at time t
+        :param actions: the actions at time t
+        :param rewards: the reward obtained when taking the actions while seeing the observations at time t
+        :param done: whether the episodes ended
+        :param next_obs: the observation at time t + 1
+        :param omega: the prioritization exponent
+        :return: the rainbow loss
+        """
+
+        # Compute the best actions at time t + 1 using the value network.
+        next_actions = torch.argmax(self.value_net.q_values(next_obs), dim=1).detach()
+
+        # Retrieve the atoms and probabilities corresponding to the best actions at time t + 1.
+        next_atoms, next_probs, _ = self.target_net(next_obs)
+        next_atoms = next_atoms[range(self.batch_size), :, next_actions.squeeze()]
+        next_probs = next_probs[range(self.batch_size), :, next_actions.squeeze()]
+
+        # Compute the new atom positions using the Bellman update.
+        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + math.pow(self.gamma, self.n_steps) * next_atoms
+        next_atoms = torch.clamp(next_atoms, self.v_min, self.v_max)
+
+        # Compute the projected distribution over returns.
+        target_probs = torch.zeros_like(next_probs)
+        for j in range(self.n_atoms):
+            atom = (next_atoms[:, j] - self.v_min) / self.target_net.delta_z
+            lower = torch.floor(atom).int()
+            upper = torch.ceil(atom).int()
+            target_probs[range(self.batch_size), lower] += next_probs[range(self.batch_size), j] * (upper - atom)
+            mask = torch.logical_not(torch.eq(lower, upper))
+            target_probs[range(self.batch_size), upper] += mask * next_probs[range(self.batch_size), j] * (atom - lower)
+
+        # Compute the predicted return log-probabilities.
+        _, _, log_probs = self.value_net(obs)
+        log_probs = log_probs[range(self.batch_size), :, actions.squeeze()]
+
+        # Compute the categorical loss.
+        loss_fc = CrossEntropyLoss(reduction="none")
+        loss = loss_fc(log_probs, target_probs.detach())
+
+        # Report the loss obtained for each sampled transition for potential prioritization.
+        self.buffer.report(loss.pow(omega))
 
         # Report the total loss of the batch.
         return loss.mean()
@@ -442,6 +518,8 @@ class DQN(AgentInterface):
         self.v_min = checkpoint["v_min"]
         self.v_max = checkpoint["v_max"]
         self.n_actions = checkpoint["n_actions"]
+        self.n_steps = checkpoint["n_steps"]
+        self.omega = checkpoint["omega"]
         self.replay_type = checkpoint["replay_type"]
         self.loss_type = checkpoint["loss_type"]
         self.network_type = checkpoint["network_type"]
@@ -449,17 +527,18 @@ class DQN(AgentInterface):
         self.epsilon_schedule = checkpoint["epsilon_schedule"]
         self.current_step = checkpoint["current_step"]
 
+        # Update the dictionary of losses, replay buffers and value networks, using the newly loaded parameters.
+        self.losses = self.get_all_losses()
+        self.buffers = self.get_all_replay_buffers()
+        self.networks = self.get_all_value_networks()
+
         # Update the agent's networks using the checkpoint.
-        self.value_net = self.networks[self.network_type](
-            n_atoms=self.n_atoms, n_actions=self.n_actions, v_min=self.v_min, v_max=self.v_max
-        )
+        self.value_net = self.networks[self.network_type]()
         self.value_net.load_state_dict(checkpoint[f"value_net"])
         self.value_net.train(self.training)
         self.value_net.to(self.device)
 
-        self.target_net = self.networks[self.network_type](
-            n_atoms=self.n_atoms, n_actions=self.n_actions, v_min=self.v_min, v_max=self.v_max
-        )
+        self.target_net = self.networks[self.network_type]()
         self.target_net.load_state_dict(checkpoint[f"target_net"])
         self.target_net.train(self.training)
         self.target_net.to(self.device)
@@ -467,7 +546,7 @@ class DQN(AgentInterface):
             param.requires_grad = False
 
         # Update the optimizer and replay buffer.
-        self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_starts, eps=self.adam_eps)
+        self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
         self.buffer = self.buffers[self.replay_type](capacity=self.buffer_size)
 
     def save(self, checkpoint_name):
@@ -494,6 +573,8 @@ class DQN(AgentInterface):
             "v_min": self.v_min,
             "v_max": self.v_max,
             "n_actions": self.n_actions,
+            "n_steps": self.n_steps,
+            "omega": self.omega,
             "replay_type": self.replay_type,
             "loss_type": self.loss_type,
             "network_type": self.network_type,

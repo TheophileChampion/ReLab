@@ -13,7 +13,7 @@ class CategoricalDeepQNetwork(nn.Module):
     In International conference on machine learning. PMLR, 2017.
     """
 
-    def __init__(self, n_atoms=21, n_actions=18, v_min=-10, v_max=10, **_):
+    def __init__(self, n_atoms=21, n_actions=18, v_min=-10, v_max=10):
         """
         Constructor.
         :param n_atoms: the number of atoms used to approximate the distribution over returns
@@ -47,11 +47,11 @@ class CategoricalDeepQNetwork(nn.Module):
         self.fc2 = nn.Linear(1024, n_atoms * n_actions)
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
 
     def forward(self, x):
         """
@@ -100,7 +100,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_atoms=21, n_actions=18, v_min=-10, v_max=10, **_):
+    def __init__(self, n_atoms=21, n_actions=18, v_min=-10, v_max=10):
         """
         Constructor.
         :param n_atoms: the number of atoms used to approximate the distribution over returns
@@ -134,11 +134,11 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         self.fc2 = NoisyLinear(1024, n_atoms * n_actions)
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
 
     def forward(self, x):
         """

@@ -12,7 +12,7 @@ class DuelingDeepQNetwork(nn.Module):
     In International conference on machine learning. PMLR, 2016.
     """
 
-    def __init__(self, n_actions=18, **_):
+    def __init__(self, n_actions=18):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
@@ -33,20 +33,20 @@ class DuelingDeepQNetwork(nn.Module):
         self.advantage = nn.Linear(512, n_actions)
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.value.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.advantage.weight, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.value.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.advantage.weight, nonlinearity="leaky_relu")
 
     def forward(self, x, return_all=False):
         """
         Perform the forward pass through the network.
         :param x: the observations
         :param return_all: True, if the Q-value, state value and advantage must be returned, False for only the Q-value
-        :return: a tuple containing the state value and advantages
+        :return: a 3-tuple (Q-values, state values, advantages) or simply the Q-values
         """
 
         # Forward pass through the shared encoder.
@@ -85,7 +85,7 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_actions=18, **_):
+    def __init__(self, n_actions=18):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
@@ -106,13 +106,13 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         self.advantage = NoisyLinear(512, n_actions)
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.value.weight, nonlinearity='leaky_relu')
-        torch.nn.init.kaiming_normal_(self.advantage.weight, nonlinearity='leaky_relu')
+        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.value.weight, nonlinearity="leaky_relu")
+        torch.nn.init.kaiming_normal_(self.advantage.weight, nonlinearity="leaky_relu")
 
     def forward(self, x, return_all=False):
         """
@@ -120,6 +120,7 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         :param x: the observations
         :param return_all: True, if the Q-value, state value and advantage must be returned, False for only the Q-value
         :return: a tuple containing the state value and advantages
+        :return: a 3-tuple (Q-values, state values, advantages) or simply the Q-values
         """
 
         # Forward pass through the shared encoder.
@@ -134,7 +135,7 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         # Compute the Q-values.
         value = self.value(x)
         advantages = self.advantage(x)
-        q_values = value + advantages - advantages.mean()
+        q_values = value + advantages - advantages.mean(dim=1).unsqueeze(dim=1).repeat(1, self.n_actions)
         return (q_values, value, advantages) if return_all is True else q_values
 
     def q_values(self, x):
