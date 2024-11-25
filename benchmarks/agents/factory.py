@@ -3,6 +3,7 @@ from benchmarks.agents.DuelingDQN import DuelingDQN
 from benchmarks.agents.DDQN import DDQN
 from benchmarks.agents.DQN import DQN
 from benchmarks.agents.DuelingDDQN import DuelingDDQN
+from benchmarks.agents.IQN import IQN
 from benchmarks.agents.MDQN import MDQN
 from benchmarks.agents.NoisyCDQN import NoisyCDQN
 from benchmarks.agents.NoisyDDQN import NoisyDDQN
@@ -37,6 +38,7 @@ def make(agent_name, **kwargs):
         "DDQN": DDQN,
         "CDQN": CDQN,
         "MDQN": MDQN,
+        "IQN": IQN,
         "DQN": DQN,
     }
 

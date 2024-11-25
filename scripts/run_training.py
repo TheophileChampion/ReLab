@@ -26,4 +26,4 @@ def run_training(agent_name, env_name, seed):
 if __name__ == "__main__":
 
     # Train a reinforcement learning agent on a gym environment.
-    run_training(agent_name="RainbowDQN", env_name="ALE/Pong-v5", seed=0)
+    run_training(agent_name="IQN", env_name="ALE/Pong-v5", seed=0)

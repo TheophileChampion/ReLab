@@ -18,7 +18,7 @@ from torch import optim
 import numpy as np
 
 from benchmarks.agents.networks.DuelingDeepQNetworks import DuelingDeepQNetwork, NoisyDuelingDeepQNetwork
-from benchmarks.agents.networks.QuantileDeepQNetwork import QuantileDeepQNetwork
+from benchmarks.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork, ImplicitQuantileNetwork
 from benchmarks.agents.networks.RainbowDeepQNetwork import RainbowDeepQNetwork
 
 
@@ -31,8 +31,9 @@ class LossType(IntEnum):
     DDQN_MSE = 2  # Double Q-value loss with Mean Square Error
     DDQN_SL1 = 3  # Double Q-value loss with Smooth L1 norm
     KL_DIVERGENCE = 4  # Categorical DQN loss
-    QUANTILE_LOSS = 5  # Huber quantile loss
-    RAINBOW = 6  # Rainbow loss
+    QUANTILE = 5  # Huber quantile loss
+    IMPLICIT_QUANTILE = 6  # Implicit quantile loss
+    RAINBOW = 7  # Rainbow loss
 
 
 class ReplayType(IntEnum):
@@ -56,7 +57,8 @@ class NetworkType(IntEnum):
     CATEGORICAL = 4  # Categorical Deep Q-network
     NOISY_CATEGORICAL = 5  # Categorical Deep Q-network with noisy linear layer
     QUANTILE = 6  # Quantile Deep Q-network
-    RAINBOW = 7  # Rainbow Deep Q-network
+    IMPLICIT_QUANTILE = 7  # Implicit quantile network
+    RAINBOW = 8  # Rainbow Deep Q-network
 
 
 class DQN(AgentInterface):
@@ -123,7 +125,7 @@ class DQN(AgentInterface):
             (0, 1), (self.learning_starts, 1), (1e6, 0.1), (10e6, 0.01)
         ] if epsilon_schedule is None else epsilon_schedule
 
-        # A dictionary of loss functions, replay buffers and value networks.
+        # A dictionary of loss functions, replay buffers, and value networks.
         self.losses = self.get_all_losses()
         self.buffers = self.get_all_replay_buffers()
         self.networks = self.get_all_value_networks()
@@ -153,10 +155,11 @@ class DQN(AgentInterface):
         return {
             LossType.DQN_MSE: partial(self.q_learning_loss, loss_fc=MSELoss(reduction="none")),
             LossType.DQN_SL1: partial(self.q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
-            LossType.DDQN_MSE: partial(self.double_q_learning_loss, loss_fc=MSELoss(reduction="none")),
-            LossType.DDQN_SL1: partial(self.double_q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
+            LossType.DDQN_MSE: partial(self.q_learning_loss, loss_fc=MSELoss(reduction="none"), double_ql=True),
+            LossType.DDQN_SL1: partial(self.q_learning_loss, loss_fc=SmoothL1Loss(reduction="none"), double_ql=True),
             LossType.KL_DIVERGENCE: self.categorical_kl_divergence,
-            LossType.QUANTILE_LOSS: partial(self.quantile_loss, kappa=self.kappa),
+            LossType.QUANTILE: partial(self.quantile_loss, kappa=self.kappa),
+            LossType.IMPLICIT_QUANTILE: partial(self.implicit_quantile_loss, kappa=self.kappa),
             LossType.RAINBOW: partial(self.rainbow_loss, omega=self.omega),
         }
 
@@ -185,6 +188,7 @@ class DQN(AgentInterface):
             NetworkType.CATEGORICAL: partial(CategoricalDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms, v_min=self.v_min, v_max=self.v_max),
             NetworkType.NOISY_CATEGORICAL: partial(NoisyCategoricalDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms, v_min=self.v_min, v_max=self.v_max),
             NetworkType.QUANTILE: partial(QuantileDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms),
+            NetworkType.IMPLICIT_QUANTILE: partial(ImplicitQuantileNetwork, n_actions=self.n_actions),
             NetworkType.RAINBOW: partial(RainbowDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms, v_min=self.v_min, v_max=self.v_max)
         }
 
@@ -291,48 +295,26 @@ class DQN(AgentInterface):
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
-    def q_learning_loss(self, obs, actions, rewards, done, next_obs, loss_fc):
+    def q_learning_loss(self, obs, actions, rewards, done, next_obs, loss_fc, double_ql):
         """
-        Compute the loss of the Q-learning algorithm.
+        Compute the loss of the standard or double Q-learning algorithm.
         :param obs: the observations at time t
         :param actions: the actions at time t
         :param rewards: the reward obtained when taking the actions while seeing the observations at time t
         :param done: whether the episodes ended
         :param next_obs: the observation at time t + 1
         :param loss_fc: the loss function to use to compare target and prediction
+        :param double_ql: False for standard Q-learning, True for Double Q-learning
         :return: the Q-value loss
         """
 
-        # Chose and evaluate the best actions using the target network.
-        next_values = torch.max(self.target_net.q_values(next_obs), dim=1).values.detach()
-
-        # Compute the Q-value loss.
-        mask = torch.logical_not(done).float()
-        y = rewards + mask * math.pow(self.gamma, self.n_steps) * next_values
-        x = self.value_net.q_values(obs)[range(self.batch_size), actions.squeeze()]
-        loss = loss_fc(x, y)
-
-        # Report the loss obtained for each sampled transition for potential prioritization.
-        self.buffer.report(loss)
-
-        # Report the total loss of the batch.
-        return loss.mean()
-
-    def double_q_learning_loss(self, obs, actions, rewards, done, next_obs, loss_fc):
-        """
-        Compute the loss of the double Q-learning algorithm.
-        :param obs: the observations at time t
-        :param actions: the actions at time t
-        :param rewards: the reward obtained when taking the actions while seeing the observations at time t
-        :param done: whether the episodes ended
-        :param next_obs: the observation at time t + 1
-        :param loss_fc: the loss function to use to compare target and prediction
-        :return: the Q-value loss
-        """
-
-        # Chose the best actions according to the value network, and evaluate them using the target network.
-        next_actions = torch.argmax(self.value_net.q_values(next_obs), dim=1).detach()
-        next_values = self.target_net.q_values(next_obs)[range(self.batch_size), next_actions.squeeze()].detach()
+        if double_ql is True:
+            # Chose the best actions according to the value network, and evaluate them using the target network.
+            next_actions = torch.argmax(self.value_net.q_values(next_obs), dim=1).detach()
+            next_values = self.target_net.q_values(next_obs)[range(self.batch_size), next_actions.squeeze()].detach()
+        else:
+            # Chose and evaluate the best actions using the target network.
+            next_values = torch.max(self.target_net.q_values(next_obs), dim=1).values.detach()
 
         # Compute the Q-value loss.
         mask = torch.logical_not(done).float()
@@ -394,49 +376,6 @@ class DQN(AgentInterface):
         # Report the total loss of the batch.
         return loss.mean()
 
-    def quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
-        """
-        Compute the loss of the quantile regression algorithm.
-        :param obs: the observations at time t
-        :param actions: the actions at time t
-        :param rewards: the reward obtained when taking the actions while seeing the observations at time t
-        :param done: whether the episodes ended
-        :param next_obs: the observation at time t + 1
-        :param kappa: the kappa parameter of the quantile Huber loss see Equation (10) in QR-DQN paper
-        :return: the categorical loss
-        """
-
-        # Compute the best actions at time t + 1.
-        next_atoms, next_probs, _ = self.target_net(next_obs)
-        next_q_values = (next_atoms * next_probs).sum(dim=1)
-        next_actions = torch.argmax(next_q_values, dim=1)
-
-        # Compute the new atom positions using the Bellman update.
-        next_atoms = next_atoms[range(self.batch_size), :, next_actions.squeeze()]
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + math.pow(self.gamma, self.n_steps) * next_atoms
-
-        # Compute the predicted atoms (canonical return).
-        atoms, _, _ = self.value_net(obs)
-        atoms = atoms[range(self.batch_size), :, actions.squeeze()]
-
-        # Compute the quantile Huber loss.
-        huber_loss = HuberLoss(reduction="none", delta=kappa)
-        loss = torch.zeros([self.batch_size]).to(self.device)
-        for i in range(self.n_atoms):
-            tau = (i + 0.5) / self.n_atoms
-            for j in range(self.n_atoms):
-                next_atom_j = next_atoms[:, j]
-                atom_i = atoms[:, i]
-                mask = torch.where(next_atom_j - atom_i > 0, 1.0, 0.0)
-                loss += torch.abs(tau - mask).to(self.device) * huber_loss(next_atom_j, atom_i) / kappa
-        loss /= self.n_atoms
-
-        # Report the loss obtained for each sampled transition for potential prioritization.
-        self.buffer.report(loss)
-
-        # Report the total loss of the batch.
-        return loss.mean()
-
     def rainbow_loss(self, obs, actions, rewards, done, next_obs, omega=0.5):
         """
         Compute the loss of the rainbow DQN.
@@ -481,6 +420,91 @@ class DQN(AgentInterface):
 
         # Report the loss obtained for each sampled transition for potential prioritization.
         self.buffer.report(loss.pow(omega))
+
+        # Report the total loss of the batch.
+        return loss.mean()
+
+    def quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
+        """
+        Compute the loss of the quantile regression algorithm.
+        :param obs: the observations at time t
+        :param actions: the actions at time t
+        :param rewards: the reward obtained when taking the actions while seeing the observations at time t
+        :param done: whether the episodes ended
+        :param next_obs: the observation at time t + 1
+        :param kappa: the kappa parameter of the quantile Huber loss see Equation (10) in QR-DQN paper
+        :return: the categorical loss
+        """
+
+        # Compute the best actions at time t + 1.
+        next_atoms = self.target_net(next_obs)
+        next_q_values = next_atoms.sum(dim=1) / self.n_atoms
+        next_actions = torch.argmax(next_q_values, dim=1)
+
+        # Compute the new atom positions using the Bellman update.
+        next_atoms = next_atoms[range(self.batch_size), :, next_actions.squeeze()]
+        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + math.pow(self.gamma, self.n_steps) * next_atoms
+
+        # Compute the predicted atoms (canonical return).
+        atoms = self.value_net(obs)
+        atoms = atoms[range(self.batch_size), :, actions.squeeze()]
+
+        # Compute the quantile Huber loss.
+        huber_loss = HuberLoss(reduction="none", delta=kappa)
+        loss = torch.zeros([self.batch_size]).to(self.device)
+        for i in range(self.n_atoms):
+            tau = (i + 0.5) / self.n_atoms
+            for j in range(self.n_atoms):
+                next_atom_j = next_atoms[:, j]
+                atom_i = atoms[:, i]
+                mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
+                loss += torch.abs(tau - mask).to(self.device) * huber_loss(next_atom_j, atom_i) / kappa
+        loss /= self.n_atoms
+
+        # Report the loss obtained for each sampled transition for potential prioritization.
+        self.buffer.report(loss)
+
+        # Report the total loss of the batch.
+        return loss.mean()
+
+    def implicit_quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
+        """
+        Compute the loss of the quantile regression algorithm.
+        :param obs: the observations at time t
+        :param actions: the actions at time t
+        :param rewards: the reward obtained when taking the actions while seeing the observations at time t
+        :param done: whether the episodes ended
+        :param next_obs: the observation at time t + 1
+        :param kappa: the kappa parameter of the quantile Huber loss see Equation (10) in QR-DQN paper
+        :return: the categorical loss
+        """
+
+        # Compute the best actions at time t + 1.
+        next_q_values = self.target_net.q_values(next_obs)
+        next_actions = torch.argmax(next_q_values, dim=1)
+
+        # Compute the new atom positions using the Bellman update.
+        next_atoms, _ = self.target_net(next_obs, n_samples=self.n_atoms, invalidate_cache=False)
+        next_atoms = next_atoms[range(self.batch_size), :, next_actions.squeeze()]
+        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) + math.pow(self.gamma, self.n_steps) * next_atoms
+
+        # Compute the predicted atoms (canonical return).
+        atoms, taus = self.value_net(obs, n_samples=self.n_atoms)
+        atoms = atoms[range(self.batch_size), :, actions.squeeze()]
+
+        # Compute the quantile Huber loss.
+        huber_loss = HuberLoss(reduction="none", delta=kappa)
+        loss = torch.zeros([self.batch_size]).to(self.device)
+        for i in range(self.n_atoms):
+            for j in range(self.n_atoms):
+                next_atom_j = next_atoms[:, j]
+                atom_i = atoms[:, i]
+                mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
+                loss += torch.abs(taus[:, i] - mask).to(self.device) * huber_loss(next_atom_j, atom_i) / kappa
+        loss /= self.n_atoms
+
+        # Report the loss obtained for each sampled transition for potential prioritization.
+        self.buffer.report(loss)
 
         # Report the total loss of the batch.
         return loss.mean()

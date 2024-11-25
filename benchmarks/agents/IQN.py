@@ -1,21 +1,21 @@
 from benchmarks.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 
-class QRDQN(DQN):
+class IQN(DQN):
     """
-    Implement the quantile regression Deep Q-Network with the Huber quantile loss agent from:
-    Will Dabney, Mark Rowland, Marc Bellemare, and Rémi Munos.
-    Distributional reinforcement learning with quantile regression.
-    In Proceedings of the AAAI conference on artificial intelligence, 2018.
+    Implement the Implicit Quantile Network (IQN) from:
+    Will Dabney, Georg Ostrovski, David Silver, and Rémi Munos.
+    Implicit quantile networks for distributional reinforcement learning.
+    In International conference on machine learning, pages 1096–1105. PMLR, 2018.
     """
 
     def __init__(
         self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=1.0,
-        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=32, v_min=None, v_max=None, training=True,
-        replay_type=ReplayType.DEFAULT, loss_type=LossType.QUANTILE, network_type=NetworkType.QUANTILE
+        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=8, v_min=None, v_max=None, training=True,
+        replay_type=ReplayType.DEFAULT, loss_type=LossType.IMPLICIT_QUANTILE, network_type=NetworkType.IMPLICIT_QUANTILE
     ):
         """
-        Create a quantile regression DQN agent.
+        Create an IQN agent.
         :param gamma: the discount factor
         :param learning_rate: the learning rate
         :param buffer_size: the size of the replay buffer
