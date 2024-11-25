@@ -45,7 +45,7 @@ class QuantileDeepQNetwork(nn.Module):
         """
         Perform the forward pass through the network.
         :param x: the observation
-        :return: a 3-tuple (returns, probabilities, log-probabilities)
+        :return: the returns
         """
 
         # Ensure the input has the correct shape.
@@ -137,7 +137,7 @@ class ImplicitQuantileNetwork(nn.Module):
         :param x: the observation
         :param n_samples: the number of taus to sample
         :param invalidate_cache: False if the cached output should be used, True to recompute the convolutional output
-        :return: a 3-tuple (returns, probabilities, log-probabilities)
+        :return: a tuple (returns, sampled taus)
         """
 
         # Ensure the input has the correct shape.
@@ -154,19 +154,17 @@ class ImplicitQuantileNetwork(nn.Module):
         for j in range(n_samples):
 
             # Compute tau embeddings.
-            tau = torch.rand([batch_size])
-            tau = torch.concat([
-                torch.cos(torch.pi * i * tau).unsqueeze(dim=1) for i in range(self.n_tau)
-            ], dim=1).to(self.device)
-            tau = F.leaky_relu(self.tau_fc1(tau), 0.01)
+            tau = torch.rand([batch_size]).unsqueeze(dim=1).to(self.device)
             taus.append(tau)
+            tau = torch.concat([torch.cos(torch.pi * i * tau) for i in range(self.n_tau)], dim=1)
+            tau = F.leaky_relu(self.tau_fc1(tau), 0.01)
 
             # Compute the output
             x_tau = F.leaky_relu(self.fc1(x * tau), 0.01)
             atoms_tau = self.fc2(x_tau).view(batch_size, 1, self.n_actions)
             atoms.append(atoms_tau)
 
-        # Concatenate all atoms along the second dimension, i.e., atoms dimension.
+        # Concatenate all atoms and taus along the atoms dimension.
         return torch.concat(atoms, dim=1), torch.concat(taus, dim=1)
 
     def q_values(self, x, n_samples=32, invalidate_cache=True):

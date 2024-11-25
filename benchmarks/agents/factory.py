@@ -13,6 +13,7 @@ from benchmarks.agents.PrioritizedDQN import PrioritizedDQN
 from benchmarks.agents.PrioritizedMDQN import PrioritizedMDQN
 from benchmarks.agents.QRDQN import QRDQN
 from benchmarks.agents.RainbowDQN import RainbowDQN
+from benchmarks.agents.RainbowIQN import RainbowIQN
 
 
 def make(agent_name, **kwargs):
@@ -31,6 +32,7 @@ def make(agent_name, **kwargs):
         "DuelingDDQN": DuelingDDQN,
         "DuelingDQN": DuelingDQN,
         "RainbowDQN": RainbowDQN,
+        "RainbowIQN": RainbowIQN,
         "NoisyCDQN": NoisyCDQN,
         "NoisyDDQN": NoisyDDQN,
         "NoisyDQN": NoisyDQN,
