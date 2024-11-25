@@ -2,3 +2,5 @@ gymnasium[atari, accept-rom-licesnse, other]==1.0.0
 torch==2.5.1
 torchrl==0.6.0
 tensorboard==2.18.0
+imageio==2.36.0
+pillow==11.0.0

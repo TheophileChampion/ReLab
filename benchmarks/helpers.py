@@ -20,14 +20,15 @@ def initialize(agent_name, env_name, seed, data_directory=None):
                   "or passing it as parameter to 'benchmarks.initialize()'."
         raise RuntimeError(message)
 
-    # Set the environment variable 'DATA_DIRECTORY' if provided as parameters by the user.
+    # Set the environment variable "DATA_DIRECTORY" if provided as parameters by the user.
     if data_directory is not None:
         os.environ["DATA_DIRECTORY"] = data_directory
 
-    # Set the environment variables: 'CHECKPOINT_DIRECTORY' and 'TENSORBOARD_DIRECTORY'.
+    # Set the environment variables: "CHECKPOINT_DIRECTORY", "TENSORBOARD_DIRECTORY" and "DEMO_DIRECTORY".
     suffix = env_name.replace("ALE/", "") + os.sep + agent_name + os.sep + f"{seed}" + os.sep
     os.environ["CHECKPOINT_DIRECTORY"] = os.path.join(os.environ["DATA_DIRECTORY"], "saves", suffix)
     os.environ["TENSORBOARD_DIRECTORY"] = os.path.join(os.environ["DATA_DIRECTORY"], "runs", suffix)
+    os.environ["DEMO_DIRECTORY"] = os.path.join(os.environ["DATA_DIRECTORY"], "demos", suffix)
 
     # Register the Atari environments.
     gym.register_envs(ale_py)

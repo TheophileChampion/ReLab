@@ -101,7 +101,7 @@ class DQN(AgentInterface):
         """
 
         # Call the parent constructor.
-        super().__init__()
+        super().__init__(training=training)
 
         # Store the agent's parameters.
         self.gamma = gamma
@@ -554,6 +554,12 @@ class DQN(AgentInterface):
         # Report the total loss of the batch.
         return loss.mean()
 
+    @staticmethod
+    def safe_load(checkpoint, key):
+        if key not in checkpoint.keys():
+            return None
+        return checkpoint[key]
+
     def load(self, checkpoint_name=None):
         """
         Load an agent from the filesystem.
@@ -575,26 +581,26 @@ class DQN(AgentInterface):
         checkpoint = torch.load(checkpoint_path, map_location=self.device)
 
         # Update the agent's parameters using the checkpoint.
-        self.gamma = checkpoint["gamma"]
-        self.learning_rate = checkpoint["learning_rate"]
-        self.buffer_size = checkpoint["buffer_size"]
-        self.batch_size = checkpoint["batch_size"]
-        self.target_update_interval = checkpoint["target_update_interval"]
-        self.learning_starts = checkpoint["learning_starts"]
-        self.kappa = checkpoint["kappa"]
-        self.adam_eps = checkpoint["adam_eps"]
-        self.n_atoms = checkpoint["n_atoms"]
-        self.v_min = checkpoint["v_min"]
-        self.v_max = checkpoint["v_max"]
-        self.n_actions = checkpoint["n_actions"]
-        self.n_steps = checkpoint["n_steps"]
-        self.omega = checkpoint["omega"]
-        self.replay_type = checkpoint["replay_type"]
-        self.loss_type = checkpoint["loss_type"]
-        self.network_type = checkpoint["network_type"]
-        self.training = checkpoint["training"]
-        self.epsilon_schedule = checkpoint["epsilon_schedule"]
-        self.current_step = checkpoint["current_step"]
+        self.gamma = self.safe_load(checkpoint, "gamma")
+        self.learning_rate = self.safe_load(checkpoint, "learning_rate")
+        self.buffer_size = self.safe_load(checkpoint, "buffer_size")
+        self.batch_size = self.safe_load(checkpoint, "batch_size")
+        self.target_update_interval = self.safe_load(checkpoint, "target_update_interval")
+        self.learning_starts = self.safe_load(checkpoint, "learning_starts")
+        self.kappa = self.safe_load(checkpoint, "kappa")
+        self.adam_eps = self.safe_load(checkpoint, "adam_eps")
+        self.n_atoms = self.safe_load(checkpoint, "n_atoms")
+        self.v_min = self.safe_load(checkpoint, "v_min")
+        self.v_max = self.safe_load(checkpoint, "v_max")
+        self.n_actions = self.safe_load(checkpoint, "n_actions")
+        self.n_steps = self.safe_load(checkpoint, "n_steps")
+        self.omega = self.safe_load(checkpoint, "omega")
+        self.replay_type = self.safe_load(checkpoint, "replay_type")
+        self.loss_type = self.safe_load(checkpoint, "loss_type")
+        self.network_type = self.safe_load(checkpoint, "network_type")
+        self.training = self.safe_load(checkpoint, "training")
+        self.epsilon_schedule = self.safe_load(checkpoint, "epsilon_schedule")
+        self.current_step = self.safe_load(checkpoint, "current_step")
 
         # Update the dictionary of losses, replay buffers and value networks, using the newly loaded parameters.
         self.losses = self.get_all_losses()
@@ -603,12 +609,12 @@ class DQN(AgentInterface):
 
         # Update the agent's networks using the checkpoint.
         self.value_net = self.networks[self.network_type]()
-        self.value_net.load_state_dict(checkpoint[f"value_net"])
+        self.value_net.load_state_dict(self.safe_load(checkpoint, "value_net"))
         self.value_net.train(self.training)
         self.value_net.to(self.device)
 
         self.target_net = self.networks[self.network_type]()
-        self.target_net.load_state_dict(checkpoint[f"target_net"])
+        self.target_net.load_state_dict(self.safe_load(checkpoint, "target_net"))
         self.target_net.train(self.training)
         self.target_net.to(self.device)
         for param in self.target_net.parameters():

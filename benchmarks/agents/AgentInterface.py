@@ -10,6 +10,8 @@ from pathlib import Path
 
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
+import imageio
+from PIL import Image
 
 import benchmarks
 
@@ -19,9 +21,10 @@ class AgentInterface(ABC):
     The interface that all agents must implement.
     """
 
-    def __init__(self):
+    def __init__(self, training=True):
         """
         Create an agent.
+        :param training: True if the agent is being training, False otherwise
         """
 
         # Retrieve the device to use for training.
@@ -42,7 +45,7 @@ class AgentInterface(ABC):
         self.current_episode_length = 0
 
         # Create the summary writer for monitoring with TensorBoard.
-        self.writer = SummaryWriter(os.environ["TENSORBOARD_DIRECTORY"])
+        self.writer = SummaryWriter(os.environ["TENSORBOARD_DIRECTORY"]) if training is True else None
 
     @abc.abstractmethod
     def step(self, obs):
@@ -76,6 +79,41 @@ class AgentInterface(ABC):
         :param checkpoint_name: the name of the checkpoint in which to save the agent
         """
         ...
+
+    def demo(self, env, gif_name, max_frames=10000):
+        """
+        Train the agent in the gym environment passed as parameters
+        :param env: the gym environment
+        :param gif_name: the name of the GIF file in which to save the demo
+        :param max_frames: the maximum number of frames to include in the GIF file
+        """
+
+        # Reset the environment.
+        obs, _ = env.reset()
+
+        # Record the agent policy.
+        frames = []
+        for t in range(max_frames):
+
+            # Record the frame associated to the current environment state.
+            frames.append(Image.fromarray(env.render()))
+
+            # Execute an action in the environment.
+            action = self.step(obs.to(self.device))
+            obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+
+            # Stop recording if the episode ends.
+            if done:
+                break
+
+        # Close the environment.
+        env.close()
+
+        # Create a GIF of the recorded frames.
+        gif_path = join(os.environ["DEMO_DIRECTORY"], gif_name)
+        self.create_directory_and_file(gif_path)
+        imageio.mimwrite(gif_path, frames, fps=60)
 
     def report(self, reward, done):
         """
