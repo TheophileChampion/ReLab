@@ -72,9 +72,9 @@ class DQN(AgentInterface):
 
     def __init__(
         self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=None,
-        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=1, v_min=None, v_max=None, training=True,
-        n_steps=1, replay_type=ReplayType.DEFAULT, loss_type=LossType.DQN_SL1, network_type=NetworkType.DEFAULT,
-        omega=0.5, epsilon_schedule=None
+        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=None, v_min=None, v_max=None, n_steps=1,
+        training=True, replay_type=ReplayType.DEFAULT, loss_type=LossType.DQN_SL1, network_type=NetworkType.DEFAULT,
+        omega=None, epsilon_schedule=None
     ):
         """
         Create a DQN agent.
@@ -298,7 +298,7 @@ class DQN(AgentInterface):
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
-    def q_learning_loss(self, obs, actions, rewards, done, next_obs, loss_fc, double_ql):
+    def q_learning_loss(self, obs, actions, rewards, done, next_obs, loss_fc, double_ql=False):
         """
         Compute the loss of the standard or double Q-learning algorithm.
         :param obs: the observations at time t
@@ -556,6 +556,12 @@ class DQN(AgentInterface):
 
     @staticmethod
     def safe_load(checkpoint, key):
+        """
+        Load the value corresponding to the key in the checkpoint.
+        :param checkpoint: the checkpoint
+        :param key: the key
+        :return: the value, or None if the key is not in the checkpoint
+        """
         if key not in checkpoint.keys():
             return None
         return checkpoint[key]
