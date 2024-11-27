@@ -1,3 +1,4 @@
+import os
 import subprocess
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import re
@@ -39,6 +40,7 @@ def run_experiment(agent_names, env_names, seeds):
     """
 
     # Iterate over all environments.
+    prefix = "." + os.sep + "scripts" + os.sep + "slurm"
     for env in env_names:
 
         # Keep track of all the training job indices on the current environment.
@@ -52,21 +54,21 @@ def run_experiment(agent_names, env_names, seeds):
 
                 # Train the agent on the environment with the specified seed.
                 job_id = launch_job(
-                    task="run_training.sh",
+                    task=prefix + os.sep + "run_training.sh",
                     kwargs={"agent": agent, "env": env, "seed": seed}
                 )
                 job_indices.append(job_id)
 
                 # Demonstrate the policy learned by the agent on the environment with the specified seed.
                 launch_job(
-                    task="run_demo.sh",
+                    task=prefix + os.sep + "run_demo.sh",
                     kwargs={"agent": agent, "env": env, "seed": seed, "index": benchmarks.config(key="max_n_steps")},
                     dependencies=[job_id]
                 )
 
         # Draw the graph of mean episodic reward for all agents in the current environment.
         launch_job(
-            task="draw_graph.sh",
+            task=prefix + os.sep + "draw_graph.sh",
             kwargs={"agents": " ".join(agent_names), "env": env, "seeds": " ".join(seeds), "metric": "mean_episodic_reward"},
             dependencies=job_indices
         )
