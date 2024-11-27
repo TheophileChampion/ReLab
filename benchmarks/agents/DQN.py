@@ -20,6 +20,7 @@ import numpy as np
 from benchmarks.agents.networks.DuelingDeepQNetworks import DuelingDeepQNetwork, NoisyDuelingDeepQNetwork
 from benchmarks.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork, ImplicitQuantileNetwork
 from benchmarks.agents.networks.RainbowDeepQNetwork import RainbowDeepQNetwork, RainbowImplicitQuantileNetwork
+from benchmarks.helpers.FileSystem import FileSystem
 
 
 class LossType(IntEnum):
@@ -638,9 +639,10 @@ class DQN(AgentInterface):
         
         # Create the checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
-        self.create_directory_and_file(checkpoint_path)
+        FileSystem.create_directory_and_file(checkpoint_path)
 
         # Save the model.
+        logging.info("Saving agent to the following file: " + checkpoint_path)
         torch.save({
             "gamma": self.gamma,
             "learning_rate": self.learning_rate,

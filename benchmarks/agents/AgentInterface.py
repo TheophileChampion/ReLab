@@ -14,6 +14,7 @@ import imageio
 from PIL import Image
 
 import benchmarks
+from benchmarks.helpers.FileSystem import FileSystem
 
 
 class AgentInterface(ABC):
@@ -112,7 +113,7 @@ class AgentInterface(ABC):
 
         # Create a GIF of the recorded frames.
         gif_path = join(os.environ["DEMO_DIRECTORY"], gif_name)
-        self.create_directory_and_file(gif_path)
+        FileSystem.create_directory_and_file(gif_path)
         imageio.mimwrite(gif_path, frames, fps=60)
 
     def report(self, reward, done):
@@ -183,16 +184,3 @@ class AgentInterface(ABC):
                 file = join(directory, current_file)
 
         return file
-    
-    @staticmethod
-    def create_directory_and_file(checkpoint_path):
-        """
-        Create the directory and file of the checkpoint if they do not already exist
-        :param checkpoint_path: the checkpoint path
-        """
-        checkpoint_dir = dirname(checkpoint_path)
-        if not exists(checkpoint_dir):
-            os.makedirs(checkpoint_dir)
-        if not exists(checkpoint_path):
-            file = Path(checkpoint_path)
-            file.touch(exist_ok=True)

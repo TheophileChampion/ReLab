@@ -4,3 +4,6 @@ torchrl==0.6.0
 tensorboard==2.18.0
 imageio==2.36.0
 pillow==11.0.0
+pandas==2.2.3
+seaborn==0.13.2
+matplotlib==3.9.2

@@ -1,1 +1,1 @@
-from benchmarks.helpers import initialize, device, config
+from benchmarks.benchmarks import initialize, device, config
