@@ -17,7 +17,7 @@ def launch_job(task, kwargs, dependencies=None):
 
     # Create the job's command line.
     python_args = " ".join([f"--{key} {value}" for key, value in kwargs.items()])
-    dependencies = "" if dependencies is None else f"-d afterok:{":".join(dependencies)}"
+    dependencies = "" if dependencies is None else f"-d afterok:{':'.join(dependencies)}"
     command = f"sbatch {dependencies} {task} {python_args}"
 
     # Launch the slurm job.
