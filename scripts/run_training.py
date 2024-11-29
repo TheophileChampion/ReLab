@@ -5,22 +5,22 @@ import benchmarks
 from benchmarks import environments
 
 
-def run_training(agent_name, env_name, seed):
+def run_training(agent, env, seed):
     """
     Train a reinforcement learning agent on a gym environment.
-    :param agent_name: the agent name
-    :param env_name: the environment name
+    :param agent: the agent name
+    :param env: the environment name
     :param seed: the random seed
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent_name, env_name, seed)
+    benchmarks.initialize(agent, env, seed)
 
     # Create the environment.
-    env = environments.make(env_name)
+    env = environments.make(env)
 
     # Create and train the agent.
-    agent = agents.make(agent_name, training=True)
+    agent = agents.make(agent, training=True)
     agent.load()
     agent.train(env)
 
@@ -35,4 +35,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Train a reinforcement learning agent on a gym environment.
-    run_training(agent_name=args.agent, env_name=args.env, seed=args.seed)
+    run_training(agent=args.agent, env=args.env, seed=args.seed)

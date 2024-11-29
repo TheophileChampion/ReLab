@@ -3,10 +3,10 @@ import logging
 import math
 import os
 import re
+import time
 from abc import ABC
 from collections import deque
-from os.path import exists, isdir, isfile, join, dirname
-from pathlib import Path
+from os.path import exists, isdir, isfile, join
 
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
@@ -40,6 +40,10 @@ class AgentInterface(ABC):
         # Create the queue containing the last episodic rewards.
         self.episodic_rewards = deque(maxlen=self.max_queue_len)
         self.current_episodic_reward = 0
+
+        # Create the queue containing the time elapsed between training iterations.
+        self.time_elapsed = deque(maxlen=self.max_queue_len)
+        self.last_time = None
 
         # Create the queue containing the last episode lengths.
         self.episode_lengths = deque(maxlen=self.max_queue_len)
@@ -118,10 +122,16 @@ class AgentInterface(ABC):
 
     def report(self, reward, done):
         """
-        Keep track of the last 100 episodic rewards.
+        Keep track of the last episodic rewards, episode length, and time elapse since last training iteration.
         :param reward: the current reward
         :param done: whether the episode ended
         """
+
+        # Keep track of time elapsed since last training iteration.
+        now = time.time() * 1000
+        if self.last_time is not None:
+            self.time_elapsed.append(now - self.last_time)
+        self.last_time = now
 
         # Keep track of current episodic reward.
         self.current_episodic_reward += reward
@@ -138,6 +148,10 @@ class AgentInterface(ABC):
         """
         Log the agent performance in tensorboard, if the internal queue
         """
+
+        # Log the mean time elapsed between two training iterations.
+        if len(self.time_elapsed) >= 2:
+            self.writer.add_scalar("mean_time_elapsed_ms", np.mean(list(self.time_elapsed)), self.current_step)
 
         # Log the mean episodic reward.
         if len(self.episodic_rewards) >= 2:

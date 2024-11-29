@@ -1,34 +1,13 @@
 import os
-import subprocess
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-import re
+from functools import partial
 
 import benchmarks
 from benchmarks.environments import small_benchmark_atari_games as atari_games
+from benchmarks.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
 
 
-def launch_job(task, kwargs, dependencies=None):
-    """
-    Launch a slurm job.
-    :param task: the task to run, e.g., "run_training" or "run_demo"
-    :param kwargs: the keywords argument of the job's shell script
-    :param dependencies: the job indices on which this job depends
-    :return: the index of the slurm job launched
-    """
-
-    # Create the job's command line.
-    python_args = " ".join([f"--{key} {value}" for key, value in kwargs.items()])
-    dependencies = "" if dependencies is None else f"-d afterok:{':'.join(dependencies)}"
-    command = f"sbatch {dependencies} {task} {python_args}"
-
-    # Launch the slurm job.
-    process = subprocess.run(command.split(), capture_output=True, text=True)
-
-    # Return the job index of the slurm job.
-    return re.findall(r"\d+", process.stdout)[-1]
-
-
-def run_experiment(agent_names, env_names, seeds):
+def run_experiment(agent_names, env_names, seeds, local=True):
     """
     Run an experiments by:
     - training all reinforcement learning agents on all gym environments using all seeds
@@ -37,7 +16,15 @@ def run_experiment(agent_names, env_names, seeds):
     :param agent_names: the agent names
     :param env_names: the environment names
     :param seeds: the random seeds
+    :param local: True for launching jobs on the local computer, False to launch slurm jobs
     """
+
+    # Select the requested job runner.
+    job_runners = {
+        True: partial(LocalJobRunner, max_worker=2),
+        False: SlurmJobRunner
+    }
+    job_runner = job_runners[local]()
 
     # Iterate over all environments.
     prefix = "." + os.sep + "scripts" + os.sep + "slurm"
@@ -53,26 +40,29 @@ def run_experiment(agent_names, env_names, seeds):
             for seed in seeds:
 
                 # Train the agent on the environment with the specified seed.
-                job_id = launch_job(
+                job_id = job_runner.launch_job(
                     task=prefix + os.sep + "run_training.sh",
                     kwargs={"agent": agent, "env": env, "seed": seed}
                 )
                 job_indices.append(job_id)
 
                 # Demonstrate the policy learned by the agent on the environment with the specified seed.
-                launch_job(
+                job_runner.launch_job(
                     task=prefix + os.sep + "run_demo.sh",
                     kwargs={"agent": agent, "env": env, "seed": seed, "index": benchmarks.config(key="max_n_steps")},
                     dependencies=[job_id]
                 )
 
         # Draw the graph of mean episodic reward for all agents in the current environment.
-        launch_job(
+        job_runner.launch_job(
             task=prefix + os.sep + "draw_graph.sh",
-            kwargs={"agents": " ".join(agent_names), "env": env, "seeds": " ".join(seeds), "metric": "mean_episodic_reward"},
+            kwargs={"agents": agent_names, "env": env, "seeds": seeds, "metric": "mean_episodic_reward"},
             dependencies=job_indices
         )
         job_indices.clear()
+
+    # Wait for all job to terminate.
+    job_runner.wait()
 
 
 if __name__ == "__main__":
@@ -85,4 +75,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Train a reinforcement learning agent on a gym environment.
-    run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds)
+    run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=True)

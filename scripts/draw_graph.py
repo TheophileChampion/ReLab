@@ -1,12 +1,10 @@
 import logging
-import math
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import join, exists
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sympy.core.random import random
 
 import benchmarks
 from benchmarks.helpers.FileSystem import FileSystem
@@ -58,6 +56,8 @@ def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_stat
     mean = mean[mean.index % log_interval == 0]
     std = summary_statistics.std().rename(columns={metric: "std"})
     std = std[std.index % log_interval == 0]
+    if len(seeds) == 1:
+        std = std.fillna(0)
     summary_statistics = mean.merge(std, on=["step", "step"]).dropna()
 
     # Save the summary statistics on the file system before.
@@ -66,11 +66,11 @@ def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_stat
     return summary_statistics
 
 
-def draw_graph(agent_names, env_name, seeds, metric, overwrite=False):
+def draw_graph(agents, env, seeds, metric, overwrite=False):
     """
     Generate a graph representing the agents performance in an environment according to the specified metric.
-    :param agent_names: the agent names
-    :param env_name: the environment name
+    :param agents: the agent names
+    :param env: the environment name
     :param seeds: the random seeds over which the average and standard deviation is computed
     :param metric: the name of the metric to draw in the graph
     :param overwrite: True to overwrite the previously computed metric values, False otherwise
@@ -79,29 +79,29 @@ def draw_graph(agent_names, env_name, seeds, metric, overwrite=False):
     # For each agent, compute the mean and standard deviations of the metric over all seeds.
     ax = None
     summary_statistics = {}
-    for agent_name in agent_names:
+    for agent in agents:
 
         # Get the path where the summary statistics should be stored.
-        benchmarks.initialize(agent_name, env_name, paths_only=True)
+        benchmarks.initialize(agent, env, paths_only=True)
         summary_statistics_path = join(os.environ["STATISTICS_DIRECTORY"], f"{metric}.tsv")
 
         # Compute the summary statistics for the current agent.
         if exists(summary_statistics_path) and overwrite is False:
             logging.info(f"Using already computed summary statistics from: {summary_statistics_path}.")
-            summary_statistics[agent_name] = pd.read_csv(summary_statistics_path, sep="\t")
+            summary_statistics[agent] = pd.read_csv(summary_statistics_path, sep="\t")
         else:
             logging.info(f"Computing summary statistics from TensorBoard files in: {os.environ["TENSORBOARD_DIRECTORY"]}.")
-            summary_statistics[agent_name] = compute_summary_statistics(agent_name, env_name, seeds, metric, summary_statistics_path)
+            summary_statistics[agent] = compute_summary_statistics(agent, env, seeds, metric, summary_statistics_path)
 
         # Draw the mean as a solid curve, and the standard deviation as the shaded area.
-        statistics = summary_statistics[agent_name]
+        statistics = summary_statistics[agent]
         lower_bound = statistics["mean"] - statistics["std"]
         upper_bound = statistics["mean"] + statistics["std"]
         ax = sns.lineplot(statistics, x="step", y="mean", ax=ax)
         plt.fill_between(statistics["step"], lower_bound.values, upper_bound.values, alpha=0.1)
 
     # Set the legend of the figure, and the axis labels with labels sorted in natural order.
-    ax.legend(handles=ax.lines, labels=agent_names)
+    ax.legend(handles=ax.lines, labels=agents)
     ax.set_xlabel("Training Iterations")
     ax.set_ylabel(display_name(metric))
 
@@ -110,9 +110,6 @@ def draw_graph(agent_names, env_name, seeds, metric, overwrite=False):
 
 
 if __name__ == "__main__":
-
-    # Save the figure comparing the agents.
-    MatPlotLib.save_figure(figure_path=join(os.environ["GRAPH_DIRECTORY"], f"{metric}.pdf"))
 
     # Parse the script arguments.
     parser = ArgumentParser(prog="draw_graph", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -124,4 +121,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Generate a graph representing the agents performance in an environment according to the specified metric.
-    draw_graph(agent_names=args.agents, env_name=args.env, seeds=args.seeds, metric=args.metric, overwrite=args.overwrite)
+    draw_graph(agents=args.agents, env=args.env, seeds=args.seeds, metric=args.metric, overwrite=args.overwrite)

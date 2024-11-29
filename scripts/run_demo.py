@@ -5,25 +5,25 @@ import benchmarks
 from benchmarks import environments
 
 
-def run_demo(agent_name, env_name, seed, checkpoint_index):
+def run_demo(agent, env, seed, index):
     """
     Demonstrate the policy learned by a reinforcement learning agent on a gym environment.
-    :param agent_name: the agent name
-    :param env_name: the environment name
+    :param agent: the agent name
+    :param env: the environment name
     :param seed: the random seed
-    :param checkpoint_index: the number of training steps corresponding to the checkpoint to load
+    :param index: the number of training steps corresponding to the checkpoint to load
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent_name, env_name, seed)
+    benchmarks.initialize(agent, env, seed)
 
     # Create the environment.
-    env = environments.make(env_name, render_mode="rgb_array")
+    env = environments.make(env, render_mode="rgb_array")
 
     # Create and train the agent.
-    agent = agents.make(agent_name, training=False)
-    agent.load(f"model_{checkpoint_index}.pt")
-    agent.demo(env, f"demo_{checkpoint_index}.gif")
+    agent = agents.make(agent, training=False)
+    agent.load(f"model_{index}.pt")
+    agent.demo(env, f"demo_{index}.gif")
 
 
 if __name__ == "__main__":
@@ -37,4 +37,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Demonstrate the policy learned by a reinforcement learning agent on a gym environment.
-    run_demo(agent_name=args.agent, env_name=args.env, seed=args.seed, checkpoint_index=args.index)
+    run_demo(agent=args.agent, env=args.env, seed=args.seed, index=args.index)
