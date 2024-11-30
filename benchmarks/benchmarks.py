@@ -69,6 +69,7 @@ def config(key=None):
     :return: the configuration or the entry in the configuration corresponding to the key passed as parameters
     """
     conf = {
+        "stack_size": 4,
         "max_n_steps": 50000000,
         "checkpoint_frequency": 500000,
         "tensorboard_log_interval": 5000,

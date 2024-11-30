@@ -34,5 +34,5 @@ if __name__ == "__main__":
 
     # Demonstrate the policy learnt by a reinforcement learning agent on a gym environment.
     update_checkpoint(
-        agent_name="DuelingDDQN", env_name="ALE/Pong-v5", seed=0, checkpoint_index=8500000, updates={"n_actions": 18}
+        agent_name="DuelingDDQN", env_name="ALE/Pong-v5", seed=0, checkpoint_index=10000000, updates={"n_actions": 18}
     )

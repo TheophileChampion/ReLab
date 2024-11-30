@@ -8,10 +8,11 @@ import torch
 import benchmarks
 
 
-#
 # Class storing an experience.
-#
 Experience = collections.namedtuple("Experience", field_names=["obs", "action", "reward", "done", "next_obs"])
+
+# Class storing an element of the buffer used to optimize memory requirement.
+BufferElement = collections.namedtuple("BufferElement", field_names=["frame", "action", "reward", "done"])
 
 
 class ReplayBuffer:
@@ -32,7 +33,9 @@ class ReplayBuffer:
         """
 
         # The experience replay buffer and the device on which to store experiences.
-        self.buffer = collections.deque(maxlen=capacity)
+        self.stack_size = benchmarks.config("stack_size")
+        self.capacity = capacity
+        self.buffer = collections.deque(maxlen=capacity + self.stack_size)
         self.device = benchmarks.device()
 
         # Store the multistep parameters.
@@ -49,6 +52,21 @@ class ReplayBuffer:
         # The indices of the last sampled experiences.
         self.indices = []
 
+    def get_experience(self, idx):
+        """
+        Retrieve the experience corresponding to the index.
+        :param idx: the index
+        :return: the experience
+        """
+        elements = []
+        frames = []
+        for i in range(self.stack_size + 1):
+            elements.append(self.buffer[idx + i])
+            frames.append(self.buffer[idx + i].frame)
+        obs = torch.concat(frames[0:self.stack_size])
+        next_obs = torch.concat(frames[1:self.stack_size + 1])
+        return Experience(obs, elements[-2].action, elements[-2].reward, elements[-2].done, next_obs)
+
     def sample(self, batch_size):
         """
         Sample a batch from the replay buffer.
@@ -64,12 +82,12 @@ class ReplayBuffer:
 
         # Sample a batch from the replay buffer.
         if self.max_priority is None:
-            self.indices = np.random.choice(len(self.buffer), batch_size, replace=False)
+            self.indices = np.random.choice(len(self), batch_size, replace=False)
         else:
             weights = torch.tensor(list(self.weights), dtype=torch.float)
             self.indices = torch.multinomial(weights, batch_size, replacement=False)
 
-        obs, actions, rewards, done, next_obs = zip(*[self.buffer[idx] for idx in self.indices])
+        obs, actions, rewards, done, next_obs = zip(*[self.get_experience(idx) for idx in self.indices])
 
         # Convert the batch into a torch tensor stored on the proper device.
         return self.list_to_tensor(obs).to(self.device), \
@@ -109,12 +127,12 @@ class ReplayBuffer:
         Retrieve the number of elements in the buffer.
         :return: the number of elements contained in the replay buffer
         """
-        return len(self.buffer)
+        return len(self.buffer) - self.stack_size
 
-    def append(self, experience):
+    def append(self, exp):
         """
         Add a new experience to the buffer
-        :param experience: the experience to add
+        :param exp: the experience to add
         """
 
         # Update the cumulated return of (past) experiences.
@@ -122,22 +140,27 @@ class ReplayBuffer:
 
             # Update the returns of last experiences.
             for i in range(len(self.last_experiences)):
-                new_reward = self.last_experiences[i].reward + math.pow(self.gamma, i + 1) * experience.reward
+                new_reward = self.last_experiences[i].reward + math.pow(self.gamma, i + 1) * exp.reward
                 self.last_experiences[i] = self.last_experiences[i]._replace(reward=new_reward)
 
             # Add the current experience to the queue of last experiences.
-            self.last_experiences.appendleft(experience)
+            self.last_experiences.appendleft(exp)
 
             # Check if no experience should be added to the replay buffer, simply return.
             if len(self.last_experiences) < self.n_steps:
                 return
 
             # Otherwise pop the experience from the queue of (past) experiences and update its next observation.
-            experience = self.last_experiences.pop()
-            experience = experience._replace(next_obs=self.last_experiences[0].next_obs)
+            exp = self.last_experiences.pop()
+            exp = exp._replace(next_obs=self.last_experiences[0].next_obs)
 
-        # Add the experience to the replay buffer and initialize its weight (if needed).
-        self.buffer.append(experience)
+        # Add the experience to the replay buffer.
+        if len(self.buffer) == 0:
+            for i in range(self.stack_size):
+                self.buffer.append(BufferElement(exp.obs[i, :, :].detach().clone().unsqueeze(dim=0), exp.action, exp.reward, exp.done))
+        self.buffer.append(BufferElement(exp.next_obs[-1, :, :].detach().clone().unsqueeze(dim=0), exp.action, exp.reward, exp.done))
+
+        # Initialize the experience weight (if needed).
         if self.max_priority is not None:
             self.weights.append(self.max_priority)
 

@@ -30,10 +30,10 @@ if __name__ == "__main__":
 
     # Parse the script arguments.
     parser = ArgumentParser(prog="run_demo", formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--agent", type=str, default="DQN", help="name of the agent whose policy needs to be demonstrated")
+    parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
     parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
     parser.add_argument("--seed", type=int, default=0, help="random seed to use")
-    parser.add_argument("--index", type=int, default=8500000, help="index of the checkpoint to load")
+    parser.add_argument("--index", type=int, default=10000000, help="index of the checkpoint to load")
     args = parser.parse_args()
 
     # Demonstrate the policy learned by a reinforcement learning agent on a gym environment.
