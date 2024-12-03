@@ -15,7 +15,7 @@ class PrioritizedMDQN(DQN):
     def __init__(
         self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=None,
         target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=1, v_min=None, v_max=None, training=True,
-        n_steps=3, replay_type=ReplayType.MULTISTEP_PRIORITIZED, loss_type=LossType.DQN_SL1,
+        n_steps=3, omega=0.7, omega_is=0.5, replay_type=ReplayType.MULTISTEP_PRIORITIZED, loss_type=LossType.DQN_SL1,
         network_type=NetworkType.DEFAULT
     ):
         """
@@ -34,6 +34,8 @@ class PrioritizedMDQN(DQN):
         :param v_max: the maximum amount of returns (only used for categorical DQN)
         :param training: True if the agent is being trained, False otherwise
         :param n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
+        :param omega: the prioritization exponent
+        :param omega_is: the important sampling exponent
         :param replay_type: the type of replay buffer
         :param loss_type: the loss to use during gradient descent
         :param network_type: the network architecture to use for the value and target networks
@@ -44,5 +46,6 @@ class PrioritizedMDQN(DQN):
             gamma=gamma, learning_rate=learning_rate, buffer_size=buffer_size, batch_size=batch_size,
             learning_starts=learning_starts, kappa=kappa, target_update_interval=target_update_interval,
             adam_eps=adam_eps, n_actions=n_actions, n_atoms=n_atoms, v_min=v_min, v_max=v_max, training=training,
-            n_steps=n_steps, replay_type=replay_type, loss_type=loss_type, network_type=network_type
+            n_steps=n_steps, replay_type=replay_type, loss_type=loss_type, network_type=network_type, omega=omega,
+            omega_is=omega_is
         )

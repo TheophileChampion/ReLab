@@ -72,7 +72,7 @@ class LocalJobRunner(JobRunnerInterface):
     Class launching local jobs.
     """
 
-    def __init__(self, max_worker=2):
+    def __init__(self, max_worker=1):
         """
         Create a local job runner.
         :param max_worker: the maximum number of worker

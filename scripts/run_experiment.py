@@ -21,7 +21,7 @@ def run_experiment(agent_names, env_names, seeds, local=True):
 
     # Select the requested job runner.
     job_runners = {
-        True: partial(LocalJobRunner, max_worker=2),
+        True: partial(LocalJobRunner, max_worker=3),
         False: SlurmJobRunner
     }
     job_runner = job_runners[local]()

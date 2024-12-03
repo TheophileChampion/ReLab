@@ -12,9 +12,9 @@ class PrioritizedDQN(DQN):
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000,
+        self, gamma=0.99, learning_rate=0.00025, buffer_size=1000000, batch_size=32, learning_starts=200000,
         target_update_interval=40000, adam_eps=1.5e-4, replay_type=ReplayType.PRIORITIZED, loss_type=LossType.DQN_SL1,
-        network_type=NetworkType.DEFAULT, training=True
+        network_type=NetworkType.DEFAULT, omega=0.7, omega_is=0.5, training=True
     ):
         """
         Create a DQN agent.
@@ -28,6 +28,8 @@ class PrioritizedDQN(DQN):
         :param replay_type: the type of replay buffer, i.e., 'default' or 'prioritized'
         :param loss_type: the loss to use during gradient descent
         :param network_type: the network architecture to use for the value and target networks
+        :param omega: the prioritization exponent
+        :param omega_is: the important sampling exponent
         :param training: True if the agent is being trained, False otherwise
         """
 
@@ -35,5 +37,6 @@ class PrioritizedDQN(DQN):
         super().__init__(
             gamma=gamma, learning_rate=learning_rate, buffer_size=buffer_size, batch_size=batch_size,
             learning_starts=learning_starts, target_update_interval=target_update_interval, adam_eps=adam_eps,
-            replay_type=replay_type, loss_type=loss_type, network_type=network_type, training=training
+            replay_type=replay_type, loss_type=loss_type, network_type=network_type, training=training, omega=omega,
+            omega_is=omega_is
         )
