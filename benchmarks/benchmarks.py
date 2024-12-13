@@ -69,9 +69,10 @@ def config(key=None):
     :return: the configuration or the entry in the configuration corresponding to the key passed as parameters
     """
     conf = {
-        "stack_size": 4,
-        "max_n_steps": 50000000,
-        "checkpoint_frequency": 500000,
-        "tensorboard_log_interval": 5000,
+        "stack_size": 4,  # Number of frames per observation
+        "frame_skip": 1,  # Number of times each action is repeated in the environment
+        "max_n_steps": 50000000,  # Maximum number of training iterations
+        "checkpoint_frequency": 500000,  # Number of training iterations between two checkpoints
+        "tensorboard_log_interval": 5000,  # Number of training iterations between two logging of values in tensorboard
     }
     return conf if key is None else conf[key]

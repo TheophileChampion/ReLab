@@ -3,6 +3,7 @@ import torch
 import benchmarks
 from benchmarks import agents
 
+
 def describe(parameters, n_copies=1, memory_unit="GB"):
     """
     Describe the parameters passed as arguments.
@@ -60,6 +61,7 @@ def describe_params(agent_name, env_name, seed):
 
     # Describe the agent parameters.
     describe(agent.value_net.parameters(), n_copies=2)
+
 
 if __name__ == "__main__":
 

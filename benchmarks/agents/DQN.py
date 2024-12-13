@@ -10,8 +10,8 @@ import torch
 from torch.nn import SmoothL1Loss, MSELoss, CrossEntropyLoss, HuberLoss
 
 import benchmarks
-from benchmarks.agents.AgentInterface import AgentInterface
-from benchmarks.agents.memory.ReplayBuffer import ReplayBuffer, Experience
+from benchmarks.agents.AgentInterface import AgentInterface, ReplayType
+from benchmarks.agents.memory.ReplayBuffer import Experience
 from benchmarks.agents.networks.CategoricalDeepQNetworks import CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork
 from benchmarks.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
 from torch import optim
@@ -37,14 +37,6 @@ class LossType(IntEnum):
     RAINBOW = 7  # Rainbow loss
     RAINBOW_IQN = 8  # Rainbow IQN loss
 
-class ReplayType(IntEnum):
-    """
-    The replay buffer supported by the DQN agent.
-    """
-    DEFAULT = 0  # Standard replay buffer
-    PRIORITIZED = 1  # Prioritized replay buffer
-    MULTISTEP = 2  # Multistep replay buffer (used in multistep Q-learning)
-    MULTISTEP_PRIORITIZED = 3  # Multistep prioritized replay buffer (used in multistep Q-learning)
 
 class NetworkType(IntEnum):
     """
@@ -130,16 +122,16 @@ class DQN(AgentInterface):
 
         # The loss function, value network, and replay buffer.
         self.loss = self.get_loss(self.loss_type)
-        self.network = self.get_value_network(self.network_type)
-        self.replay_buffer = self.get_replay_buffer(self.replay_type)
+        network = self.get_value_network(self.network_type)
+        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
 
         # Create the value network.
-        self.value_net = self.network()
+        self.value_net = network()
         self.value_net.train(training)
         self.value_net.to(self.device)
 
         # Create the target network (copy value network's weights and avoid gradient computation).
-        self.target_net = self.network()
+        self.target_net = network()
         self.target_net.train(training)
         self.target_net.to(self.device)
         self.update_target_network()
@@ -148,7 +140,7 @@ class DQN(AgentInterface):
 
         # Create the optimizer and replay buffer.
         self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
-        self.buffer = self.replay_buffer(capacity=self.buffer_size)
+        self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
 
     def get_loss(self, loss_type):
         """
@@ -167,19 +159,6 @@ class DQN(AgentInterface):
             LossType.RAINBOW: self.rainbow_loss,
             LossType.RAINBOW_IQN: partial(self.rainbow_iqn_loss, kappa=self.kappa),
         }[loss_type]
-
-    def get_replay_buffer(self, replay_type):
-        """
-        Retrieve the constructor of the replay buffer requested as parameters.
-        :param replay_type: the type of replay buffer
-        :return: the constructor of the replay buffer
-        """
-        return {
-            ReplayType.DEFAULT: ReplayBuffer,
-            ReplayType.PRIORITIZED: partial(ReplayBuffer, initial_priority=1e9, omega=self.omega, omega_is=self.omega_is),
-            ReplayType.MULTISTEP: partial(ReplayBuffer, n_steps=self.n_steps, gamma=self.gamma),
-            ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, n_steps=self.n_steps, gamma=self.gamma, initial_priority=1e9, omega=self.omega, omega_is=self.omega_is),
-        }[replay_type]
 
     def get_value_network(self, network_type):
         """
@@ -256,7 +235,7 @@ class DQN(AgentInterface):
             self.buffer.append(Experience(old_obs, action, reward, done, obs))
 
             # Perform one iteration of training (if needed).
-            if len(self.buffer) >= self.learning_starts:
+            if self.current_step >= self.learning_starts:
                 self.learn()
 
             # Save the agent (if needed).
@@ -283,7 +262,7 @@ class DQN(AgentInterface):
 
     def learn(self):
         """
-        Perform on step of gradient descent on the value network.
+        Perform one step of gradient descent on the value network.
         """
 
         # Synchronize the target with the value network (if needed).
@@ -291,7 +270,7 @@ class DQN(AgentInterface):
             self.update_target_network()
 
         # Sample the replay buffer.
-        obs, actions, rewards, done, next_obs = self.buffer.sample(self.batch_size)
+        obs, actions, rewards, done, next_obs = self.buffer.sample()
 
         # Compute the Q-value loss.
         loss = self.loss(obs, actions, rewards, done, next_obs)
@@ -530,18 +509,6 @@ class DQN(AgentInterface):
         loss /= self.n_atoms
         return loss
 
-    @staticmethod
-    def safe_load(checkpoint, key):
-        """
-        Load the value corresponding to the key in the checkpoint.
-        :param checkpoint: the checkpoint
-        :param key: the key
-        :return: the value, or None if the key is not in the checkpoint
-        """
-        if key not in checkpoint.keys():
-            return None
-        return checkpoint[key]
-
     def load(self, checkpoint_name=None):
         """
         Load an agent from the filesystem.
@@ -556,7 +523,8 @@ class DQN(AgentInterface):
 
         # Check if the checkpoint can be loaded.
         if checkpoint_path is None:
-            return 
+            logging.info("Could not load the agent from the file system.")
+            return
         
         # Load the checkpoint from the file system.
         logging.info("Loading agent from the following file: " + checkpoint_path)
@@ -587,16 +555,16 @@ class DQN(AgentInterface):
 
         # Update the dictionary of losses, replay buffers and value networks, using the newly loaded parameters.
         self.loss = self.get_loss(self.loss_type)
-        self.buffer = self.get_replay_buffer(self.replay_type)
-        self.network = self.get_value_network(self.network_type)
+        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
+        network = self.get_value_network(self.network_type)
 
         # Update the agent's networks using the checkpoint.
-        self.value_net = self.network()
+        self.value_net = network()
         self.value_net.load_state_dict(self.safe_load(checkpoint, "value_net"))
         self.value_net.train(self.training)
         self.value_net.to(self.device)
 
-        self.target_net = self.network()
+        self.target_net = network()
         self.target_net.load_state_dict(self.safe_load(checkpoint, "target_net"))
         self.target_net.train(self.training)
         self.target_net.to(self.device)
@@ -605,14 +573,14 @@ class DQN(AgentInterface):
 
         # Update the optimizer and replay buffer.
         self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
-        self.buffer = self.replay_buffer(capacity=self.buffer_size)
+        self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
 
     def save(self, checkpoint_name):
         """
         Save the agent on the filesystem.
         :param checkpoint_name: the name of the checkpoint in which to save the agent
         """
-        
+
         # Create the checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)

@@ -6,6 +6,8 @@ import re
 import time
 from abc import ABC
 from collections import deque
+from enum import IntEnum
+from functools import partial
 from os.path import exists, isdir, isfile, join
 
 import numpy as np
@@ -14,7 +16,18 @@ import imageio
 from PIL import Image
 
 import benchmarks
+from benchmarks.agents.memory.ReplayBuffer import ReplayBuffer
 from benchmarks.helpers.FileSystem import FileSystem
+
+
+class ReplayType(IntEnum):
+    """
+    The replay buffer supported by the DQN agent.
+    """
+    DEFAULT = 0  # Standard replay buffer
+    PRIORITIZED = 1  # Prioritized replay buffer
+    MULTISTEP = 2  # Multistep replay buffer (used in multistep Q-learning)
+    MULTISTEP_PRIORITIZED = 3  # Multistep prioritized replay buffer (used in multistep Q-learning)
 
 
 class AgentInterface(ABC):
@@ -87,7 +100,7 @@ class AgentInterface(ABC):
 
     def demo(self, env, gif_name, max_frames=10000):
         """
-        Train the agent in the gym environment passed as parameters
+        Demonstrate the agent policy in the gym environment passed as parameters
         :param env: the gym environment
         :param gif_name: the name of the GIF file in which to save the demo
         :param max_frames: the maximum number of frames to include in the GIF file
@@ -198,3 +211,35 @@ class AgentInterface(ABC):
                 file = join(directory, current_file)
 
         return file
+
+    @staticmethod
+    def get_replay_buffer(replay_type, omega, omega_is, n_steps, gamma=1.0):
+        """
+        Retrieve the constructor of the replay buffer requested as parameters.
+        :param replay_type: the type of replay buffer
+        :param omega: the prioritization exponent
+        :param omega_is: the important sampling exponent
+        :param n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
+        :param gamma: the discount factor
+        :return: the constructor of the replay buffer
+        """
+        m_args = {"n_steps": n_steps, "gamma": gamma}
+        p_args = {"initial_priority": 1e9, "omega": omega, "omega_is": omega_is}
+        return {
+            ReplayType.DEFAULT: partial(ReplayBuffer),
+            ReplayType.PRIORITIZED: partial(ReplayBuffer, p_args=p_args),
+            ReplayType.MULTISTEP: partial(ReplayBuffer, m_args=m_args),
+            ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, m_args=m_args, p_args=p_args),
+        }[replay_type]
+
+    @staticmethod
+    def safe_load(checkpoint, key):
+        """
+        Load the value corresponding to the key in the checkpoint.
+        :param checkpoint: the checkpoint
+        :param key: the key
+        :return: the value, or None if the key is not in the checkpoint
+        """
+        if key not in checkpoint.keys():
+            return None
+        return checkpoint[key]

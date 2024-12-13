@@ -14,11 +14,12 @@ from benchmarks.agents.PrioritizedMDQN import PrioritizedMDQN
 from benchmarks.agents.QRDQN import QRDQN
 from benchmarks.agents.RainbowDQN import RainbowDQN
 from benchmarks.agents.RainbowIQN import RainbowIQN
+from benchmarks.agents.Random import Random
 
 
 def make(agent_name, **kwargs):
     """
-    Create the agent whose name is required as parameters.
+    Create the agent whose name is passed as parameters.
     :param agent_name: the name of the agent to instantiate
     :param kwargs: keyword arguments to pass to the agent constructor
     :return: the created agent
@@ -36,6 +37,7 @@ def make(agent_name, **kwargs):
         "NoisyCDQN": NoisyCDQN,
         "NoisyDDQN": NoisyDDQN,
         "NoisyDQN": NoisyDQN,
+        "Random": Random,
         "QRDQN": QRDQN,
         "DDQN": DDQN,
         "CDQN": CDQN,
