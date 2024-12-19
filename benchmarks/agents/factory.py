@@ -15,6 +15,7 @@ from benchmarks.agents.QRDQN import QRDQN
 from benchmarks.agents.RainbowDQN import RainbowDQN
 from benchmarks.agents.RainbowIQN import RainbowIQN
 from benchmarks.agents.Random import Random
+from benchmarks.agents.VAE import VAE
 
 
 def make(agent_name, **kwargs):
@@ -44,6 +45,7 @@ def make(agent_name, **kwargs):
         "MDQN": MDQN,
         "IQN": IQN,
         "DQN": DQN,
+        "VAE": VAE,
     }
 
     # Check if the agent is supported, raise an error if it isn't.
