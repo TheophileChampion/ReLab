@@ -20,8 +20,10 @@ Experience = collections.namedtuple("Experience", field_names=["obs", "action", 
 
 class ReplayBuffer:
     """
-    Class implementing the prioritized experience replay buffer from:
-    Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
+    Class implementing a replay buffer with support for prioritization [1] and multistep Q-learning [2] from:
+
+    [1] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
+    [2] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
     """
 
     def __init__(self, capacity=10000, batch_size=32, frame_skip=None, stack_size=None, p_args=None, m_args=None):
@@ -44,7 +46,7 @@ class ReplayBuffer:
         # Keep in mind whether the replay buffer is prioritized.
         self.prioritized = (p_args is not None)
 
-        # Default values of the prioritization, multistep, worker arguments.
+        # Default values of the prioritization and multistep arguments.
         default_p_args = {"initial_priority": 1.0, "omega": 1.0, "omega_is": 1.0, "n_children": 10}
         default_m_args = {"n_steps": 1, "gamma": 0.99}
 
@@ -76,7 +78,7 @@ class ReplayBuffer:
 
     def append(self, experience):
         """
-        Add a new experience to the buffer
+        Add a new experience to the buffer.
         :param experience: the experience to add
         """
         self.observations.append(experience)
@@ -109,6 +111,7 @@ class ReplayBuffer:
         """
         Report the loss associated with all the transitions of the previous batch.
         :param loss: the loss of all previous transitions
+        :return: the new loss
         """
 
         # If the buffer is not prioritized, don't update the priorities.

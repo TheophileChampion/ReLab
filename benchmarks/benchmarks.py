@@ -1,11 +1,14 @@
 import os
 import random
-from os.path import join
+from os.path import join, isfile
+import invoke
 
 import gymnasium as gym
 import ale_py
 import numpy as np
 import torch
+
+from benchmarks.helpers.FileSystem import FileSystem
 
 
 def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=False):
@@ -52,6 +55,28 @@ def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=
     np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)
+
+
+def build_cpp_library_and_wrapper(cpp_library_name="benchmarks", python_module_name="cpp"):
+    """
+    Build the C++ shared library and the python module wrapping the library.
+    :param cpp_library_name: the name of the shared library to create
+    :param python_module_name: the name of the python module
+    """
+
+    # Check if the shared libraries already exist.
+    build_directory = os.environ["BUILD_DIRECTORY"]
+    shared_library = join(build_directory, f"lib{cpp_library_name}.so")
+    module_directory = os.environ["CPP_MODULE_DIRECTORY"]
+    files = FileSystem.files_in(module_directory, fr"^{python_module_name}.*")
+    if isfile(shared_library) and len(files) != 0:
+        return
+
+    # Create the shared libraries.
+    invoke.run(
+        f"mkdir -p {build_directory} && cd {build_directory} && cmake .. && make && cd .. "
+        f"&& mv ./build/libbenchmarks_wrapper.so {module_directory}/{python_module_name}`python3.12-config --extension-suffix`"
+    )
 
 
 def device():

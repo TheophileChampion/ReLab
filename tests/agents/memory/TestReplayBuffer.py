@@ -5,7 +5,8 @@ import pytest
 import torch
 
 from benchmarks import benchmarks
-from benchmarks.agents.memory.ReplayBuffer import Experience, ReplayBuffer
+from benchmarks.agents.memory.ReplayBuffer import Experience
+from benchmarks.agents.memory.FastReplayBuffer import FastReplayBuffer as ReplayBuffer
 
 
 class TestReplayBuffer:
@@ -66,26 +67,28 @@ class TestReplayBuffer:
             buffer.append(experiences[t])
 
         # Check that experiences in the frame buffer are as expected.
-        obs, action, reward, done, next_obs = buffer.get_experiences([t for t in range(capacity)])
+        indices = torch.tensor([t for t in range(capacity)])
+        obs, action, reward, done, next_obs = buffer.get_experiences(indices)
         for t in range(capacity):
-            assert torch.all(torch.eq(obs[t], result_experiences[t].obs))
-            assert action[t] == result_experiences[t].action
-            assert reward[t] == result_experiences[t].reward
-            assert done[t] == result_experiences[t].done
-            assert torch.all(torch.eq(next_obs[t], result_experiences[t].next_obs))
+            assert torch.all(torch.eq(obs[t].cpu(), result_experiences[t].obs))
+            assert action[t].cpu().item() == result_experiences[t].action
+            assert abs(reward[t].cpu().item() - result_experiences[t].reward) < 1e-5
+            assert done[t].cpu().item() == result_experiences[t].done
+            assert torch.all(torch.eq(next_obs[t].cpu(), result_experiences[t].next_obs))
 
         # Keep pushing experiences to the buffer, effectively replacing all experiences in the frame buffer.
         for t in range(capacity - 1):
             buffer.append(experiences[capacity + t])
 
         # Check that the new experiences in the frame buffer are as expected.
-        obs, action, reward, done, next_obs = buffer.get_experiences([t for t in range(capacity)])
+        indices = torch.tensor([t for t in range(capacity)])
+        obs, action, reward, done, next_obs = buffer.get_experiences(indices)
         for t in range(capacity - n_steps + 1):
-            assert torch.all(torch.eq(obs[t], result_experiences[capacity - n_steps + t].obs))
-            assert action[t] == result_experiences[capacity - n_steps + t].action
-            assert reward[t] == result_experiences[capacity - n_steps + t].reward
-            assert done[t] == result_experiences[capacity - n_steps + t].done
-            assert torch.all(torch.eq(next_obs[t], result_experiences[capacity - n_steps + t].next_obs))
+            assert torch.all(torch.eq(obs[t].cpu(), result_experiences[capacity - n_steps + t].obs))
+            assert action[t].cpu().item() == result_experiences[capacity - n_steps + t].action
+            assert abs(reward[t].cpu().item() - result_experiences[capacity - n_steps + t].reward) < 1e-5
+            assert done[t].cpu().item() == result_experiences[capacity - n_steps + t].done
+            assert torch.all(torch.eq(next_obs[t].cpu(), result_experiences[capacity - n_steps + t].next_obs))
 
     @pytest.mark.parametrize("capacity, n_steps, gamma", [
         (5, 1, 1), (5, 1, 0.9), (5, 2, 1), (5, 2, 0.99),
@@ -121,26 +124,28 @@ class TestReplayBuffer:
             buffer.append(experiences[t])
 
         # Check that experiences in the frame buffer are as expected.
-        obs, action, reward, done, next_obs = buffer.get_experiences([t for t in range(capacity)])
+        indices = torch.tensor([t for t in range(capacity)])
+        obs, action, reward, done, next_obs = buffer.get_experiences(indices)
         for t in range(capacity):
-            assert torch.all(torch.eq(obs[t], result_experiences[t].obs))
-            assert action[t] == result_experiences[t].action
-            assert reward[t] == result_experiences[t].reward
-            assert done[t] == result_experiences[t].done
-            assert torch.all(torch.eq(next_obs[t], result_experiences[t].next_obs))
+            assert torch.all(torch.eq(obs[t].cpu(), result_experiences[t].obs))
+            assert action[t].cpu().item() == result_experiences[t].action
+            assert abs(reward[t].cpu().item() - result_experiences[t].reward) < 1e-5
+            assert done[t].cpu().item() == result_experiences[t].done
+            assert torch.all(torch.eq(next_obs[t].cpu(), result_experiences[t].next_obs))
 
         # Keep pushing experiences to the buffer, effectively replacing all experiences in the frame buffer.
         for t in range(capacity):
             buffer.append(experiences[t + n_experiences])
 
         # Check that the new experiences in the frame buffer are as expected.
-        obs, action, reward, done, next_obs = buffer.get_experiences([t for t in range(capacity)])
+        indices = torch.tensor([t for t in range(capacity)])
+        obs, action, reward, done, next_obs = buffer.get_experiences(indices)
         for t in range(capacity):
-            assert torch.all(torch.eq(obs[t], result_experiences[t + capacity].obs))
-            assert action[t] == result_experiences[t + capacity].action
-            assert reward[t] == result_experiences[t + capacity].reward
-            assert done[t] == result_experiences[t + capacity].done
-            assert torch.all(torch.eq(next_obs[t], result_experiences[t + capacity].next_obs))
+            assert torch.all(torch.eq(obs[t].cpu(), result_experiences[t + capacity].obs))
+            assert action[t].cpu().item() == result_experiences[t + capacity].action
+            assert abs(reward[t].cpu().item() - result_experiences[t + capacity].reward) < 1e-5
+            assert done[t].cpu().item() == result_experiences[t + capacity].done
+            assert torch.all(torch.eq(next_obs[t].cpu(), result_experiences[t + capacity].next_obs))
 
     @pytest.mark.parametrize("experiences, n_experiences, n_elements", [
         ([], 0, 0),
@@ -160,8 +165,6 @@ class TestReplayBuffer:
 
         # Assert.
         assert len(buffer) == n_experiences
-        assert len(buffer.data) == n_experiences
-        assert len(buffer.observations) == n_experiences
 
     @pytest.mark.parametrize("p_args, result", [(None, False), ({"initial_priority": 10}, True)])
     def test_prioritized(self, p_args, result):
@@ -170,7 +173,7 @@ class TestReplayBuffer:
         buffer = ReplayBuffer(p_args=p_args)
 
         # Assert.
-        assert buffer.prioritized == result
+        assert buffer.is_prioritized() == result
 
     @pytest.mark.parametrize("experiences", [
         ([]),
@@ -191,13 +194,12 @@ class TestReplayBuffer:
 
         # Assert.
         assert len(buffer) == 0
-        assert len(buffer.data) == 0
-        assert len(buffer.observations) == 0
 
     def test_report(self):
 
         # Arrange.
-        buffer = ReplayBuffer(batch_size=2, capacity=4, p_args={"initial_priority": 1, "omega_is": 0.5})
+        capacity = 4
+        buffer = ReplayBuffer(batch_size=2, capacity=capacity, p_args={"initial_priority": 1, "omega_is": 0.5})
         experiences = [
             Experience(
                 obs=self.obs(index), action=index, reward=index, done=False, next_obs=self.obs(index + 1)
@@ -205,17 +207,17 @@ class TestReplayBuffer:
         ]
 
         # Acts.
-        for experience in experiences[0:buffer.capacity]:
+        for experience in experiences[0:capacity]:
             buffer.append(experience)
         buffer.sample()
         loss = 2 * torch.ones([2]).to(benchmarks.device())
         loss = buffer.report(loss)
 
         # Assert.
-        for i in range(buffer.capacity):
-            if i in buffer.indices:
-                assert abs(buffer.data.priorities[i].item() - 2.0) < 0.0001
+        for i in range(capacity):
+            if i in buffer.get_last_indices():
+                assert abs(buffer.get_priority(i) - 2.0) < 0.0001
             else:
-                assert buffer.data.priorities[i].item() == 1.0
+                assert buffer.get_priority(i) == 1.0
         for i in range(2):
             assert abs(loss[i].item() - 2.0) < 0.0001

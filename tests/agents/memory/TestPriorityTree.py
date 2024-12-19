@@ -1,6 +1,6 @@
 import pytest
 
-from benchmarks.agents.memory.PriorityTree import PriorityTree
+from benchmarks.agents.memory.FastPriorityTree import FastPriorityTree as PriorityTree
 
 
 class TestPriorityTree:
@@ -64,8 +64,8 @@ class TestPriorityTree:
 
         # Assert.
         assert len(priority_tree) == 0
-        assert priority_tree.to_str(priority_tree.max_tree) == "[[0.0, 0.0], [0.0]]"
-        assert priority_tree.to_str(priority_tree.sum_tree) == "[[0.0, 0.0], [0.0]]"
+        assert priority_tree.to_str(tree="max") == "[[0.0, 0.0], [0.0]]"
+        assert priority_tree.to_str(tree="sum") == "[[0.0, 0.0], [0.0]]"
 
     @pytest.mark.parametrize("elements, sum_result, max_result, length_result", [
         ([0, 0, 0, 0], "[[0.0, 0.0], [0.0]]", "[[0.0, 0.0], [0.0]]", 4),
@@ -86,8 +86,8 @@ class TestPriorityTree:
 
         # Assert.
         assert len(priority_tree) == length_result
-        assert priority_tree.to_str(priority_tree.sum_tree) == sum_result
-        assert priority_tree.to_str(priority_tree.max_tree) == max_result
+        assert priority_tree.to_str(tree="sum") == sum_result
+        assert priority_tree.to_str(tree="max") == max_result
 
     @pytest.mark.parametrize("elements, set_indices, set_values, sum_result, max_result, length_result", [
         ([0, 0, 0, 0], [2, 3], [10, 5], "[[0.0, 15.0], [15.0]]", "[[0.0, 10.0], [10.0]]", 4),
@@ -110,13 +110,13 @@ class TestPriorityTree:
 
         # Assert.
         assert len(priority_tree) == length_result
-        assert priority_tree.to_str(priority_tree.sum_tree) == sum_result
-        assert priority_tree.to_str(priority_tree.max_tree) == max_result
+        assert priority_tree.to_str(tree="sum") == sum_result
+        assert priority_tree.to_str(tree="max") == max_result
 
     @pytest.mark.parametrize("elements, results, length_result", [
         ([0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], 4),
         ([0, 1, 2, 3], [0, 1, 2, 3, 0, 1, 2, 3], 4),
-        ([0, 1], [0, 1, 0, 0, 0, 1, 0, 0], 2),
+        ([0, 1], [0, 1, 0, 1], 2),
         ([10, 0, 0, 0], [10, 0, 0, 0, 10, 0, 0, 0], 4),
         ([1, 10, 100, 1000], [1, 10, 100, 1000, 1, 10, 100, 1000], 4),
         ([1000, 10, 100, 1, 999], [10, 100, 1, 999, 10, 100, 1, 999], 4),
@@ -133,7 +133,7 @@ class TestPriorityTree:
         # Assert.
         assert len(priority_tree) == length_result
         for i, priority in enumerate(results):
-            assert priority_tree[i - 4] == priority
+            assert priority_tree[i - length_result] == priority
 
     @pytest.mark.parametrize("index, n_children, result", [
         (0, 10, 0), (9, 10, 0), (10, 10, 1), (19, 10, 1), (20, 10, 2),
@@ -156,15 +156,13 @@ class TestPriorityTree:
     def test_update_sum_tree(self, elements, indices, new_values, result):
 
         # Arrange.
-        priority_tree = PriorityTree(capacity=8, initial_priority=1, n_children=2)
+        priority_tree = PriorityTree(capacity=8, initial_priority=elements[0], n_children=2)
 
         # Act.
         for element in elements:
             priority_tree.append(element)
         for index, value in zip(indices, new_values):
-            priority_tree.update_sum_tree(index, value)
-            priority_tree.update_max_tree(index, value)
-            priority_tree.priorities[index] = value
+            priority_tree[index] = value
 
         # Assert.
         assert abs(priority_tree.sum() - result) < 0.001
@@ -178,7 +176,7 @@ class TestPriorityTree:
         # Act.
         for element in elements:
             priority_tree.append(element)
-        indices = priority_tree.sample_indices(10000)
+        indices = priority_tree.sample_indices(10000).tolist()
 
         # Assert.
         probs = []

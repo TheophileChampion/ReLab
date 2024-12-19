@@ -1,3 +1,4 @@
+import re
 from os.path import isfile, join, exists, dirname
 import os
 from pathlib import Path
@@ -9,19 +10,28 @@ class FileSystem:
     """
 
     @staticmethod
-    def files_in(directory):
+    def files_in(directory, regex=None):
         """
         Retrieve the name of the files present within the directory passed as parameters.
         :param directory: the directory whose files must be returned
+        :param regex: a regex that filters the file name to retrieve (None for no filter)
         :return: the files
         """
+
+        # Compile the regex, if needed.
+        if regex is not None:
+            regex = re.compile(regex)
 
         # Iterate over all directory entries.
         files = []
         for entry in os.listdir(directory):
 
-            # Add the current entry, if it is a file.
-            if isfile(join(directory, entry)):
+            # Add the current entry, if it is a file matching the regex.
+            if not isfile(join(directory, entry)):
+                continue
+            if regex is None:
+                files.append(entry)
+            elif regex.match(entry):
                 files.append(entry)
 
         return files

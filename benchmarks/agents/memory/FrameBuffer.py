@@ -5,6 +5,7 @@ import torch
 
 from benchmarks.agents.memory.CircularList import CircularList
 
+
 # Class storing references to the first frame of observations at time t and t + n_steps.
 ObsReferences = collections.namedtuple("ObsReferences", field_names=["frame_t", "frame_tn"])
 
@@ -53,7 +54,8 @@ class FrameBuffer:
 
         # If the buffer is full, remove the oldest observation frames from the buffer.
         if len(self) == self.capacity:
-            while self.frames[0] != self.references[self.first_reference() % self.capacity].frame_t:
+            first_frame = self.references[self.first_reference() % self.capacity].frame_t
+            while self.frames[0] != first_frame:
                 self.frames.pop()
 
         # Add the frames of the observation at time t, if needed.
@@ -141,6 +143,7 @@ class FrameBuffer:
         """
         Retrieve an observation from the buffer.
         :param idx: the index of the first frame of the observation to retrieve
+        :return: the observation
         """
         frames = []
         for i in range(self.stack_size):

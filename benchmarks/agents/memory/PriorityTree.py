@@ -128,7 +128,7 @@ class PriorityTree:
 
     def internal_index(self, index):
         """
-        Transform an experience index to its internal index
+        Transform an experience index to its internal index.
         :param index: the experience index
         :return: the internal index
         """
@@ -138,7 +138,7 @@ class PriorityTree:
 
     def external_index(self, index):
         """
-        Transform an internal index to its experience index
+        Transform an internal index to its experience index.
         :param index: the internal index
         :return: the experience index
         """

@@ -3,7 +3,7 @@ from functools import partial
 import pytest
 import torch
 
-from benchmarks.agents.memory.FrameBuffer import FrameBuffer
+from benchmarks.agents.memory.FastFrameBuffer import FastFrameBuffer as FrameBuffer
 from benchmarks.agents.memory.ReplayBuffer import Experience
 
 
@@ -103,6 +103,8 @@ class TestFrameBuffer:
         # Check that experiences in the frame buffer are as expected.
         for t in range(capacity):
             obs_t, obs_tn = buffer[t]
+            print(obs_t[:, 0, 0], obs_tn[:, 0, 0])
+            print(result_experiences[t].obs[:, 0, 0], result_experiences[t].next_obs[:, 0, 0])
             assert torch.all(torch.eq(result_experiences[t].obs, obs_t)).item()
             assert torch.all(torch.eq(result_experiences[t].next_obs, obs_tn)).item()
 
@@ -116,7 +118,10 @@ class TestFrameBuffer:
             assert torch.all(torch.eq(result_experiences[capacity + t].obs, obs_t)).item()
             assert torch.all(torch.eq(result_experiences[capacity + t].next_obs, obs_tn)).item()
 
-    def test_png_encoding(self):
+    def test_encoding_and_decoding(self):
+
+        # Create a frame buffer.
+        buffer = FrameBuffer(capacity=8, frame_skip=1, n_steps=1, stack_size=4)
 
         for i in range(256):
 
@@ -124,8 +129,8 @@ class TestFrameBuffer:
             frame = i / 255 * torch.ones([84, 84], dtype=torch.float)
 
             # Encode and decode the i-th frame.
-            encoded_frame = FrameBuffer.encode(frame)
-            decoded_frame = FrameBuffer.decode(encoded_frame)
+            encoded_frame = buffer.encode(frame)
+            decoded_frame = buffer.decode(encoded_frame)
 
             # Check that the initial and decoded frames are identical.
             assert torch.all(torch.eq(frame, decoded_frame)).item()

@@ -164,6 +164,7 @@ cython_debug/
 # Do not push the data folder.
 data/
 
-# Do not push virtual environments
+# Do not push virtual environments.
 rl-bench-venv/
 rl-venv-3.11/
+venv-benchmarks/
