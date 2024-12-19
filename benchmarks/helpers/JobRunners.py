@@ -1,5 +1,4 @@
 import abc
-import collections
 import os
 import subprocess
 import re
@@ -140,6 +139,7 @@ class LocalJobRunner(JobRunnerInterface):
         :param kwargs: the keyword arguments of the task
         :param job_index: the index of the job to run
         """
+        print(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
         future = self.pool.submit(task, **kwargs)
         future.add_done_callback(partial(self.check_jobs_to_submit, job_index=job_index))
         self.futures.append(future)
@@ -152,6 +152,7 @@ class LocalJobRunner(JobRunnerInterface):
         """
 
         # Lock the object to avoid simultaneously access to the class attributes.
+        print(f"Job {job_index} just finished.")
         self.lock(job_index)
 
         # Remove the index of job that terminated from the list of jobs not done.

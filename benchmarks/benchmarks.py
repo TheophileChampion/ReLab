@@ -49,6 +49,7 @@ def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=
     gym.register_envs(ale_py)
 
     # Set the random seed of all the framework used.
+    seed = int(seed)
     np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)
