@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchrl.modules import NoisyLinear
 
+from benchmarks import benchmarks
+
 
 class DuelingDeepQNetwork(nn.Module):
     """
@@ -12,17 +14,19 @@ class DuelingDeepQNetwork(nn.Module):
     In International conference on machine learning. PMLR, 2016.
     """
 
-    def __init__(self, n_actions=18):
+    def __init__(self, n_actions=18, stack_size=None):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
+        :param stack_size: the number of stacked frame in each observation, if None use the configuration
         """
 
         # Call the parent constructor.
         super().__init__()
 
-        # 3 convolutional layers
-        self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
+        # 3 convolutional layers.
+        self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
 
@@ -85,17 +89,19 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_actions=18):
+    def __init__(self, n_actions=18, stack_size=None):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
+        :param stack_size: the number of stacked frame in each observation, if None use the configuration
         """
 
         # Call the parent constructor.
         super().__init__()
 
-        # 3 convolutional layers
-        self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
+        # 3 convolutional layers.
+        self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
 

@@ -20,6 +20,7 @@ import numpy as np
 from benchmarks.agents.networks.DuelingDeepQNetworks import DuelingDeepQNetwork, NoisyDuelingDeepQNetwork
 from benchmarks.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork, ImplicitQuantileNetwork
 from benchmarks.agents.networks.RainbowDeepQNetwork import RainbowDeepQNetwork, RainbowImplicitQuantileNetwork
+from benchmarks.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from benchmarks.helpers.FileSystem import FileSystem
 
 
@@ -119,6 +120,7 @@ class DQN(AgentInterface):
         self.epsilon_schedule = [
             (0, 1), (self.learning_starts, 1), (1e6, 0.1), (10e6, 0.01)
         ] if epsilon_schedule is None else epsilon_schedule
+        self.epsilon = PiecewiseLinearSchedule(self.epsilon_schedule)
 
         # The loss function, value network, and replay buffer.
         self.loss = self.get_loss(self.loss_type)
@@ -184,20 +186,6 @@ class DQN(AgentInterface):
         Synchronize the target with the value network.
         """
         self.target_net.load_state_dict(self.value_net.state_dict())
-
-    def epsilon(self, current_step):
-        """
-        Compute the epsilon value at a given step.
-        :param current_step: the step for which epsilon must be computed
-        :return: the current epsilon
-        """
-        for i, (next_step, next_epsilon) in enumerate(self.epsilon_schedule):
-            if next_step > current_step:
-                previous_step, previous_epsilon = self.epsilon_schedule[i - 1]
-                progress = (current_step - previous_step) / (next_step - previous_step)
-                return progress * next_epsilon + (1 - progress) * previous_epsilon
-
-        return self.epsilon_schedule[-1][1]
 
     def step(self, obs):
         """
@@ -552,13 +540,14 @@ class DQN(AgentInterface):
         self.training = self.safe_load(checkpoint, "training")
         self.epsilon_schedule = self.safe_load(checkpoint, "epsilon_schedule")
         self.current_step = self.safe_load(checkpoint, "current_step")
+        self.epsilon = PiecewiseLinearSchedule(self.epsilon_schedule)
 
-        # Update the dictionary of losses, replay buffers and value networks, using the newly loaded parameters.
+        # Update the loss function using the checkpoint.
         self.loss = self.get_loss(self.loss_type)
-        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
-        network = self.get_value_network(self.network_type)
 
         # Update the agent's networks using the checkpoint.
+        network = self.get_value_network(self.network_type)
+
         self.value_net = network()
         self.value_net.load_state_dict(self.safe_load(checkpoint, "value_net"))
         self.value_net.train(self.training)
@@ -572,8 +561,9 @@ class DQN(AgentInterface):
             param.requires_grad = False
 
         # Update the optimizer and replay buffer.
-        self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
+        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
+        self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
 
     def save(self, checkpoint_name):
         """

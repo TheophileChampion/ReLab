@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import datetime
 from os.path import join
+from enum import IntEnum
 
 import torch
 
@@ -11,6 +12,23 @@ from benchmarks.agents.memory.ReplayBuffer import Experience
 import numpy as np
 
 from benchmarks.helpers.FileSystem import FileSystem
+
+
+class LatentSpaceType(IntEnum):
+    """
+    The type of latent spaces supported by the model-based agents.
+    """
+    CONTINUOUS = 0  # Latent space with a continuous latent variables
+    DISCRETE = 1  # Latent space with discrete latent variables
+    MIXED = 2  # Latent space with discrete and continuous latent variables
+
+
+class LikelihoodType(IntEnum):
+    """
+    The type of likelihood supported by the model-based agents.
+    """
+    GAUSSIAN = 0  # Gaussian likelihood
+    BERNOULLI = 1  # Bernoulli likelihood
 
 
 class Random(AgentInterface):

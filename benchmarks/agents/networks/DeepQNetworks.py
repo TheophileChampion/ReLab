@@ -3,6 +3,8 @@ import torch
 import torch.nn.functional as F
 from torchrl.modules import NoisyLinear
 
+from benchmarks import benchmarks
+
 
 class DeepQNetwork(nn.Module):
     """
@@ -12,17 +14,19 @@ class DeepQNetwork(nn.Module):
     Human-level control through deep reinforcement learning. nature, 2015.
     """
 
-    def __init__(self, n_actions=18):
+    def __init__(self, n_actions=18, stack_size=None):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
+        :param stack_size: the number of stacked frame in each observation, if None use the configuration
         """
 
         # Call the parent constructor.
         super().__init__()
 
         # Create the layers.
-        self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
+        self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
         self.fc1 = nn.Linear(3136, 1024)
@@ -70,17 +74,19 @@ class NoisyDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_actions=18):
+    def __init__(self, n_actions=18, stack_size=None):
         """
         Constructor.
         :param n_actions: the number of actions available to the agent
+        :param stack_size: the number of stacked frame in each observation, if None use the configuration
         """
 
         # Call the parent constructor.
         super().__init__()
 
         # Create the layers.
-        self.conv1 = nn.Conv2d(4, 32, 8, stride=4)
+        self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
         self.fc1 = NoisyLinear(3136, 1024)
