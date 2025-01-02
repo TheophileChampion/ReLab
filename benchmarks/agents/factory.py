@@ -1,9 +1,16 @@
+from benchmarks.agents.BetaHMM import BetaHMM
+from benchmarks.agents.BetaVAE import BetaVAE
 from benchmarks.agents.CDQN import CDQN
+from benchmarks.agents.DiscreteHMM import DiscreteHMM
+from benchmarks.agents.DiscreteVAE import DiscreteVAE
 from benchmarks.agents.DuelingDQN import DuelingDQN
 from benchmarks.agents.DDQN import DDQN
 from benchmarks.agents.DQN import DQN
 from benchmarks.agents.DuelingDDQN import DuelingDDQN
+from benchmarks.agents.HMM import HMM
 from benchmarks.agents.IQN import IQN
+from benchmarks.agents.JointHMM import JointHMM
+from benchmarks.agents.JointVAE import JointVAE
 from benchmarks.agents.MDQN import MDQN
 from benchmarks.agents.NoisyCDQN import NoisyCDQN
 from benchmarks.agents.NoisyDDQN import NoisyDDQN
@@ -45,7 +52,14 @@ def make(agent_name, **kwargs):
         "MDQN": MDQN,
         "IQN": IQN,
         "DQN": DQN,
+        "DiscreteVAE": DiscreteVAE,
+        "JointVAE": JointVAE,
+        "BetaVAE": BetaVAE,
         "VAE": VAE,
+        "DiscreteHMM": DiscreteHMM,
+        "JointHMM": JointHMM,
+        "BetaHMM": BetaHMM,
+        "HMM": HMM,
     }
 
     # Check if the agent is supported, raise an error if it isn't.

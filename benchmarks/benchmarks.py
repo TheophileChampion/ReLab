@@ -9,6 +9,7 @@ import numpy as np
 import torch
 
 from benchmarks.helpers.FileSystem import FileSystem
+from benchmarks.environments.SpritesEnv import SpritesEnv
 
 
 def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=False):
@@ -33,7 +34,8 @@ def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=
         os.environ["DATA_DIRECTORY"] = data_directory
 
     # Set the environment variables:
-    #  "CHECKPOINT_DIRECTORY", "TENSORBOARD_DIRECTORY", "DEMO_DIRECTORY", "GRAPH_DIRECTORY", and "STATISTICS_DIRECTORY".
+    #  "CHECKPOINT_DIRECTORY", "TENSORBOARD_DIRECTORY", "DEMO_DIRECTORY", "GRAPH_DIRECTORY",
+    #  "STATISTICS_DIRECTORY", and "DATASET_DIRECTORY".
     suffix = env_name.replace("ALE/", "") + os.sep
     os.environ["GRAPH_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "graphs", suffix)
     suffix += agent_name + os.sep
@@ -43,13 +45,15 @@ def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=
     os.environ["CHECKPOINT_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "saves", suffix)
     os.environ["TENSORBOARD_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "runs", suffix)
     os.environ["DEMO_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "demos", suffix)
+    os.environ["DATASET_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "datasets")
 
     # Check whether only the paths should be initialized.
     if paths_only is True:
         return
 
-    # Register the Atari environments.
+    # Register the Atari and dSprites environments.
     gym.register_envs(ale_py)
+    gym.register(id="Sprites-v5", entry_point=SpritesEnv)
 
     # Set the random seed of all the framework used.
     seed = int(seed)
@@ -100,7 +104,7 @@ def config(key=None):
         "screen_size": 84,  # Size of the images used by the agent to learn
         "compress_images": True,  # True, if in-memory compression must be performed, False otherwise
         "max_n_steps": 50000000,  # Maximum number of training iterations
-        "checkpoint_frequency": 500000,  # Number of training iterations between two checkpoints
-        "tensorboard_log_interval": 5000,  # Number of training iterations between two logging of values in tensorboard
+        "checkpoint_frequency": 10000,  # Number of training iterations between two checkpoints TODO 500000
+        "tensorboard_log_interval": 100,  # Number of training iterations between two logging of values in tensorboard  TODO 5000
     }
     return conf if key is None else conf[key]

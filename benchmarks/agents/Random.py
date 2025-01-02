@@ -2,7 +2,6 @@ import logging
 import os
 from datetime import datetime
 from os.path import join
-from enum import IntEnum
 
 import torch
 
@@ -14,26 +13,9 @@ import numpy as np
 from benchmarks.helpers.FileSystem import FileSystem
 
 
-class LatentSpaceType(IntEnum):
-    """
-    The type of latent spaces supported by the model-based agents.
-    """
-    CONTINUOUS = 0  # Latent space with a continuous latent variables
-    DISCRETE = 1  # Latent space with discrete latent variables
-    MIXED = 2  # Latent space with discrete and continuous latent variables
-
-
-class LikelihoodType(IntEnum):
-    """
-    The type of likelihood supported by the model-based agents.
-    """
-    GAUSSIAN = 0  # Gaussian likelihood
-    BERNOULLI = 1  # Bernoulli likelihood
-
-
 class Random(AgentInterface):
     """
-    Implement an agent taking random actions, with support for learning world models.
+    Implement an agent taking random actions.
     """
 
     def __init__(
@@ -105,10 +87,6 @@ class Random(AgentInterface):
             if self.training is True:
                 self.buffer.append(Experience(old_obs, action, reward, done, obs))
 
-            # Perform one iteration of training (if needed).
-            if self.training is True and self.current_step >= self.learning_starts:
-                self.learn()
-
             # Save the agent (if needed).
             if self.current_step % config["checkpoint_frequency"] == 0:
                 self.save(f"model_{self.current_step}.pt")
@@ -131,12 +109,6 @@ class Random(AgentInterface):
         # Close the environment.
         env.close()
 
-    def learn(self):
-        """
-        Perform one step of gradient descent on the world model.
-        """
-        ...
-
     def load(self, checkpoint_name=None):
         """
         Load an agent from the filesystem.
@@ -156,7 +128,7 @@ class Random(AgentInterface):
         
         # Load the checkpoint from the file system.
         logging.info("Loading agent from the following file: " + checkpoint_path)
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
 
         # Update the agent's parameters using the checkpoint.
         self.buffer_size = self.safe_load(checkpoint, "buffer_size")

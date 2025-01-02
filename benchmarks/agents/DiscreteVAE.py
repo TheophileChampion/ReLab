@@ -1,5 +1,5 @@
 from benchmarks.agents.AgentInterface import ReplayType
-from benchmarks.agents.Random import LikelihoodType, LatentSpaceType
+from benchmarks.agents.VariationalModel import LikelihoodType, LatentSpaceType
 from benchmarks.agents.VAE import VAE
 
 

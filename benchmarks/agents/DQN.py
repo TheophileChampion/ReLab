@@ -516,7 +516,7 @@ class DQN(AgentInterface):
         
         # Load the checkpoint from the file system.
         logging.info("Loading agent from the following file: " + checkpoint_path)
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
 
         # Update the agent's parameters using the checkpoint.
         self.gamma = self.safe_load(checkpoint, "gamma")

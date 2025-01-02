@@ -8,7 +8,7 @@ class PiecewiseLinearSchedule:
         Create the piecewise linear schedule.
         :param schedule: a list of tuples of the form (value, time_step)
         """
-        self.schedule = schedule
+        self.schedule = schedule if isinstance(schedule, list) else [schedule]
 
     def __call__(self, current_step):
         """
@@ -21,5 +21,4 @@ class PiecewiseLinearSchedule:
                 previous_step, previous_epsilon = self.schedule[i - 1]
                 progress = (current_step - previous_step) / (next_step - previous_step)
                 return progress * next_epsilon + (1 - progress) * previous_epsilon
-
         return self.schedule[-1][1]

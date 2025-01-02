@@ -1,22 +1,22 @@
 from benchmarks.agents.AgentInterface import ReplayType
+from benchmarks.agents.HMM import HMM
 from benchmarks.agents.VariationalModel import LikelihoodType, LatentSpaceType
-from benchmarks.agents.VAE import VAE
 
 
-class JointVAE(VAE):
+class JointHMM(HMM):
     """
-    Implement an agent taking random actions, and learning a world model using a Variational Auto-Encoder from:
-    Emilien Dupont. Learning Disentangled Joint Continuous and Discrete Representations. NeurIPS, 2018.
+    Implement an agent taking random actions, and learning a world model using a HMM with mixed latent space.
     """
 
     def __init__(
-        self, learning_starts=200000, n_actions=18, training=True, learning_rate=0.00001, adam_eps=1.5e-4,
+        self, learning_starts=200000, n_actions=18, training=True,
         likelihood_type=LikelihoodType.BERNOULLI, latent_space_type=LatentSpaceType.MIXED,
-        n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10, beta_schedule=None, tau_schedule=None,
+        n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10,
+        learning_rate=0.00001, adam_eps=1.5e-4, beta_schedule=None, tau_schedule=None,
         replay_type=ReplayType.DEFAULT, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0
     ):
         """
-        Create a Variational Auto-Encoder agent taking random actions.
+        Create a Hidden Markov Model agent taking random actions.
         :param learning_starts: the step at which learning starts
         :param n_actions: the number of actions available to the agent
         :param training: True if the agent is being trained, False otherwise
@@ -40,9 +40,9 @@ class JointVAE(VAE):
 
         # Call the parent constructor.
         super().__init__(
-            learning_starts=learning_starts, n_actions=n_actions, training=training, likelihood_type=likelihood_type,
-            latent_space_type=latent_space_type, n_continuous_vars=n_continuous_vars, n_discrete_vars=n_discrete_vars,
-            n_discrete_vals=n_discrete_vals, learning_rate=learning_rate, adam_eps=adam_eps, tau_schedule=tau_schedule,
-            beta_schedule=beta_schedule, replay_type=replay_type, buffer_size=buffer_size,  batch_size=batch_size,
-            n_steps=n_steps, omega=omega, omega_is=omega_is
+            learning_starts=learning_starts, n_actions=n_actions, training=training,  replay_type=replay_type,
+            likelihood_type=likelihood_type, latent_space_type=latent_space_type,
+            buffer_size=buffer_size, batch_size=batch_size, n_steps=n_steps, omega=omega, omega_is=omega_is,
+            n_continuous_vars=n_continuous_vars, n_discrete_vars=n_discrete_vars, n_discrete_vals=n_discrete_vals,
+            learning_rate=learning_rate, adam_eps=adam_eps, beta_schedule=beta_schedule, tau_schedule=tau_schedule,
         )

@@ -25,10 +25,11 @@ class ContinuousDecoderNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Linear(256, 16 * 16 * 64),
-            nn.ReLU(),
+            nn.Linear(256, 11 * 11 * 64),
+            nn.ReLU()
         )
-        self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        # TODO self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = 1
         self.up_conv_net = nn.Sequential(
             nn.ConvTranspose2d(64, 64, (3, 3), stride=(2, 2), output_padding=(0, 0)),
             nn.ReLU(),
@@ -46,7 +47,7 @@ class ContinuousDecoderNetwork(nn.Module):
         :return: the reconstructed image
         """
         x = self.lin_net(x)
-        x = torch.reshape(x, (x.shape[0], 64, 16, 16))
+        x = torch.reshape(x, (x.shape[0], 64, 11, 11))
         return self.up_conv_net(x)
 
 
@@ -73,8 +74,8 @@ class DiscreteDecoderNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Linear(256, 16 * 16 * 64),
-            nn.ReLU(),
+            nn.Linear(256, 11 * 11 * 64),
+            nn.ReLU()
         )
         self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
         self.up_conv_net = nn.Sequential(
@@ -94,7 +95,7 @@ class DiscreteDecoderNetwork(nn.Module):
         :return: the reconstructed image
         """
         x = self.lin_net(x)
-        x = torch.reshape(x, (x.shape[0], 64, 16, 16))
+        x = torch.reshape(x, (x.shape[0], 64, 11, 11))
         return self.up_conv_net(x)
 
 
@@ -122,8 +123,8 @@ class MixedDecoderNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Linear(256, 16 * 16 * 64),
-            nn.ReLU(),
+            nn.Linear(256, 11 * 11 * 64),
+            nn.ReLU()
         )
         self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
         self.up_conv_net = nn.Sequential(
@@ -143,5 +144,5 @@ class MixedDecoderNetwork(nn.Module):
         :return: the reconstructed image
         """
         x = self.lin_net(x)
-        x = torch.reshape(x, (x.shape[0], 64, 16, 16))
+        x = torch.reshape(x, (x.shape[0], 64, 11, 11))
         return self.up_conv_net(x)

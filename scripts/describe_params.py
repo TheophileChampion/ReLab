@@ -1,3 +1,5 @@
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
 import torch
 
 import benchmarks
@@ -45,19 +47,19 @@ def describe(parameters, n_copies=1, memory_unit="GB"):
     print(f"Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
 
 
-def describe_params(agent_name, env_name, seed):
+def describe_params(agent, env, seed):
     """
     Describe the agent's parameters.
-    :param agent_name: the agent name
-    :param env_name: the environment name
+    :param agent: the agent name
+    :param env: the environment name
     :param seed: the random seed
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent_name, env_name, seed)
+    benchmarks.initialize(agent, env, seed)
 
     # Create the requested agent.
-    agent = agents.make(agent_name, training=True)
+    agent = agents.make(agent, training=True)
 
     # Describe the agent parameters.
     describe(agent.value_net.parameters(), n_copies=2)
@@ -65,5 +67,12 @@ def describe_params(agent_name, env_name, seed):
 
 if __name__ == "__main__":
 
+    # Parse the script arguments.
+    parser = ArgumentParser(prog="run_demo", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
+    parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
+    parser.add_argument("--seed", type=int, default=0, help="random seed to use")
+    args = parser.parse_args()
+
     # Describe the agent's parameters.
-    describe_params(agent_name="DuelingDDQN", env_name="ALE/Pong-v5", seed=0)
+    describe_params(agent=args.agent, env=args.env, seed=args.seed)

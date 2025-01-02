@@ -56,6 +56,11 @@ class AgentInterface(ABC):
         self.virtual_memory = deque(maxlen=self.max_queue_len)
         self.residential_memory = deque(maxlen=self.max_queue_len)
 
+        # Create the queue containing the last variational free energy values.
+        self.vfe_losses = deque(maxlen=self.max_queue_len)
+        self.log_likelihoods = deque(maxlen=self.max_queue_len)
+        self.kl_divergences = deque(maxlen=self.max_queue_len)
+
         # Create the queue containing the last episodic rewards.
         self.episodic_rewards = deque(maxlen=self.max_queue_len)
         self.current_episodic_reward = 0
@@ -137,13 +142,14 @@ class AgentInterface(ABC):
         # Create a GIF of the recorded frames.
         gif_path = join(os.environ["DEMO_DIRECTORY"], gif_name)
         FileSystem.create_directory_and_file(gif_path)
-        imageio.mimwrite(gif_path, frames, fps=60)
+        imageio.mimwrite(gif_path, frames, duration=16.66)  # 60 frames per second
 
-    def report(self, reward, done):
+    def report(self, reward, done, model_losses=None):
         """
         Keep track of the last episodic rewards, episode length, and time elapse since last training iteration.
         :param reward: the current reward
         :param done: whether the episode ended
+        :param model_losses: the current variational free energy, log-likelihood and KL-divergence
         """
 
         # Keep track of the memory usage of the program.
@@ -157,9 +163,15 @@ class AgentInterface(ABC):
             self.time_elapsed.append(now - self.last_time)
         self.last_time = now
 
-        # Keep track of current episodic reward.
+        # Keep track of the current episodic reward.
         self.current_episodic_reward += reward
         self.current_episode_length += 1
+
+        # Keep track of the current variational free energy, log-likelihood and KL-divergence.
+        if model_losses is not None:
+            self.vfe_losses.append(model_losses["vfe"].item())
+            self.log_likelihoods.append(model_losses["log_likelihood"].item())
+            self.kl_divergences.append(model_losses["kl_divergence"].item())
 
         # If the episode ended, keep track of the current episodic reward and episode length.
         if done:
@@ -189,6 +201,12 @@ class AgentInterface(ABC):
         # Log the mean episode length.
         if len(self.episode_lengths) >= 2:
             self.writer.add_scalar("mean_episode_length", np.mean(list(self.episode_lengths)), self.current_step)
+
+        # Log the mean variational free energy, log-likelihood, and KL-divergence.
+        if len(self.vfe_losses) >= 2:
+            self.writer.add_scalar("variational_free_energy", np.mean(list(self.vfe_losses)), self.current_step)
+            self.writer.add_scalar("log_likelihood", np.mean(list(self.log_likelihoods)), self.current_step)
+            self.writer.add_scalar("kl_divergence", np.mean(list(self.kl_divergences)), self.current_step)
 
     @staticmethod
     def get_latest_checkpoint(regex=r"model_\d+.pt"):

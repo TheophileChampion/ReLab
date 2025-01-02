@@ -23,7 +23,8 @@ class ContinuousEncoderNetwork(nn.Module):
         super().__init__()
 
         # Create the convolutional encoder network.
-        self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        # TODO self.stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = 1
         self.conv_net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, (3, 3), stride=(2, 2), padding=1),
             nn.ReLU(),
@@ -32,24 +33,21 @@ class ContinuousEncoderNetwork(nn.Module):
             nn.Conv2d(32, 64, (3, 3), stride=(2, 2), padding=1),
             nn.ReLU(),
             nn.Conv2d(64, 64, (3, 3), stride=(2, 2), padding=1),
-            nn.ReLU(),
+            nn.ReLU()
         )
         self.conv_output_shape = self.conv_output_shape([self.stack_size, 84, 84])
         self.conv_output_shape = self.conv_output_shape[1:]
-        conv_output_size = prod(self.__conv_output_shape)
+        conv_output_size = prod(self.conv_output_shape)
 
         # Create the linear encoder network.
         self.linear_net = nn.Sequential(
             nn.Flatten(start_dim=1),
             nn.Linear(conv_output_size, 256),
             nn.ReLU(),
-            nn.Dropout(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Dropout(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Dropout(),
             DiagonalGaussian(256, n_continuous_vars)
         )
 
@@ -108,24 +106,21 @@ class DiscreteEncoderNetwork(nn.Module):
             nn.Conv2d(32, 64, (3, 3), stride=(2, 2), padding=1),
             nn.ReLU(),
             nn.Conv2d(64, 64, (3, 3), stride=(2, 2), padding=1),
-            nn.ReLU(),
+            nn.ReLU()
         )
         self.conv_output_shape = self.conv_output_shape([self.stack_size, 84, 84])
         self.conv_output_shape = self.conv_output_shape[1:]
-        conv_output_size = prod(self.__conv_output_shape)
+        conv_output_size = prod(self.conv_output_shape)
 
         # Create the linear encoder network.
         self.linear_net = nn.Sequential(
             nn.Flatten(start_dim=1),
             nn.Linear(conv_output_size, 256),
             nn.ReLU(),
-            nn.Dropout(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Dropout(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Dropout(),
             Categorical(256, n_discrete_vars, n_discrete_vals)
         )
 
@@ -185,24 +180,21 @@ class MixedEncoderNetwork(nn.Module):
             nn.Conv2d(32, 64, (3, 3), stride=(2, 2), padding=1),
             nn.ReLU(),
             nn.Conv2d(64, 64, (3, 3), stride=(2, 2), padding=1),
-            nn.ReLU(),
+            nn.ReLU()
         )
         self.conv_output_shape = self.conv_output_shape([self.stack_size, 84, 84])
         self.conv_output_shape = self.conv_output_shape[1:]
-        conv_output_size = prod(self.__conv_output_shape)
+        conv_output_size = prod(self.conv_output_shape)
 
         # Create the linear encoder network.
         self.linear_net = nn.Sequential(
             nn.Flatten(start_dim=1),
             nn.Linear(conv_output_size, 256),
             nn.ReLU(),
-            nn.Dropout(),
             nn.Linear(256, 256),
             nn.ReLU(),
-            nn.Dropout(),
             nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Dropout(),
+            nn.ReLU()
         )
 
         # Create the full encoder network and the network heads.

@@ -1,7 +1,7 @@
 import math
 
 import torch
-from torch.nn.functional import binary_cross_entropy_with_logits, gumbel_softmax
+from torch.nn.functional import gumbel_softmax
 
 
 class VariationalInference:
@@ -31,7 +31,7 @@ class VariationalInference:
         var = log_var.exp()
         var = torch.clamp(var, min=min_var)
         kl_div = log_var - log_var_hat + torch.exp(log_var_hat - log_var) + (mean - mean_hat) ** 2 / var
-        return 0.5 * kl_div.sum(dim=1).mean()
+        return 0.5 * kl_div.sum(dim=1)
 
     @staticmethod
     def categorical_kl_divergence(log_alpha_hat, log_alpha=None):
@@ -68,7 +68,10 @@ class VariationalInference:
         :param alpha: the log-probabilities of all pixels
         :return: the log-likelihood
         """
-        return binary_cross_entropy_with_logits(alpha, obs)
+        one = torch.ones_like(alpha)
+        zero = torch.zeros_like(alpha)
+        out = - torch.maximum(alpha, zero) + alpha * obs - torch.log(one + torch.exp(-torch.abs(alpha)))
+        return out.sum(dim=(1, 2, 3))
 
     @staticmethod
     def gaussian_reparameterization(mean, log_var):
@@ -90,3 +93,45 @@ class VariationalInference:
         :return: the sampled state
         """
         return gumbel_softmax(log_alpha, tau)
+
+    @staticmethod
+    def continuous_reparameterization(gaussian_params, tau=0):
+        """
+        Implement the reparameterization trick for a continuous latent space.
+        :param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution
+        :param tau: the temperature of the Gumbel-softmax (unused)
+        :return: the sampled state
+        """
+        mean, log_var = gaussian_params
+        return VariationalInference.gaussian_reparameterization(mean, log_var)
+
+    @staticmethod
+    def discrete_reparameterization(log_alphas, tau):
+        """
+        Implement the reparameterization trick for a discrete latent space.
+        :param log_alphas: the log-probabilities of the categorical distributions
+        :param tau: the temperature of the Gumbel-softmax
+        :return: the sampled state
+        """
+        states = [
+            VariationalInference.concrete_reparameterization(log_alpha, tau)
+            for log_alpha in log_alphas
+        ]
+        return torch.cat(states)
+
+    @staticmethod
+    def mixed_reparameterization(gaussian_params, log_alphas, tau):
+        """
+        Implement the reparameterization trick for a categorical distribution using the concrete distribution.
+        :param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution
+        :param log_alphas: the log-probabilities of the categorical distributions
+        :param tau: the temperature of the Gumbel-softmax
+        :return: the sampled state
+        """
+        mean, log_var = gaussian_params
+        states = [
+            VariationalInference.concrete_reparameterization(log_alpha, tau)
+            for log_alpha in log_alphas
+        ]
+        states.append(VariationalInference.gaussian_reparameterization(mean, log_var))
+        return torch.cat(states)

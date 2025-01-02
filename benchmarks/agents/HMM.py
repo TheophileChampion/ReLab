@@ -16,31 +16,20 @@ from benchmarks.helpers.MatPlotLib import MatPlotLib
 from benchmarks.helpers.VariationalInference import VariationalInference
 
 
-class VAE(VariationalModel):
+class HMM(VariationalModel):
     """
-    Implement an agent taking random actions, and learning a world model using a Variational Auto-Encoder (VAE) from:
-    Kingma Diederi, and Welling Max. Auto-Encoding Variational Bayes.
-    International Conference on Learning Representations, 2014.
-
-    This implementation also support beta-VAE [1], Concrete VAE [2], Joint VAE [3], and prioritized replay buffer [4]:
-    [1] Irina Higgins, Loic Matthey, Arka Pal, Christopher Burgess, Xavier Glorot, Matthew Botvinick,
-        Shakir Mohamed, and Alexander Lerchner.
-        beta-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework. ICLR, 2017.
-    [2] Eric Jang, Shixiang Gu, and Ben Poole. Categorical Reparameterization with Gumbel-Softmax.
-        arXiv preprint arXiv:1611.01144, 2016.
-    [3] Emilien Dupont. Learning Disentangled Joint Continuous and Discrete Representations. NeurIPS, 2018.
-    [4] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
+    Implement an agent taking random actions, and learning a world model using a Hidden Markov Model (HMM).
     """
 
     def __init__(
         self, learning_starts=200000, n_actions=18, training=True,
         likelihood_type=LikelihoodType.BERNOULLI, latent_space_type=LatentSpaceType.CONTINUOUS,
-        n_continuous_vars=100, n_discrete_vars=20, n_discrete_vals=10,
+        n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10,
         learning_rate=0.00001, adam_eps=1.5e-4, beta_schedule=None, tau_schedule=None,
         replay_type=ReplayType.DEFAULT, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0
     ):
         """
-        Create a Variational Auto-Encoder agent taking random actions.
+        Create a Hidden Markov Model agent taking random actions.
         :param learning_starts: the step at which learning starts
         :param n_actions: the number of actions available to the agent
         :param training: True if the agent is being trained, False otherwise
@@ -74,10 +63,11 @@ class VAE(VariationalModel):
         # Create the world model.
         self.encoder = self.get_encoder_network(self.latent_space_type)
         self.decoder = self.get_decoder_network(self.latent_space_type)
+        self.transition = self.get_transition_network(self.latent_space_type)
 
         # Create the optimizer.
         self.optimizer = optim.Adam(
-            list(self.encoder.parameters()) + list(self.decoder.parameters()),
+            list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters()),
             lr=self.learning_rate, eps=self.adam_eps
         )
 
@@ -115,21 +105,25 @@ class VAE(VariationalModel):
         """
         Compute the variational free energy for a continuous latent space.
         :param obs: the observations at time t
-        :param actions: the actions at time t (unused)
-        :param next_obs: the observations at time t + 1 (unused)
+        :param actions: the actions at time t
+        :param next_obs: the observations at time t + 1
         :return: the variational free energy
         """
 
-        obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
-
-        # Compute required tensors.
+        # Compute required vectors.
         mean_hat, log_var_hat = self.encoder(obs)
-        state = self.reparameterize((mean_hat, log_var_hat))
-        reconstructed_obs = self.decoder(state)
+        states = self.reparameterize((mean_hat, log_var_hat))
+        reconstructed_obs = self.decoder(states)
+        next_mean_hat, next_log_var_hat = self.encoder(next_obs)
+        next_states = self.reparameterize((next_mean_hat, next_log_var_hat))
+        next_reconstructed_obs = self.decoder(next_states)
+        mean, log_var = self.transition(states, actions)
 
         # Compute the variational free energy.
-        kl_div_hs = VariationalInference.gaussian_kl_divergence(mean_hat, log_var_hat)
-        log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
+        kl_div_hs = VariationalInference.gaussian_kl_divergence(mean_hat, log_var_hat) + \
+            VariationalInference.gaussian_kl_divergence(next_mean_hat, next_log_var_hat, mean, log_var)
+        log_likelihood = self.likelihood_loss(obs, reconstructed_obs) + \
+            self.likelihood_loss(next_obs, next_reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
 
@@ -137,22 +131,31 @@ class VAE(VariationalModel):
         """
         Compute the variational free energy for a discrete latent space.
         :param obs: the observations at time t
-        :param actions: the actions at time t (unused)
-        :param next_obs: the observations at time t + 1 (unused)
+        :param actions: the actions at time t
+        :param next_obs: the observations at time t + 1
         :return: the variational free energy
         """
 
-        # Compute required tensors.
+        # Compute required vectors.
         tau = self.tau(self.current_step)
         log_alpha_hats = self.encoder(obs)
-        states = self.reparameterize(log_alpha_hats, tau)
+        states = self.reparameterize(log_alpha_hats, tau=tau)
         reconstructed_obs = self.decoder(states)
+        next_log_alpha_hats = self.encoder(next_obs)
+        next_states = self.reparameterize(next_log_alpha_hats, tau=tau)
+        next_reconstructed_obs = self.decoder(next_states)
+        log_alphas = self.transition(states, actions)
 
         # Compute the variational free energy.
-        kl_div_hs = 0
+        kl_div_hs_t0 = 0
         for log_alpha_hat in log_alpha_hats:
-            kl_div_hs += VariationalInference.categorical_kl_divergence(log_alpha_hat)
-        log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
+            kl_div_hs_t0 += VariationalInference.categorical_kl_divergence(log_alpha_hat)
+        kl_div_hs_t1 = 0
+        for next_log_alpha_hat, log_alpha in zip(next_log_alpha_hats, log_alphas):
+            kl_div_hs_t1 += VariationalInference.categorical_kl_divergence(next_log_alpha_hat, log_alpha)
+        kl_div_hs = kl_div_hs_t1 + kl_div_hs_t0
+        log_likelihood = self.likelihood_loss(obs, reconstructed_obs) + \
+            self.likelihood_loss(next_obs, next_reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
 
@@ -160,22 +163,31 @@ class VAE(VariationalModel):
         """
         Compute the variational free energy for a mixed latent space.
         :param obs: the observations at time t
-        :param actions: the actions at time t (unused)
-        :param next_obs: the observations at time t + 1 (unused)
+        :param actions: the actions at time t
+        :param next_obs: the observations at time t + 1
         :return: the variational free energy
         """
 
-        # Compute required tensors.
+        # Compute required vectors.
         tau = self.tau(self.current_step)
         (mean_hat, log_var_hat), log_alpha_hats = self.encoder(obs)
-        states = self.reparameterize((mean_hat, log_var_hat), log_alpha_hats, tau)
+        states = self.reparameterize((mean_hat, log_var_hat), log_alpha_hats, tau=tau)
         reconstructed_obs = self.decoder(states)
+        (next_mean_hat, next_log_var_hat), next_log_alpha_hats = self.encoder(next_obs)
+        next_states = self.reparameterize((next_mean_hat, next_log_var_hat), next_log_alpha_hats, tau=tau)
+        next_reconstructed_obs = self.decoder(next_states)
+        (mean, log_var), log_alphas = self.transition(states, actions)
 
         # Compute the variational free energy.
-        kl_div_hs = VariationalInference.gaussian_kl_divergence(mean_hat, log_var_hat)
+        kl_div_hs_t0 = VariationalInference.gaussian_kl_divergence(mean_hat, log_var_hat)
         for log_alpha_hat in log_alpha_hats:
-            kl_div_hs += VariationalInference.categorical_kl_divergence(log_alpha_hat)
-        log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
+            kl_div_hs_t0 += VariationalInference.categorical_kl_divergence(log_alpha_hat)
+        kl_div_hs_t1 = VariationalInference.gaussian_kl_divergence(next_mean_hat, next_log_var_hat, mean, log_var)
+        for next_log_alpha_hat, log_alpha in zip(next_log_alpha_hats, log_alphas):
+            kl_div_hs_t1 += VariationalInference.categorical_kl_divergence(next_log_alpha_hat, log_alpha)
+        kl_div_hs = kl_div_hs_t1 + kl_div_hs_t0
+        log_likelihood = self.likelihood_loss(obs, reconstructed_obs) + \
+            self.likelihood_loss(next_obs, next_reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
 
@@ -195,8 +207,9 @@ class VAE(VariationalModel):
         gs = fig.add_gridspec(height * 2, width + n_cols)
 
         # Iterate over the grid's rows.
+        h = 0
         tau = self.tau(model_index)
-        for h in range(height):
+        while h < height:
 
             # Draw the ground truth label for each row.
             fig.add_subplot(gs[2 * h, 0:3])
@@ -208,18 +221,15 @@ class VAE(VariationalModel):
             plt.text(0.08, 0.45, "Reconstructed Image:", fontsize=10)
             plt.axis("off")
 
+            # Retrieve the initial ground truth and reconstructed images.
+            obs, _ = env.reset()
+            obs = torch.unsqueeze(obs, dim=0)
+            parameters = self.encoder(obs)
+            states = self.reparameterize(parameters, tau=tau)
+            reconstructed_obs = torch.sigmoid(self.decoder(states))
+
             # Iterate over the grid's columns.
             for w in range(width):
-
-                # Retrieve the ground truth and reconstructed images.
-                obs, _ = env.reset()
-                obs = torch.unsqueeze(obs, dim=0)
-                obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
-                parameters = self.encoder(obs)
-                state = self.reparameterize(parameters, tau=tau)
-                reconstructed_obs = torch.sigmoid(self.decoder(state))
-                obs = obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
-                reconstructed_obs = reconstructed_obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
 
                 # Draw the ground truth image.
                 fig.add_subplot(gs[2 * h, w + n_cols])
@@ -230,6 +240,25 @@ class VAE(VariationalModel):
                 fig.add_subplot(gs[2 * h + 1, w + n_cols])
                 plt.imshow(MatPlotLib.format_image(reconstructed_obs))
                 plt.axis("off")
+
+                # Execute the agent's action in the environment to obtain the next ground truth observation.
+                action = self.step(obs)
+                obs, _, done, _ = env.step(action)
+                obs = torch.unsqueeze(obs, dim=0)
+                action = torch.tensor([action])
+
+                # Simulate the agent's action to obtain the next reconstructed observation.
+                parameters = self.transition(states, action)
+                states = self.reparameterize(parameters, tau=tau)
+                reconstructed_obs = torch.sigmoid(self.decoder(states))
+
+                # Increase row index.
+                if done:
+                    h -= 1
+                    break
+
+            # Increase row index.
+            h += 1
 
         # Set spacing between subplots.
         plt.subplots_adjust(wspace=0, hspace=0)
@@ -277,19 +306,20 @@ class VAE(VariationalModel):
         self.tau_schedule = self.safe_load(checkpoint, "tau_schedule")
         self.tau = ExponentialSchedule(self.tau_schedule)
 
-        # Update the model loss using the checkpoint.
+        # Update the model losses using the checkpoint.
         self.model_loss = self.get_model_loss(self.latent_space_type)
         self.likelihood_loss = self.get_likelihood_loss(self.likelihood_type)
 
         # Update the world model using the checkpoint.
         self.encoder = self.get_encoder_network(self.latent_space_type)
         self.decoder = self.get_decoder_network(self.latent_space_type)
+        self.transition = self.get_transition_network(self.latent_space_type)
 
         # Update the replay buffer.
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
 
-        # Get the reparameterization function to use with the world model.
+        # Update the reparameterization function to use with the world model.
         self.reparameterize = self.get_reparameterization(self.latent_space_type)
 
         # Update the optimizer.
