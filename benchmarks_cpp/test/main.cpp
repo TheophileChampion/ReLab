@@ -2,8 +2,22 @@
 #include <cstdlib>
 #include "replay_buffer.hpp"
 
+
+#include "circular_list.hpp"
+#include "frame.hpp"
 int main(int argc, char *argv[])
 {
+    int expected_size = 10;
+    auto list = CircularList<Frame>(expected_size);
+
+    for (auto i = 0; i < 2 * expected_size; i++) {
+        if (i == expected_size) {
+            std::cout << "list is full!" << std::endl;
+        }
+        list.append(Frame(i, torch::zeros({4, 84, 84})));
+    }
+
+    /* TODO
     // Create replay buffer.
     auto capacity = 1000;
     auto buffer = std::make_shared<ReplayBuffer>(capacity=capacity);
@@ -32,6 +46,7 @@ int main(int argc, char *argv[])
     auto loss = torch::ones({2});
     loss = buffer->report(loss);
     std::cout << "report!" << std::endl;
+    */
 
     return EXIT_SUCCESS;
 }

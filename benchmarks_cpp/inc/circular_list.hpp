@@ -41,7 +41,7 @@ class CircularList {
 private:
 
     int expected_size;
-    std::vector<std::vector<T>> elements;
+    T **elements;
     int first_index;
     int current_index;
 

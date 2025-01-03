@@ -27,6 +27,13 @@ public:
      * @param data the frame's data
      */
     Frame(int index, torch::Tensor data);
+
+    /**
+     * Copy of the attributes of the frame passed as parameters.
+     * @param the frame whose attribute must be copied
+     * @return a reference to the new frame
+     */
+    Frame &operator=(const Frame &other);
 };
 
 #endif //FRAME_HPP
