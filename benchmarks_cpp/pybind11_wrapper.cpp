@@ -22,7 +22,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("report", &ReplayBuffer::report, "Report the loss associated with all the transitions of the previous batch.")
         .def("get_experiences", &ReplayBuffer::getExperiences, "Retrieve the experiences whose indices are passed as parameters.")
         .def("clear", &ReplayBuffer::clear, "Empty the replay buffer.")
-        .def("length", &ReplayBuffer::length, "Empty the replay buffer.")
+        .def("length", &ReplayBuffer::size, "Retrieve the number of elements in the buffer.")
         .def("is_prioritized", &ReplayBuffer::getPrioritized, "Retrieve a boolean indicating whether the replay buffer is prioritized.")
         .def("get_last_indices", &ReplayBuffer::getLastIndices, "Retrieves the last sampled indices.")
         .def("get_priority", &ReplayBuffer::getPriority, "Retrieves the priority at the provided index.");
@@ -33,7 +33,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("sum", &PriorityTree::sum, "Compute the sum of all priorities.")
         .def("max", &PriorityTree::max, "Find the largest priority.")
         .def("clear", &PriorityTree::clear, "Empty the priority tree.")
-        .def("length", &PriorityTree::length, "Retrieve the number of priorities stored in the priority tree.")
+        .def("length", &PriorityTree::size, "Retrieve the number of priorities stored in the priority tree.")
         .def("get", &PriorityTree::get, "Retrieve a priority from the priority tree.")
         .def("set", &PriorityTree::set, "Replace a priority in the priority tree.")
         .def("parent_index", &PriorityTree::parentIndex, "Compute the index of the parent element.")
@@ -48,14 +48,14 @@ PYBIND11_MODULE(cpp, m) {
         .def(py::init<int, int, float, float, int>(), "capacity"_a, "n_steps"_a, "gamma"_a, "initial_priority"_a, "n_children"_a)
         .def("append", &DataBuffer::append, "Add the datum of the next experience to the buffer.")
         .def("get", &DataBuffer::operator[], "Retrieve the data of the experiences whose indices are passed as parameters.")
-        .def("length", &DataBuffer::length, "Retrieve the number of experiences stored in the buffer.")
+        .def("length", &DataBuffer::size, "Retrieve the number of experiences stored in the buffer.")
         .def("clear", &DataBuffer::clear, "Empty the data buffer.");
 
     py::class_<FrameBuffer>(m, "FrameBuffer")
         .def(py::init<int, int, int, int>(), "capacity"_a, "frame_skip"_a, "n_steps"_a, "stack_size"_a)
         .def("append", &FrameBuffer::append, "Add the frames of the next experience to the buffer.")
         .def("get", &FrameBuffer::operator[], "Retrieve the observations of the experience whose index is passed as parameters.")
-        .def("length", &FrameBuffer::length, "Retrieve the number of experiences stored in the buffer.")
+        .def("length", &FrameBuffer::size, "Retrieve the number of experiences stored in the buffer.")
         .def("clear", &FrameBuffer::clear, "Empty the frame buffer.")
         .def("encode", &FrameBuffer::encode, "Encode a frame to compress it.")
         .def("decode", &FrameBuffer::decode, "Decode a frame to decompress it.");

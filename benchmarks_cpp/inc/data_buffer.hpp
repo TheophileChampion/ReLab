@@ -64,7 +64,7 @@ public:
      * Retrieve the number of experiences stored in the buffer.
      * @return the number of experiences stored in the buffer
      */
-    int length();
+    int size();
 
     /**
      * Empty the data buffer.

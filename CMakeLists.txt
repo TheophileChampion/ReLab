@@ -17,6 +17,9 @@ project(benchmarks VERSION 1.0)
 # The name of the virtual environment.
 SET(VENV_DIR "venv-benchmarks")
 
+# Add the zlib library.
+find_package(ZLIB REQUIRED)
+
 # Add the torch library.
 list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/${VENV_DIR}/lib/python3.12/site-packages/torch")
 link_directories("${PROJECT_SOURCE_DIR}/${VENV_DIR}/lib")
@@ -36,13 +39,13 @@ link_directories(${PROJECT_SOURCE_DIR}/scripts/ ${PROJECT_SOURCE_DIR}/scripts/bu
 
 # Add the shared library: libbenchmarks.so
 add_library(benchmarks SHARED
+    benchmarks_cpp/src/compressor.cpp
+    benchmarks_cpp/src/frame_storage.cpp
     benchmarks_cpp/src/replay_buffer.cpp
     benchmarks_cpp/src/frame_buffer.cpp
     benchmarks_cpp/src/data_buffer.cpp
-    benchmarks_cpp/src/circular_list.cpp
     benchmarks_cpp/src/priority_tree.cpp
     benchmarks_cpp/src/experience.cpp
-    benchmarks_cpp/src/frame.cpp
     benchmarks_cpp/src/deque.cpp
 )
 target_link_libraries(benchmarks PRIVATE
@@ -63,6 +66,7 @@ add_executable(test benchmarks_cpp/test/main.cpp)
 target_link_libraries(test PRIVATE
     benchmarks_wrapper benchmarks
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
+    ZLIB::ZLIB
     pthread
     python3.12
 )

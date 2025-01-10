@@ -2,7 +2,6 @@
 #include "replay_buffer.hpp"
 #include "data_buffer.hpp"
 
-
 DataBuffer::DataBuffer(int capacity, int n_steps, float gamma, float initial_priority, int n_children)
     : past_actions(n_steps), past_rewards(n_steps), past_dones(n_steps), device(ReplayBuffer::getDevice()) {
 
@@ -66,7 +65,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> DataBuffer::operator[](t
     return std::make_tuple(this->actions.index({indices}), this->rewards.index({indices}), this->dones.index({indices}));
 }
 
-int DataBuffer::length() {
+int DataBuffer::size() {
     return std::min(this->current_id, this->capacity);
 }
 

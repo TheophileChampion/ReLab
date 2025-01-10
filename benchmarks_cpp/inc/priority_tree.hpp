@@ -85,7 +85,7 @@ public:
      * Retrieve the number of priorities stored in the priority tree.
      * @return the number of priorities stored in the priority tree
      */
-    int length();
+    int size();
 
     /**
      * Add a priority in the priority tree.

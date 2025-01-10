@@ -4,7 +4,6 @@
 #include <cmath>
 #include "replay_buffer.hpp"
 
-
 ReplayBuffer::ReplayBuffer(
     int capacity, int batch_size, int frame_skip, int stack_size,
     std::map<std::string, float> p_args, std::map<std::string, float> m_args
@@ -81,7 +80,7 @@ Batch ReplayBuffer::sample() {
     if (this->prioritized == true) {
         this->indices = this->data->getPriorities()->sampleIndices(this->batch_size);
     } else {
-        this->indices = torch::randint(0, this->length(), {this->batch_size});
+        this->indices = torch::randint(0, this->size(), {this->batch_size});
     }
 
     // Retrieve the batch corresponding to the sampled indices.
@@ -117,7 +116,7 @@ torch::Tensor ReplayBuffer::report(torch::Tensor loss) {
     }
 
     // Update the priorities and compute the importance sampling weights.
-    torch::Tensor weights = this->length() * priorities.to(this->device) / sum_priorities;
+    torch::Tensor weights = this->size() * priorities.to(this->device) / sum_priorities;
     weights = torch::pow(weights, -this->omega_is);
     return loss * weights / weights.max();
 }
@@ -126,7 +125,7 @@ Batch ReplayBuffer::getExperiences(torch::Tensor indices) {
     std::vector<torch::Tensor> obs;
     std::vector<torch::Tensor> next_obs;
 
-    for (auto i = 0; i < this->batch_size; i++) {
+    for (auto i = 0; i < indices.size(0); i++) {
         int index = indices.index({i}).item<int>();
         auto observations = (*this->observations)[index];
         obs.push_back(std::get<0>(observations));
@@ -140,8 +139,8 @@ Batch ReplayBuffer::getExperiences(torch::Tensor indices) {
     );
 }
 
-int ReplayBuffer::length() {
-    return this->observations->length();
+int ReplayBuffer::size() {
+    return this->observations->size();
 }
 
 void ReplayBuffer::clear() {

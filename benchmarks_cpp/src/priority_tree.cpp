@@ -66,7 +66,7 @@ void PriorityTree::clear() {
     this->max_tree = this->createMaxTree(this->depth, this->n_children);
 }
 
-int PriorityTree::length() {
+int PriorityTree::size() {
     return std::min(this->current_id, this->capacity);
 }
 
@@ -114,7 +114,7 @@ int PriorityTree::internalIndex(int index) {
        index += this->current_id;
     }
     index %= this->capacity;
-    return (index >= 0) ? index : index + this->length();
+    return (index >= 0) ? index : index + this->size();
 }
 
 int PriorityTree::externalIndex(int index) {
@@ -122,7 +122,7 @@ int PriorityTree::externalIndex(int index) {
         index -= (this->current_id % this->capacity);
     }
     index %= this->capacity;
-    return (index >= 0) ? index : index + this->length();
+    return (index >= 0) ? index : index + this->size();
 }
 
 torch::Tensor PriorityTree::sampleIndices(int n) {
@@ -143,7 +143,7 @@ int PriorityTree::towerSampling(float priority) {
 
     // If the priority is larger than the sum of priorities, return the index of the last element.
     if (priority > this->sum()) {
-        return this->externalIndex(this->length() - 1);
+        return this->externalIndex(this->size() - 1);
     }
 
     // Go down the sum-tree until the leaf node is reached.
@@ -208,7 +208,7 @@ void PriorityTree::refreshAllSumTree() {
     this->sum_tree = this->createSumTree(this->depth, this->n_children);
 
     // Iterate over all the priorities.
-    for (auto index = 0; index < this->length(); index++) {
+    for (auto index = 0; index < this->size(); index++) {
 
         // Compute the parent index and current priority.
         int parent_index = this->parentIndex(index);

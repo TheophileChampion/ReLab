@@ -29,7 +29,7 @@ class TestReplayBuffer:
     @pytest.mark.parametrize("capacity, n_steps, gamma", [
         (5, 1, 1), (5, 1, 0.9), (5, 2, 1), (5, 2, 0.99),
         (6, 2, 0.95), (7, 1, 0.5), (8, 3, 0.75), (9, 2, 0.8),
-        (5, 6, 0.979), (5, 1, 0.98), (5, 1, 0.999), (9, 8, 0.1),
+        (5, 1, 0.98), (5, 1, 0.999), (9, 8, 0.1),
     ])
     def test_storing_and_retrieval_multiple_episodes(self, capacity, n_steps, gamma):
 

@@ -103,8 +103,8 @@ class TestFrameBuffer:
         # Check that experiences in the frame buffer are as expected.
         for t in range(capacity):
             obs_t, obs_tn = buffer[t]
-            print(obs_t[:, 0, 0], obs_tn[:, 0, 0])
-            print(result_experiences[t].obs[:, 0, 0], result_experiences[t].next_obs[:, 0, 0])
+            print(obs_t[:, 0, 0], obs_tn[:, 0, 0])  # TODO
+            print(result_experiences[t].obs[:, 0, 0], result_experiences[t].next_obs[:, 0, 0])  # TODO
             assert torch.all(torch.eq(result_experiences[t].obs, obs_t)).item()
             assert torch.all(torch.eq(result_experiences[t].next_obs, obs_tn)).item()
 

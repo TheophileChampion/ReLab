@@ -1,25 +1,35 @@
-#include <torch/extension.h>
 #include <cstdlib>
 #include "replay_buffer.hpp"
+#include <torch/extension.h>
+#include <thread>
 
-
-#include "circular_list.hpp"
-#include "frame.hpp"
+// #include "compressor.hpp"
 int main(int argc, char *argv[])
 {
-    int expected_size = 10;
-    auto list = CircularList<Frame>(expected_size);
+    /*
+    ZCompressor png;
 
-    for (auto i = 0; i < 2 * expected_size; i++) {
-        if (i == expected_size) {
-            std::cout << "list is full!" << std::endl;
-        }
-        list.append(Frame(i, torch::zeros({4, 84, 84})));
-    }
+    // torch::Tensor a = torch::zeros({5, 5});
+    // torch::Tensor a = torch::ones({2, 5});
+    torch::Tensor a = torch::ones({2, 3, 4, 5});
+    // torch::Tensor a = torch::arange(0, 25).view({5, 5});
+    std::cout << "Uncompressed tensor is: " << a << std::endl;
 
-    /* TODO
+    // STEP 1. compress a into b.
+    torch::Tensor b = png.encode(a);
+    std::cout << "Compressed tensor is: " << b << std::endl;
+
+    // STEP 2. decompress b into c.
+    std::cout << a.dtype() << std::endl;
+
+    torch::Tensor c = png.decode(b).to(a.dtype());
+    std::cout << "Uncompressed tensor is: " << c << std::endl;
+
+    // make sure uncompressed is exactly equal to original.
+    assert(torch::equal(a, c));
+
     // Create replay buffer.
-    auto capacity = 1000;
+    auto capacity = 1000000;
     auto buffer = std::make_shared<ReplayBuffer>(capacity=capacity);
 
     // Append an experience to the replay buffer.

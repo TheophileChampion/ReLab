@@ -101,7 +101,7 @@ public:
      * Retrieve the number of elements in the buffer.
      * @return the number of elements contained in the replay buffer
      */
-    int length();
+    int size();
 
     /**
      * Empty the replay buffer.

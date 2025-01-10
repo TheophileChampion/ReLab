@@ -2,36 +2,10 @@
 #define FRAME_BUFFER_HPP
 
 #include <vector>
-#include "circular_list.hpp"
+#include "frame_storage.hpp"
+#include "compressor.hpp"
 #include "experience.hpp"
-#include "frame.hpp"
 #include "deque.hpp"
-
-
-/**
- * Class storing references to the first frame of observations at time t and t + n_steps.
- */
-class ObsReferences {
-
-public:
-
-    Frame frame_t;
-    Frame frame_tn;
-
-public:
-
-    /**
-     * Create an empty observation references.
-     */
-    ObsReferences();
-
-    /**
-     * Create a observation references.
-     * @param frame_t the first frame of the observation at time t
-     * @param frame_tn the first frame of the observation at time t + n_steps
-     */
-    ObsReferences(Frame frame_t, Frame frame_tn);
-};
 
 
 /**
@@ -47,18 +21,22 @@ private:
     int capacity;
     int n_steps;
 
-    // A circular list storing all the buffer's frames.
-    CircularList<Frame> frames;
+    // A frame storage containing all the buffer's frames.
+    FrameStorage frames;
 
-    // A list storing the observation references of each experience.
-    std::vector<ObsReferences> references;
+    // Lists storing the observation references of each experience.
+    std::vector<int> references_t;
+    std::vector<int> references_tn;
     int current_ref;
 
-    // A queue storing the frames of recent observations (for multistep Q-learning).
-    Deque<Frame> past_obs_frames;
+    // A queue storing the recent observations references (for multistep Q-learning).
+    Deque<int> past_references;
 
     // A boolean keeping track of whether the next experience is the beginning of a new episode.
     bool new_episode;
+
+    // A zlib compressor to encode and decode the stored frames.
+    ZCompressor png;
 
 public:
 
@@ -88,7 +66,7 @@ public:
      * Retrieve the number of experiences stored in the buffer.
      * @return the number of experiences stored in the buffer
      */
-    int length();
+    int size();
 
     /**
      * Empty the frame buffer.
@@ -97,16 +75,17 @@ public:
 
     /**
      * Add a frame to the buffer.
-     * @param data the frame's data
+     * @param frame the frame
+     * @return the unique index of the frame
      */
-    void addFrame(torch::Tensor data);
+    int addFrame(torch::Tensor frame);
 
     /**
      * Add an observation references to the buffer.
-     * @param t_0 the index of the first frame in the queue of past observation frames
-     * @param t_1 the index of the second frame in the queue of past observation frames
+     * @param t the index of the first reference in the queue of past references
+     * @param tn the index of the second reference in the queue of past references
      */
-    void addReference(int t_0, int t_1);
+    void addReference(int t, int tn);
 
     /**
      * Retrieve an observation from the buffer.
