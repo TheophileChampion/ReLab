@@ -1,9 +1,10 @@
+#include "replay_buffer.hpp"
 #include "frame_buffer.hpp"
 
 using namespace torch::indexing;
 
 FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size)
-    : frames(FrameStorage(capacity)), past_references(n_steps + 1) {
+    : device(ReplayBuffer::getDevice()), frames(FrameStorage(capacity)), past_references(n_steps + 1) {
 
     // Store the frame buffer's parameters.
     this->frame_skip = frame_skip;
@@ -17,6 +18,9 @@ FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_si
     std::vector<int> references_tn(capacity);
     this->references_tn = std::move(references_tn);
     this->current_ref = 0;
+
+    // Create the PNG compressor.
+    this->png = Compressor::create();
 
     // A boolean keeping track of whether the next experience is the beginning of a new episode.
     this->new_episode = true;
@@ -36,8 +40,9 @@ void FrameBuffer::append(ExperienceTuple experience_tuple) {
 
     // Add the frames of the observation at time t, if needed.
     if (this->new_episode == true) {
+        auto obs = experience.obs.to(this->device);
         for (auto i = 0; i < this->stack_size; i++) {
-            int reference = this->addFrame(this->encode(experience.obs.index({i, Slice(), Slice()}).detach().clone()));
+            int reference = this->addFrame(this->encode(obs.index({i, Slice(), Slice()}).detach().clone()));
             if (i == 0) {
                 this->past_references.push_back(reference);
             }
@@ -46,8 +51,9 @@ void FrameBuffer::append(ExperienceTuple experience_tuple) {
 
     // Add the frames of the observation at time t + 1.
     int n = std::min(this->frame_skip, this->stack_size);
+    auto next_obs = experience.next_obs.to(this->device);
     for (auto i = n; i >= 1; i--) {
-        int reference = this->addFrame(this->encode(experience.next_obs.index({-i, Slice(), Slice()}).detach().clone()));
+        int reference = this->addFrame(this->encode(next_obs.index({-i, Slice(), Slice()}).detach().clone()));
         if (i == 1) {
             this->past_references.push_back(reference + 1 - this->stack_size);
         }
@@ -132,11 +138,9 @@ int FrameBuffer::firstReference() {
 }
 
 torch::Tensor FrameBuffer::encode(torch::Tensor frame){
-    return this->png.encode(frame.unsqueeze(0));
-    // TODO add GPU compression
+    return this->png->encode(frame.unsqueeze(0));
 }
 
 torch::Tensor FrameBuffer::decode(torch::Tensor frame) {
-    return this->png.decode(frame);
-    // TODO add GPU compression
+    return this->png->decode(frame);
 }

@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "frame_storage.hpp"
-#include "compressor.hpp"
+#include "compressors.hpp"
 #include "experience.hpp"
 #include "deque.hpp"
 
@@ -14,6 +14,9 @@
 class FrameBuffer {
 
 private:
+
+    // The device on which computation is performed.
+    torch::Device device;
 
     // Store the frame buffer's parameters.
     int frame_skip;
@@ -35,8 +38,8 @@ private:
     // A boolean keeping track of whether the next experience is the beginning of a new episode.
     bool new_episode;
 
-    // A zlib compressor to encode and decode the stored frames.
-    ZCompressor png;
+    // A compressor to encode and decode the stored frames.
+    std::unique_ptr<Compressor> png;
 
 public:
 

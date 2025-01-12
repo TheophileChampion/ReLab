@@ -67,11 +67,6 @@ ReplayBuffer::ReplayBuffer(
 void ReplayBuffer::append(ExperienceTuple experience_tuple) {
     this->observations->append(experience_tuple);
     this->data->append(experience_tuple);
-
-    // TODO
-    // TODO "obs: {" << experience.obs << "} " <<
-    // TODO << " next_obs: {" << experience.next_obs << "}"
-    // TODO std::cout << "action: " << experience.action << " reward: " << experience.reward << " done: " << experience.done << std::endl;
 }
 
 Batch ReplayBuffer::sample() {
@@ -84,7 +79,7 @@ Batch ReplayBuffer::sample() {
     }
 
     // Retrieve the batch corresponding to the sampled indices.
-    return this->getExperiences(this->indices);  // TODO ensure the observations are on device
+    return this->getExperiences(this->indices);
 }
 
 torch::Tensor ReplayBuffer::report(torch::Tensor loss) {
@@ -133,9 +128,7 @@ Batch ReplayBuffer::getExperiences(torch::Tensor indices) {
     }
     auto data = (*this->data)[indices];
     return std::make_tuple(
-        this->listToTensor(obs).to(this->device),
-        std::get<0>(data), std::get<1>(data), std::get<2>(data),
-        this->listToTensor(next_obs).to(this->device)
+        this->listToTensor(obs), std::get<0>(data), std::get<1>(data), std::get<2>(data), this->listToTensor(next_obs)
     );
 }
 
@@ -161,8 +154,9 @@ torch::Tensor ReplayBuffer::listToTensor(std::vector<torch::Tensor> &tensor_list
 }
 
 torch::Device ReplayBuffer::getDevice() {
-    bool use_cuda = (torch::cuda::is_available() and torch::cuda::device_count() >= 1);
-    return torch::Device((use_cuda == true) ? torch::kCUDA: torch::kCPU);
+    // TODO bool use_cuda = (torch::cuda::is_available() and torch::cuda::device_count() >= 1);
+    // TODO return torch::Device((use_cuda == true) ? torch::kCUDA: torch::kCPU);
+    return torch::Device(torch::kCPU);
 }
 
 torch::Tensor ReplayBuffer::getLastIndices() {
