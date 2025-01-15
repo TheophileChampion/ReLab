@@ -1,7 +1,7 @@
 from benchmarks.agents.memory.cpp import IntDeque
 
 
-class FastDeque:
+class Deque:
     """
     A double ended queue allowing for storage and retrieval of integers.
     """

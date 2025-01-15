@@ -3,7 +3,7 @@ import math
 
 import torch
 
-from benchmarks.agents.memory.FastDataBuffer import FastDataBuffer as DataBuffer
+from benchmarks.agents.memory.DataBuffer import DataBuffer
 from benchmarks.agents.memory.ReplayBuffer import Experience
 
 

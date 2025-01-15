@@ -1,6 +1,6 @@
 import pytest
 
-from benchmarks.agents.memory.FastDeque import FastDeque as Deque
+from benchmarks.agents.memory.Deque import Deque
 from collections import deque
 
 

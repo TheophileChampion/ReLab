@@ -17,7 +17,7 @@ PYBIND11_MODULE(cpp, m) {
         .value("RAW", CompressorType::RAW)
         .value("ZLIB", CompressorType::ZLIB);
 
-    py::class_<ReplayBuffer>(m, "ReplayBuffer")
+    py::class_<ReplayBuffer>(m, "FastReplayBuffer")
         .def(py::init<int, int, int, int, int, CompressorType>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "type"_a = CompressorType::ZLIB)
         .def(py::init<int, int, int, int, int, CompressorType, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "type"_a = CompressorType::ZLIB, "m_args"_a)
         .def(py::init<int, int, int, int, int, CompressorType, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "type"_a = CompressorType::ZLIB, "p_args"_a)
@@ -32,7 +32,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("get_last_indices", &ReplayBuffer::getLastIndices, "Retrieves the last sampled indices.")
         .def("get_priority", &ReplayBuffer::getPriority, "Retrieves the priority at the provided index.");
 
-    py::class_<PriorityTree>(m, "PriorityTree")
+    py::class_<PriorityTree>(m, "FastPriorityTree")
         .def(py::init<int, float, int>(), "capacity"_a, "initial_priority"_a, "n_children"_a)
         .def("append", &PriorityTree::append, "Add a priority in the priority tree.")
         .def("sum", &PriorityTree::sum, "Compute the sum of all priorities.")
@@ -49,14 +49,14 @@ PYBIND11_MODULE(cpp, m) {
         .def("update_sum_tree", &PriorityTree::updateSumTree, "Update the sum-tree to reflect an element being set to a new priority.")
         .def("update_max_tree", &PriorityTree::updateMaxTree, "Update the max-tree to reflect an element being set to a new priority.");
 
-    py::class_<DataBuffer>(m, "DataBuffer")
+    py::class_<DataBuffer>(m, "FastDataBuffer")
         .def(py::init<int, int, float, float, int>(), "capacity"_a, "n_steps"_a, "gamma"_a, "initial_priority"_a, "n_children"_a)
         .def("append", &DataBuffer::append, "Add the datum of the next experience to the buffer.")
         .def("get", &DataBuffer::operator[], "Retrieve the data of the experiences whose indices are passed as parameters.")
         .def("length", &DataBuffer::size, "Retrieve the number of experiences stored in the buffer.")
         .def("clear", &DataBuffer::clear, "Empty the data buffer.");
 
-    py::class_<FrameBuffer>(m, "FrameBuffer")
+    py::class_<FrameBuffer>(m, "FastFrameBuffer")
         .def(py::init<int, int, int, int, int>(), "capacity"_a, "frame_skip"_a, "n_steps"_a, "stack_size"_a, "screen_size"_a = 84)
         .def("append", &FrameBuffer::append, "Add the frames of the next experience to the buffer.")
         .def("get", &FrameBuffer::operator[], "Retrieve the observations of the experience whose index is passed as parameters.")

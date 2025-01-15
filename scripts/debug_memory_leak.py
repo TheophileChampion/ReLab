@@ -1,5 +1,5 @@
 import torch
-from benchmarks.agents.memory.FastReplayBuffer import FastReplayBuffer
+from benchmarks.agents.memory.ReplayBuffer import FastReplayBuffer
 from benchmarks.agents.memory.ReplayBuffer import Experience
 
 

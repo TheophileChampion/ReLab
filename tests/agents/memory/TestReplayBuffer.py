@@ -5,8 +5,7 @@ import pytest
 import torch
 
 from benchmarks import benchmarks
-from benchmarks.agents.memory.ReplayBuffer import Experience
-from benchmarks.agents.memory.FastReplayBuffer import FastReplayBuffer as ReplayBuffer
+from benchmarks.agents.memory.ReplayBuffer import ReplayBuffer, Experience
 
 
 class TestReplayBuffer:

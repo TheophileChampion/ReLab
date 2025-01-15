@@ -17,7 +17,7 @@ import imageio
 from PIL import Image
 
 import benchmarks
-from benchmarks.agents.memory.FastReplayBuffer import FastReplayBuffer
+from benchmarks.agents.memory.ReplayBuffer import ReplayBuffer
 from benchmarks.helpers.FileSystem import FileSystem
 
 
@@ -242,10 +242,10 @@ class AgentInterface(ABC):
         m_args = {"n_steps": n_steps, "gamma": gamma}
         p_args = {"initial_priority": 1e9, "omega": omega, "omega_is": omega_is}
         return {
-            ReplayType.DEFAULT: FastReplayBuffer,
-            ReplayType.PRIORITIZED: partial(FastReplayBuffer, p_args=p_args),
-            ReplayType.MULTISTEP: partial(FastReplayBuffer, m_args=m_args),
-            ReplayType.MULTISTEP_PRIORITIZED: partial(FastReplayBuffer, m_args=m_args, p_args=p_args),
+            ReplayType.DEFAULT: ReplayBuffer,
+            ReplayType.PRIORITIZED: partial(ReplayBuffer, p_args=p_args),
+            ReplayType.MULTISTEP: partial(ReplayBuffer, m_args=m_args),
+            ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, m_args=m_args, p_args=p_args),
         }[replay_type]
 
     @staticmethod

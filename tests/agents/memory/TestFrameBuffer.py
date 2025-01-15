@@ -3,7 +3,7 @@ from functools import partial
 import pytest
 import torch
 
-from benchmarks.agents.memory.FastFrameBuffer import FastFrameBuffer as FrameBuffer
+from benchmarks.agents.memory.FrameBuffer import FrameBuffer
 from benchmarks.agents.memory.ReplayBuffer import Experience
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from benchmarks.agents.memory.FastPriorityTree import FastPriorityTree as PriorityTree
+from benchmarks.agents.memory.PriorityTree import PriorityTree
 
 
 class TestPriorityTree:
