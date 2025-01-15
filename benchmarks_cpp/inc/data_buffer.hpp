@@ -51,14 +51,14 @@ public:
      * Add the datum of the next experience to the buffer.
      * @param experience_tuple the experience whose datum must be added to the buffer
      */
-    void append(ExperienceTuple experience_tuple);
+    void append(const ExperienceTuple &experience_tuple);
 
     /**
      * Retrieve the data of the experiences whose indices are passed as parameters.
      * @param indices the indices of the experiences whose data must be retrieved
      * @return the data (i.e., action at time t, n-steps return at time t, and done at time t + n_steps)
      */
-    std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> operator[](torch::Tensor indices);
+    std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> operator[](torch::Tensor &indices);
 
     /**
      * Retrieve the number of experiences stored in the buffer.

@@ -131,10 +131,10 @@ torch::Tensor PriorityTree::sampleIndices(int n) {
     torch::Tensor sampled_priorities = torch::rand({n}) * static_cast<float>(this->sum());
 
     // Sample 'n' indices with a probability proportional to their priorities.
-    torch::Tensor indices = torch::zeros({n}, torch::kInt);
+    torch::Tensor indices = torch::zeros({n}, torch::kInt64);
     for (auto i = 0; i < n; i++) {
         float priority = sampled_priorities.index({i}).item<float>();
-        indices.index_put_({i}, this->towerSampling(priority));
+        indices.index_put_({i}, static_cast<long>(this->towerSampling(priority)));
     }
     return indices;
 }

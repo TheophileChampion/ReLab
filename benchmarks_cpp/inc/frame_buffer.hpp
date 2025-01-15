@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "frame_storage.hpp"
+#include "thread_pool.hpp"
 #include "compressors.hpp"
 #include "experience.hpp"
 #include "deque.hpp"
@@ -23,6 +24,7 @@ private:
     int stack_size;
     int capacity;
     int n_steps;
+    int screen_size;
 
     // A frame storage containing all the buffer's frames.
     FrameStorage frames;
@@ -38,8 +40,9 @@ private:
     // A boolean keeping track of whether the next experience is the beginning of a new episode.
     bool new_episode;
 
-    // A compressor to encode and decode the stored frames.
-    std::unique_ptr<Compressor> png;
+    // A compressor to encode and decode the stored frames, and a thread pool to parallelize the decompression.
+    ZCompressor png;
+    ThreadPool pool;
 
 public:
 
@@ -49,21 +52,23 @@ public:
      * @param frame_skip the number of times each action is repeated in the environment
      * @param n_steps the number of steps for which rewards are accumulated in multistep Q-learning
      * @param stack_size the number of stacked frame in each observation
+     * @param screen_size: the size of the images used by the agent to learn
+     * @param n_threads the number of threads to use for speeding up the decompression of tensors
      */
-    FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size);
+    FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size, int screen_size=84, int n_threads=1);
 
     /**
      * Add the frames of the next experience to the buffer.
      * @param experience_tuple the experience whose frames must be added to the buffer
      */
-    void append(ExperienceTuple experience_tuple);
+    void append(const ExperienceTuple &experience_tuple);
 
     /**
      * Retrieve the observations of the experience whose index is passed as parameters.
      * @param idx the index of the experience whose observations must be retrieved
      * @return the observations at time t and t + n_steps
      */
-    std::tuple<torch::Tensor, torch::Tensor> operator[](int idx);
+    std::tuple<torch::Tensor, torch::Tensor> operator[](const torch::Tensor &indices);
 
     /**
      * Retrieve the number of experiences stored in the buffer.
@@ -81,7 +86,7 @@ public:
      * @param frame the frame
      * @return the unique index of the frame
      */
-    int addFrame(torch::Tensor frame);
+    int addFrame(const torch::Tensor &frame);
 
     /**
      * Add an observation references to the buffer.
@@ -89,13 +94,6 @@ public:
      * @param tn the index of the second reference in the queue of past references
      */
     void addReference(int t, int tn);
-
-    /**
-     * Retrieve an observation from the buffer.
-     * @param idx the index of the first frame of the observation to retrieve
-     * @return the observation
-     */
-    torch::Tensor getObservation(int idx);
 
     /**
      * Retrieve the index of the first reference of the buffer.
@@ -108,14 +106,14 @@ public:
      * @param frame the frame to encode
      * @return the encoded frame
      */
-    torch::Tensor encode(torch::Tensor frame);
+    torch::Tensor encode(const torch::Tensor &frame);
 
     /**
      * Decode a frame to decompress it.
      * @param frame the encoded frame to decode
      * @return the decoded frame
      */
-    torch::Tensor decode(torch::Tensor frame);
+    torch::Tensor decode(const torch::Tensor &frame);
 };
 
 #endif //FRAME_BUFFER_HPP

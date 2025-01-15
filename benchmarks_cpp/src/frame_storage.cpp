@@ -8,7 +8,7 @@ FrameStorage::FrameStorage(int capacity, int capacity_incr)
     this->frames.reserve(capacity);
 }
 
-int FrameStorage::append(torch::Tensor frame) {
+int FrameStorage::append(const torch::Tensor &frame) {
 
     // Update the last frame indices.
     this->last_frame_index += 1;

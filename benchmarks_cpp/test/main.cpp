@@ -3,6 +3,11 @@
 #include <torch/extension.h>
 #include <thread>
 
+
+/**
+ * This main is provided for debugging purposes.
+ * It is compiled by the makefile into the executable named "test".
+ */
 int main(int argc, char *argv[])
 {
     // Create replay buffer.

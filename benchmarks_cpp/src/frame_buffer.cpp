@@ -1,16 +1,14 @@
-#include "replay_buffer.hpp"
 #include "frame_buffer.hpp"
+#include "replay_buffer.hpp"
+#include "timer.hpp"
 
 using namespace torch::indexing;
 
-FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size)
-    : device(ReplayBuffer::getDevice()), frames(FrameStorage(capacity)), past_references(n_steps + 1) {
-
-    // Store the frame buffer's parameters.
-    this->frame_skip = frame_skip;
-    this->stack_size = stack_size;
-    this->capacity = capacity;
-    this->n_steps = n_steps;
+FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size, int screen_size, int n_threads)
+    : device(ReplayBuffer::getDevice()),
+      frame_skip(frame_skip), stack_size(stack_size), capacity(capacity), n_steps(n_steps), screen_size(screen_size),
+      frames(FrameStorage(capacity)), past_references(n_steps + 1),
+      png(screen_size, screen_size), pool(n_threads) {
 
     // A list storing the observation references of each experience.
     std::vector<int> references_t(capacity);
@@ -19,14 +17,11 @@ FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_si
     this->references_tn = std::move(references_tn);
     this->current_ref = 0;
 
-    // Create the PNG compressor.
-    this->png = Compressor::create();
-
     // A boolean keeping track of whether the next experience is the beginning of a new episode.
     this->new_episode = true;
 }
 
-void FrameBuffer::append(ExperienceTuple experience_tuple) {
+void FrameBuffer::append(const ExperienceTuple &experience_tuple) {
 
     Experience experience = Experience(experience_tuple);
 
@@ -40,9 +35,8 @@ void FrameBuffer::append(ExperienceTuple experience_tuple) {
 
     // Add the frames of the observation at time t, if needed.
     if (this->new_episode == true) {
-        auto obs = experience.obs.to(this->device);
         for (auto i = 0; i < this->stack_size; i++) {
-            int reference = this->addFrame(this->encode(obs.index({i, Slice(), Slice()}).detach().clone()));
+            int reference = this->addFrame(this->encode(experience.obs.index({i, Slice(), Slice()}).detach().clone()));
             if (i == 0) {
                 this->past_references.push_back(reference);
             }
@@ -51,9 +45,8 @@ void FrameBuffer::append(ExperienceTuple experience_tuple) {
 
     // Add the frames of the observation at time t + 1.
     int n = std::min(this->frame_skip, this->stack_size);
-    auto next_obs = experience.next_obs.to(this->device);
     for (auto i = n; i >= 1; i--) {
-        int reference = this->addFrame(this->encode(next_obs.index({-i, Slice(), Slice()}).detach().clone()));
+        int reference = this->addFrame(this->encode(experience.next_obs.index({-i, Slice(), Slice()}).detach().clone()));
         if (i == 1) {
             this->past_references.push_back(reference + 1 - this->stack_size);
         }
@@ -82,15 +75,49 @@ void FrameBuffer::append(ExperienceTuple experience_tuple) {
     this->new_episode = experience.done;
 }
 
-std::tuple<torch::Tensor, torch::Tensor> FrameBuffer::operator[](int idx) {
+std::tuple<torch::Tensor, torch::Tensor> FrameBuffer::operator[](const torch::Tensor &indices) {
 
-    // Retrieve the index of first frame for the requested observations.
-    idx = (this->firstReference() + idx) % this->capacity;
-    int reference_t = this->references_t[idx];
-    int reference_tn = this->references_tn[idx];
+    int n_elements = indices.numel();
+    torch::Tensor obs_batch = torch::zeros({n_elements, this->stack_size, this->screen_size, this->screen_size});
+    torch::Tensor next_obs_batch = torch::zeros({n_elements, this->stack_size, this->screen_size, this->screen_size});
 
-    // Retrieve the requested observations.
-    return std::make_tuple(this->getObservation(reference_t), this->getObservation(reference_tn));
+    // Retrieve the all the decoded observations.
+    int frame_size = this->screen_size * this->screen_size;
+    float *obs_batch_ptr = obs_batch.data_ptr<float>();
+    float *next_obs_batch_ptr = next_obs_batch.data_ptr<float>();
+    long *indices_ptr = indices.data_ptr<long>();
+    for (auto i = 0; i < n_elements; i++) {
+
+        // Retrieve the index of first frame for the requested observations.
+        int idx = (*indices_ptr + this->firstReference()) % this->capacity;
+        int reference_t = this->references_t[idx];
+        int reference_tn = this->references_tn[idx];
+
+        // Parallelize the decompression of the observations.
+        this->pool.push([this, obs_batch_ptr, reference_t, frame_size] {
+            float *ptr = obs_batch_ptr;
+            for (auto j = 0; j < this->stack_size; j++) {
+                this->png.decode(this->frames[reference_t + j], ptr);
+                ptr += frame_size;
+            }
+        });
+        this->pool.push([this, next_obs_batch_ptr, reference_tn, frame_size] {
+            float *ptr = next_obs_batch_ptr;
+            for (auto j = 0; j < this->stack_size; j++) {
+                this->png.decode(this->frames[reference_tn + j], ptr);
+                ptr += frame_size;
+            }
+        });
+        obs_batch_ptr += frame_size * this->stack_size;
+        next_obs_batch_ptr += frame_size * this->stack_size;
+
+        // Move to the next experience index in the batch.
+        ++indices_ptr;
+    }
+    this->pool.synchronize();
+
+    // Returns the batch's observations.
+    return std::make_tuple(obs_batch, next_obs_batch);
 }
 
 int FrameBuffer::size() {
@@ -108,7 +135,7 @@ void FrameBuffer::clear() {
     this->current_ref = 0;
 }
 
-int FrameBuffer::addFrame(torch::Tensor frame) {
+int FrameBuffer::addFrame(const torch::Tensor &frame) {
     return this->frames.append(frame);
 }
 
@@ -125,22 +152,14 @@ void FrameBuffer::addReference(int t, int tn) {
     this->current_ref += 1;
 }
 
-torch::Tensor FrameBuffer::getObservation(int idx) {
-    std::vector<torch::Tensor> frames;
-    for (auto i = 0; i < this->stack_size; i++) {
-        frames.push_back(this->decode(this->frames[idx + i]));
-    }
-    return torch::cat(frames);
-}
-
 int FrameBuffer::firstReference() {
     return (this->current_ref < this->capacity) ? 0 : this->current_ref;
 }
 
-torch::Tensor FrameBuffer::encode(torch::Tensor frame){
-    return this->png->encode(frame.unsqueeze(0));
+torch::Tensor FrameBuffer::encode(const torch::Tensor &frame) {
+    return this->png.encode(frame);
 }
 
-torch::Tensor FrameBuffer::decode(torch::Tensor frame) {
-    return this->png->decode(frame);
+torch::Tensor FrameBuffer::decode(const torch::Tensor &frame) {
+    return this->png.decode(frame);
 }

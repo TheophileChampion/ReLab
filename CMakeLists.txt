@@ -37,24 +37,22 @@ find_library(TORCH_PYTHON_LIBRARY torch_python PATH "${TORCH_INSTALL_PREFIX}/lib
 # Add the zlib library.
 find_package(ZLIB REQUIRED)
 
-# Add the nvcomp library.
-include_directories(/usr/include/nvcomp/ ${ADDITIONAL_INCLUDES})
-
 # Add the shared library: libbenchmarks.so
 add_library(benchmarks SHARED
-    benchmarks_cpp/src/compressors.cpp
     benchmarks_cpp/src/frame_storage.cpp
     benchmarks_cpp/src/replay_buffer.cpp
-    benchmarks_cpp/src/frame_buffer.cpp
-    benchmarks_cpp/src/data_buffer.cpp
     benchmarks_cpp/src/priority_tree.cpp
+    benchmarks_cpp/src/frame_buffer.cpp
+    benchmarks_cpp/src/compressors.cpp
+    benchmarks_cpp/src/data_buffer.cpp
+    benchmarks_cpp/src/thread_pool.cpp
     benchmarks_cpp/src/experience.cpp
     benchmarks_cpp/src/deque.cpp
+    benchmarks_cpp/src/timer.cpp
 )
 target_link_libraries(benchmarks PRIVATE
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
     ZLIB::ZLIB
-    nvcomp
     pthread
 )
 
@@ -64,7 +62,6 @@ target_link_libraries(benchmarks_wrapper PRIVATE
     benchmarks
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
     ZLIB::ZLIB
-    nvcomp
     pthread
 )
 
@@ -74,22 +71,6 @@ target_link_libraries(test PRIVATE
     benchmarks_wrapper benchmarks
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
     ZLIB::ZLIB
-    nvcomp
     pthread
     python3.12
 )
-
-# TODO
-
-# Add the nvcomp library.
-# list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/${VENV_DIR}/lib/python3.12/site-packages/nvidia")
-# find_package(nvcomp REQUIRED)
-
-# old include_directories(high_level_quickstart_example PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
-
-# add_compile_definitions("THRUST_CUB_WRAPPED_NAMESPACE=nvcomp")
-
-# TODO include_directories(high_level_quickstart_example PRIVATE ${PROJECT_SOURCE_DIR}/${VENV_DIR}/lib/python3.12/site-packages/nvidia/nvcomp/include/)
-# TODO link_directories(${PROJECT_SOURCE_DIR}/${VENV_DIR}/lib/python3.12/site-packages/nvidia/nvcomp/)
-# TODO add_executable(high_level_quickstart_example benchmarks_cpp/test/high_level_quickstart_example.cpp)
-# TODO target_link_libraries(high_level_quickstart_example PRIVATE nvcomp CUDA::cudart)

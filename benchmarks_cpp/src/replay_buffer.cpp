@@ -5,7 +5,7 @@
 #include "replay_buffer.hpp"
 
 ReplayBuffer::ReplayBuffer(
-    int capacity, int batch_size, int frame_skip, int stack_size,
+    int capacity, int batch_size, int frame_skip, int stack_size, int screen_size,
     std::map<std::string, float> p_args, std::map<std::string, float> m_args
 ): device(ReplayBuffer::getDevice()) {
 
@@ -52,7 +52,8 @@ ReplayBuffer::ReplayBuffer(
     this->omega_is = args["omega_is"];
 
     // The buffer storing the frames of all experiences.
-    this->observations = std::make_unique<FrameBuffer>(this->capacity, this->frame_skip, this->n_steps, this->stack_size);
+    int n_threads = std::min(static_cast<int>(thread::hardware_concurrency()), batch_size);
+    this->observations = std::make_unique<FrameBuffer>(this->capacity, this->frame_skip, this->n_steps, this->stack_size, screen_size, n_threads);
 
     // The buffer storing the data (i.e., actions, rewards, dones and priorities) of all experiences.
     this->data = std::make_unique<DataBuffer>(this->capacity, this->n_steps, this->gamma, this->initial_priority, this->n_children);
@@ -64,7 +65,7 @@ ReplayBuffer::ReplayBuffer(
               << " omega: " << this->omega << " omega_is: " << this->omega_is << " prioritized: " << this->prioritized << std::endl;
 }
 
-void ReplayBuffer::append(ExperienceTuple experience_tuple) {
+void ReplayBuffer::append(const ExperienceTuple &experience_tuple) {
     this->observations->append(experience_tuple);
     this->data->append(experience_tuple);
 }
@@ -82,7 +83,7 @@ Batch ReplayBuffer::sample() {
     return this->getExperiences(this->indices);
 }
 
-torch::Tensor ReplayBuffer::report(torch::Tensor loss) {
+torch::Tensor ReplayBuffer::report(torch::Tensor &loss) {
 
     // If the buffer is not prioritized, don't update the priorities.
     if (this->prioritized == false) {
@@ -97,16 +98,21 @@ torch::Tensor ReplayBuffer::report(torch::Tensor loss) {
         loss = loss.pow(this->omega);
     }
 
-    // If the buffer is prioritized, update the priorities.
-    float sum_priorities = this->data->getPriorities()->sum();
+    // Collect the old priorities.
     torch::Tensor priorities = torch::zeros({this->batch_size}, at::kFloat);
+    for (int i = 0; i < this->batch_size; i++) {
+        int idx = this->indices[i].item<int>();
+        priorities[i] = this->data->getPriorities()->get(idx);
+    }
+
+    // Update the priorities.
+    float sum_priorities = this->data->getPriorities()->sum();
     for (int i = 0; i < this->batch_size; i++) {
         int idx = this->indices[i].item<int>();
         float priority = loss[i].item<float>();
         if (std::isfinite(priority) == false) {
             priority = this->data->getPriorities()->max();
         }
-        priorities[i] = this->data->getPriorities()->get(idx);
         this->data->getPriorities()->set(idx, priority);
     }
 
@@ -116,19 +122,13 @@ torch::Tensor ReplayBuffer::report(torch::Tensor loss) {
     return loss * weights / weights.max();
 }
 
-Batch ReplayBuffer::getExperiences(torch::Tensor indices) {
-    std::vector<torch::Tensor> obs;
-    std::vector<torch::Tensor> next_obs;
-
-    for (auto i = 0; i < indices.size(0); i++) {
-        int index = indices.index({i}).item<int>();
-        auto observations = (*this->observations)[index];
-        obs.push_back(std::get<0>(observations));
-        next_obs.push_back(std::get<1>(observations));
-    }
+Batch ReplayBuffer::getExperiences(torch::Tensor &indices) {
+    auto observations = (*this->observations)[indices];
     auto data = (*this->data)[indices];
     return std::make_tuple(
-        this->listToTensor(obs), std::get<0>(data), std::get<1>(data), std::get<2>(data), this->listToTensor(next_obs)
+        std::get<0>(observations).to(this->device),
+        std::get<0>(data), std::get<1>(data), std::get<2>(data),
+        std::get<1>(observations).to(this->device)
     );
 }
 
@@ -146,17 +146,9 @@ bool ReplayBuffer::getPrioritized() {
     return this->prioritized;
 }
 
-torch::Tensor ReplayBuffer::listToTensor(std::vector<torch::Tensor> &tensor_list) {
-    for (auto it = tensor_list.begin(); it != tensor_list.end(); it++) {
-        *it = torch::unsqueeze(*it, 0);
-    }
-    return torch::cat(tensor_list);
-}
-
 torch::Device ReplayBuffer::getDevice() {
-    // TODO bool use_cuda = (torch::cuda::is_available() and torch::cuda::device_count() >= 1);
-    // TODO return torch::Device((use_cuda == true) ? torch::kCUDA: torch::kCPU);
-    return torch::Device(torch::kCPU);
+    bool use_cuda = (torch::cuda::is_available() and torch::cuda::device_count() >= 1);
+    return torch::Device((use_cuda == true) ? torch::kCUDA: torch::kCPU);
 }
 
 torch::Tensor ReplayBuffer::getLastIndices() {

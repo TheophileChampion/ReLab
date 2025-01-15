@@ -16,7 +16,7 @@ class TestReplayBuffer:
 
     @staticmethod
     def obs(t, frame_skip=1, stack_size=4):
-        o_0 = torch.arange(0, stack_size).unsqueeze(dim=1).unsqueeze(dim=2).repeat(1, 10, 10)
+        o_0 = torch.arange(0, stack_size).unsqueeze(dim=1).unsqueeze(dim=2).repeat(1, 84, 84)
         return (o_0 + t * frame_skip) / 255
 
     @staticmethod
@@ -36,7 +36,7 @@ class TestReplayBuffer:
         # Create a replay buffer.
         frame_skip = 1
         stack_size = 4
-        buffer = ReplayBuffer(capacity=capacity, frame_skip=frame_skip, stack_size=stack_size, m_args={"n_steps": n_steps, "gamma": gamma})
+        buffer = ReplayBuffer(capacity=capacity, batch_size=capacity, frame_skip=frame_skip, stack_size=stack_size, m_args={"n_steps": n_steps, "gamma": gamma})
 
         # Create the observations at time t.
         get_obs = partial(self.obs, frame_skip=frame_skip, stack_size=stack_size)

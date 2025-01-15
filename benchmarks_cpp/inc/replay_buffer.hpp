@@ -52,6 +52,7 @@ public:
      * @param batch_size the size of the batch to sample
      * @param frame_skip the number of times each action is repeated in the environment, if None use the configuration
      * @param stack_size the number of stacked frame in each observation, if None use the configuration
+     * @param screen_size: the size of the images used by the agent to learn
      * @param p_args the prioritization arguments (None for no prioritization) composed of:
      *     - initial_priority: the maximum experience priority given to new transitions
      *     - omega: the prioritization exponent
@@ -62,7 +63,7 @@ public:
      *     - gamma: the discount factor
      */
     ReplayBuffer(
-        int capacity=10000, int batch_size=32, int frame_skip=1, int stack_size=4,
+        int capacity=10000, int batch_size=32, int frame_skip=1, int stack_size=4, int screen_size=84,
         std::map<std::string, float> p_args={}, std::map<std::string, float> m_args={}
     );
 
@@ -70,7 +71,7 @@ public:
      * Add a new experience to the buffer.
      * @param experience_tuple the experience to add
      */
-    void append(ExperienceTuple experience_tuple);
+    void append(const ExperienceTuple &experience_tuple);
 
     /**
      * Sample a batch from the replay buffer.
@@ -88,14 +89,14 @@ public:
      * @param loss the loss of all previous transitions
      * @return the new loss
      */
-    torch::Tensor report(torch::Tensor loss);
+    torch::Tensor report(torch::Tensor &loss);
 
     /**
      * Retrieve the experiences whose indices are passed as parameters.
      * @param indices the experience indices
      * @return the experiences
      */
-    Batch getExperiences(torch::Tensor indices);
+    Batch getExperiences(torch::Tensor &indices);
 
     /**
      * Retrieve the number of elements in the buffer.
@@ -113,13 +114,6 @@ public:
      * @return true if the replay buffer is prioritized, false otherwise
      */
     bool getPrioritized();
-
-    /**
-     * Transform a list of n dimensional tensors into a tensor with n+1 dimensions.
-     * @param tensor_list the list of tensors
-     * @return the output tensor
-     */
-    static torch::Tensor listToTensor(std::vector<torch::Tensor> &tensor_list);
 
     /**
      * Retrieves the device on which the computation should be performed.

@@ -22,7 +22,7 @@ DataBuffer::DataBuffer(int capacity, int n_steps, float gamma, float initial_pri
     this->current_id = 0;
 }
 
-void DataBuffer::append(ExperienceTuple experience_tuple) {
+void DataBuffer::append(const ExperienceTuple &experience_tuple) {
 
     Experience experience = Experience(experience_tuple);
 
@@ -58,7 +58,7 @@ void DataBuffer::append(ExperienceTuple experience_tuple) {
     }
 }
 
-std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> DataBuffer::operator[](torch::Tensor indices) {
+std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> DataBuffer::operator[](torch::Tensor &indices) {
     if (this->current_id >= this->capacity) {
         indices = torch::remainder(indices + this->current_id, this->capacity);
     }

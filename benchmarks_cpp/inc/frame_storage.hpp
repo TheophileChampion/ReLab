@@ -46,7 +46,7 @@ public:
      * @param frame the frame to add
      * @return the unique index of the frame that was added to the buffer
      */
-    int append(torch::Tensor frame);
+    int append(const torch::Tensor &frame);
 
     /**
      * Resize the vector of frames, i.e., increasing its size by this->capacity_incr.

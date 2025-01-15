@@ -8,7 +8,7 @@ Experience::Experience(torch::Tensor obs, int action, float reward, bool done, t
     this->next_obs = next_obs;
 }
 
-Experience::Experience(ExperienceTuple &experience) {
+Experience::Experience(const ExperienceTuple &experience) {
     this->obs = std::get<0>(experience);
     this->action = std::get<1>(experience);
     this->reward = std::get<2>(experience);

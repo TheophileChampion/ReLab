@@ -44,7 +44,7 @@ public:
      * @param done true if episode ended, false otherwise
      * @param next_obs the observation at time t + 1
      */
-    Experience(ExperienceTuple &experience);
+    Experience(const ExperienceTuple &experience);
 };
 
 #endif //EXPERIENCE_HPP

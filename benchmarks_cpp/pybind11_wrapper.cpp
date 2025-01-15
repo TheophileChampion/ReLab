@@ -13,10 +13,10 @@ PYBIND11_MODULE(cpp, m) {
     m.doc() = "A C++ module providing a fast replay buffer.";
 
     py::class_<ReplayBuffer>(m, "ReplayBuffer")
-        .def(py::init<int, int, int, int>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4)
-        .def(py::init<int, int, int, int, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "m_args"_a)
-        .def(py::init<int, int, int, int, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "p_args"_a)
-        .def(py::init<int, int, int, int, std::map<std::string, float>, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "p_args"_a, "m_args"_a)
+        .def(py::init<int, int, int, int, int>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84)
+        .def(py::init<int, int, int, int, int, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "m_args"_a)
+        .def(py::init<int, int, int, int, int, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "p_args"_a)
+        .def(py::init<int, int, int, int, int, std::map<std::string, float>, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "p_args"_a, "m_args"_a)
         .def("append", &ReplayBuffer::append, "Add an experience to the replay buffer.")
         .def("sample", &ReplayBuffer::sample, "Sample a batch from the replay buffer.")
         .def("report", &ReplayBuffer::report, "Report the loss associated with all the transitions of the previous batch.")
@@ -52,7 +52,7 @@ PYBIND11_MODULE(cpp, m) {
         .def("clear", &DataBuffer::clear, "Empty the data buffer.");
 
     py::class_<FrameBuffer>(m, "FrameBuffer")
-        .def(py::init<int, int, int, int>(), "capacity"_a, "frame_skip"_a, "n_steps"_a, "stack_size"_a)
+        .def(py::init<int, int, int, int, int>(), "capacity"_a, "frame_skip"_a, "n_steps"_a, "stack_size"_a, "screen_size"_a = 84)
         .def("append", &FrameBuffer::append, "Add the frames of the next experience to the buffer.")
         .def("get", &FrameBuffer::operator[], "Retrieve the observations of the experience whose index is passed as parameters.")
         .def("length", &FrameBuffer::size, "Retrieve the number of experiences stored in the buffer.")

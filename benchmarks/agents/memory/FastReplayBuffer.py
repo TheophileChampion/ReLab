@@ -10,13 +10,14 @@ class FastReplayBuffer:
     [2] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
     """
 
-    def __init__(self, capacity=10000, batch_size=32, frame_skip=None, stack_size=None, p_args=None, m_args=None):
+    def __init__(self, capacity=10000, batch_size=32, frame_skip=None, stack_size=None, screen_size=None, p_args=None, m_args=None):
         """
         Create a replay buffer.
         :param capacity: the number of experience the buffer can store
         :param batch_size: the size of the batch to sample
         :param frame_skip: the number of times each action is repeated in the environment, if None use the configuration
         :param stack_size: the number of stacked frame in each observation, if None use the configuration
+        :param screen_size: the size of the images used by the agent to learn
         :param p_args: the prioritization arguments (None for no prioritization) composed of:
             - initial_priority: the maximum experience priority given to new transitions
             - omega: the prioritization exponent
@@ -28,11 +29,12 @@ class FastReplayBuffer:
         """
         stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
         frame_skip = benchmarks.config("frame_skip") if frame_skip is None else frame_skip
+        screen_size = benchmarks.config("screen_size") if screen_size is None else screen_size
         p_args = {} if p_args is None else p_args
         m_args = {} if m_args is None else m_args
         self.buffer = ReplayBuffer(
             capacity=capacity, batch_size=batch_size, frame_skip=frame_skip, stack_size=stack_size,
-            p_args=p_args, m_args=m_args
+            screen_size=screen_size, p_args=p_args, m_args=m_args
         )
 
     def append(self, experience):

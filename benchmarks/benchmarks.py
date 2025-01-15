@@ -96,6 +96,7 @@ def config(key=None):
     conf = {
         "stack_size": 4,  # Number of frames per observation
         "frame_skip": 1,  # Number of times each action is repeated in the environment
+        "screen_size": 84,  # Size of the images used by the agent to learn
         "max_n_steps": 50000000,  # Maximum number of training iterations
         "checkpoint_frequency": 500000,  # Number of training iterations between two checkpoints
         "tensorboard_log_interval": 5000,  # Number of training iterations between two logging of values in tensorboard
