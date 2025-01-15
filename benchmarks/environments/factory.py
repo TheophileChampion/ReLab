@@ -17,7 +17,7 @@ def make(env_name, **kwargs):
     env = FireReset(env)
     env = AtariPreprocessing(
         env=env, noop_max=0, frame_skip=config["frame_skip"],
-        screen_size=84, grayscale_obs=True, scale_obs=True
+        screen_size=config["screen_size"], grayscale_obs=True, scale_obs=True
     )
     env = FrameStackObservation(env, config["stack_size"])
     env = NumpyToTorch(env)

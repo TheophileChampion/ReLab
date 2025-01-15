@@ -14,7 +14,7 @@ class TestFrameBuffer:
 
     @staticmethod
     def obs(t, frame_skip, stack_size):
-        o_0 = torch.arange(0, stack_size).unsqueeze(dim=1).unsqueeze(dim=2).repeat(1, 10, 10)
+        o_0 = torch.arange(0, stack_size).unsqueeze(dim=1).unsqueeze(dim=2).repeat(1, 84, 84)
         return (o_0 + t * frame_skip) / 255
 
     @pytest.mark.parametrize("capacity, frame_skip, n_steps, stack_size", [
@@ -54,20 +54,22 @@ class TestFrameBuffer:
             buffer.append(experiences[t])
 
         # Check that experiences in the frame buffer are as expected.
+        indices = torch.tensor([t for t in range(capacity)])
+        obs_t, obs_tn = buffer[indices]
         for t in range(capacity):
-            obs_t, obs_tn = buffer[t]
-            assert torch.all(torch.eq(result_experiences[t].obs, obs_t)).item()
-            assert torch.all(torch.eq(result_experiences[t].next_obs, obs_tn)).item()
+            assert torch.all(torch.eq(result_experiences[t].obs, obs_t[t])).item()
+            assert torch.all(torch.eq(result_experiences[t].next_obs, obs_tn[t])).item()
 
         # Keep pushing experiences to the buffer, effectively replacing all experiences in the frame buffer.
         for t in range(capacity - 1):
             buffer.append(experiences[capacity + t])
 
         # Check that the new experiences in the frame buffer are as expected.
+        indices = torch.tensor([t for t in range(capacity)])
+        obs_t, obs_tn = buffer[indices]
         for t in range(capacity - n_steps + 1):
-            obs_t, obs_tn = buffer[t]
-            assert torch.all(torch.eq(result_experiences[capacity - n_steps + t].obs, obs_t)).item()
-            assert torch.all(torch.eq(result_experiences[capacity - n_steps + t].next_obs, obs_tn)).item()
+            assert torch.all(torch.eq(result_experiences[capacity - n_steps + t].obs, obs_t[t])).item()
+            assert torch.all(torch.eq(result_experiences[capacity - n_steps + t].next_obs, obs_tn[t])).item()
 
     @pytest.mark.parametrize("capacity, frame_skip, n_steps, stack_size", [
         (5, 1, 1, 2), (5, 1, 1, 4), (5, 1, 2, 4), (5, 2, 2, 4),
@@ -101,22 +103,27 @@ class TestFrameBuffer:
             buffer.append(experiences[t])
 
         # Check that experiences in the frame buffer are as expected.
+        indices = torch.tensor([t for t in range(capacity)])
+        obs_t, obs_tn = buffer[indices]
         for t in range(capacity):
-            obs_t, obs_tn = buffer[t]
-            assert torch.all(torch.eq(result_experiences[t].obs, obs_t)).item()
-            assert torch.all(torch.eq(result_experiences[t].next_obs, obs_tn)).item()
+            assert torch.all(torch.eq(result_experiences[t].obs, obs_t[t])).item()
+            assert torch.all(torch.eq(result_experiences[t].next_obs, obs_tn[t])).item()
 
         # Keep pushing experiences to the buffer, effectively replacing all experiences in the frame buffer.
         for t in range(capacity):
             buffer.append(experiences[t + n_experiences])
 
         # Check that the new experiences in the frame buffer are as expected.
+        indices = torch.tensor([t for t in range(capacity)])
+        obs_t, obs_tn = buffer[indices]
         for t in range(capacity):
-            obs_t, obs_tn = buffer[t]
-            assert torch.all(torch.eq(result_experiences[capacity + t].obs, obs_t)).item()
-            assert torch.all(torch.eq(result_experiences[capacity + t].next_obs, obs_tn)).item()
+            assert torch.all(torch.eq(result_experiences[capacity + t].obs, obs_t[t])).item()
+            assert torch.all(torch.eq(result_experiences[capacity + t].next_obs, obs_tn[t])).item()
 
-    def test_png_encoding(self):
+    def test_encoding_and_decoding(self):
+
+        # Create a frame buffer.
+        buffer = FrameBuffer(capacity=8, frame_skip=1, n_steps=1, stack_size=4)
 
         for i in range(256):
 
@@ -124,8 +131,8 @@ class TestFrameBuffer:
             frame = i / 255 * torch.ones([84, 84], dtype=torch.float)
 
             # Encode and decode the i-th frame.
-            encoded_frame = FrameBuffer.encode(frame)
-            decoded_frame = FrameBuffer.decode(encoded_frame)
+            encoded_frame = buffer.encode(frame)
+            decoded_frame = buffer.decode(encoded_frame)
 
             # Check that the initial and decoded frames are identical.
             assert torch.all(torch.eq(frame, decoded_frame)).item()

@@ -9,6 +9,7 @@ from collections import deque
 from enum import IntEnum
 from functools import partial
 from os.path import exists, isdir, isfile, join
+import psutil
 
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
@@ -49,6 +50,11 @@ class AgentInterface(ABC):
 
         # The number of training steps performed.
         self.current_step = 0
+
+        # The current process, as well as queue used to track the memory usage of the program.
+        self.process = psutil.Process()
+        self.virtual_memory = deque(maxlen=self.max_queue_len)
+        self.residential_memory = deque(maxlen=self.max_queue_len)
 
         # Create the queue containing the last episodic rewards.
         self.episodic_rewards = deque(maxlen=self.max_queue_len)
@@ -140,6 +146,11 @@ class AgentInterface(ABC):
         :param done: whether the episode ended
         """
 
+        # Keep track of the memory usage of the program.
+        info = self.process.memory_info()
+        self.virtual_memory.append(info.vms)
+        self.residential_memory.append(info.rss)
+
         # Keep track of time elapsed since last training iteration.
         now = time.time() * 1000
         if self.last_time is not None:
@@ -161,6 +172,11 @@ class AgentInterface(ABC):
         """
         Log the agent performance in tensorboard, if the internal queue
         """
+
+        # Log the mean time elapsed between two training iterations.
+        if len(self.virtual_memory) >= 2:
+            self.writer.add_scalar("mean_virtual_memory_gb", np.mean(list(self.virtual_memory)) / 1e9, self.current_step)
+            self.writer.add_scalar("mean_residential_memory_gb", np.mean(list(self.residential_memory)) / 1e9, self.current_step)
 
         # Log the mean time elapsed between two training iterations.
         if len(self.time_elapsed) >= 2:
@@ -226,7 +242,7 @@ class AgentInterface(ABC):
         m_args = {"n_steps": n_steps, "gamma": gamma}
         p_args = {"initial_priority": 1e9, "omega": omega, "omega_is": omega_is}
         return {
-            ReplayType.DEFAULT: partial(ReplayBuffer),
+            ReplayType.DEFAULT: ReplayBuffer,
             ReplayType.PRIORITIZED: partial(ReplayBuffer, p_args=p_args),
             ReplayType.MULTISTEP: partial(ReplayBuffer, m_args=m_args),
             ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, m_args=m_args, p_args=p_args),

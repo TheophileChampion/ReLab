@@ -1,6 +1,8 @@
 import pytest
 import math
 
+import torch
+
 from benchmarks.agents.memory.DataBuffer import DataBuffer
 from benchmarks.agents.memory.ReplayBuffer import Experience
 
@@ -29,10 +31,10 @@ class TestDataBuffer:
 
         # Create the experiences at time t.
         experiences = [
-            Experience(obs=None, action=t, reward=t, done=(t == capacity - 1), next_obs=None)
+            Experience(obs=torch.zeros([4, 10, 10]), action=t, reward=t, done=(t == capacity - 1), next_obs=torch.zeros([4, 10, 10]))
             for t in range(capacity)
         ] + [
-            Experience(obs=None, action=t, reward=t, done=(t == capacity - 1), next_obs=None)
+            Experience(obs=torch.zeros([4, 10, 10]), action=t, reward=t, done=(t == capacity - 1), next_obs=torch.zeros([4, 10, 10]))
             for t in range(capacity - 1)
         ]
 
@@ -43,8 +45,8 @@ class TestDataBuffer:
                 tn = min(t + n_steps, capacity)
                 tn1 = min(t + n_steps - 1, capacity - 1)
                 result_experiences.append(Experience(
-                    obs=None, action=t, reward=self.n_steps_reward(t, 1, gamma, tn - t),
-                    done=(tn1 == capacity - 1), next_obs=None
+                    obs=torch.zeros([4, 10, 10]), action=t, reward=self.n_steps_reward(t, 1, gamma, tn - t),
+                    done=(tn1 == capacity - 1), next_obs=torch.zeros([4, 10, 10])
                 ))
 
         # Fill the buffer with experiences.
@@ -52,10 +54,11 @@ class TestDataBuffer:
             buffer.append(experiences[t])
 
         # Check that experiences in the frame buffer are as expected.
-        actions, rewards, dones = buffer[[t for t in range(capacity)]]
+        indices = torch.tensor([t for t in range(capacity)])
+        actions, rewards, dones = buffer[indices]
         for t in range(capacity):
             assert actions[t] == result_experiences[t].action
-            assert rewards[t] == result_experiences[t].reward
+            assert abs(rewards[t].item() - result_experiences[t].reward) < 1e-5
             assert dones[t] == result_experiences[t].done
 
         # Keep pushing experiences to the buffer, effectively replacing all experiences in the frame buffer.
@@ -63,10 +66,11 @@ class TestDataBuffer:
             buffer.append(experiences[capacity + t])
 
         # Check that the new experiences in the frame buffer are as expected.
-        actions, rewards, dones = buffer[[t for t in range(capacity)]]
+        indices = torch.tensor([t for t in range(capacity)])
+        actions, rewards, dones = buffer[indices]
         for t in range(capacity - n_steps + 1):
             assert actions[t] == result_experiences[capacity - n_steps + t].action
-            assert rewards[t] == result_experiences[capacity - n_steps + t].reward
+            assert abs(rewards[t].item() - result_experiences[capacity - n_steps + t].reward) < 1e-5
             assert dones[t] == result_experiences[capacity - n_steps + t].done
 
     @pytest.mark.parametrize("capacity, n_steps, gamma", [
@@ -81,13 +85,13 @@ class TestDataBuffer:
 
         # Create the experiences at time t.
         experiences = [
-            Experience(obs=None, action=t, reward=t, done=False, next_obs=None)
+            Experience(obs=torch.zeros([4, 10, 10]), action=t, reward=t, done=False, next_obs=torch.zeros([4, 10, 10]))
             for t in range(2 * capacity + n_steps - 1)
         ]
 
         # Create the multistep experiences at time t (experiences expected to be returned by the data buffer).
         result_experiences = [
-            Experience(obs=None, action=t, reward=self.n_steps_reward(t, 1, gamma, n_steps), done=False, next_obs=None)
+            Experience(obs=torch.zeros([4, 10, 10]), action=t, reward=self.n_steps_reward(t, 1, gamma, n_steps), done=False, next_obs=torch.zeros([4, 10, 10]))
             for t in range(2 * capacity)
         ]
 
@@ -97,10 +101,11 @@ class TestDataBuffer:
             buffer.append(experiences[t])
 
         # Check that experiences in the frame buffer are as expected.
-        actions, rewards, dones = buffer[[t for t in range(capacity)]]
+        indices = torch.tensor([t for t in range(capacity)])
+        actions, rewards, dones = buffer[indices]
         for t in range(capacity):
             assert actions[t] == result_experiences[t].action
-            assert rewards[t] == result_experiences[t].reward
+            assert abs(rewards[t].item() - result_experiences[t].reward) < 1e-5
             assert dones[t] == result_experiences[t].done
 
         # Keep pushing experiences to the buffer, effectively replacing all experiences in the frame buffer.
@@ -108,8 +113,9 @@ class TestDataBuffer:
             buffer.append(experiences[t + n_experiences])
 
         # Check that the new experiences in the frame buffer are as expected.
-        actions, rewards, dones = buffer[[t for t in range(capacity)]]
+        indices = torch.tensor([t for t in range(capacity)])
+        actions, rewards, dones = buffer[indices]
         for t in range(capacity):
             assert actions[t] == result_experiences[t + capacity].action
-            assert rewards[t] == result_experiences[t + capacity].reward
+            assert abs(rewards[t].item() - result_experiences[t + capacity].reward) < 1e-5
             assert dones[t] == result_experiences[t + capacity].done

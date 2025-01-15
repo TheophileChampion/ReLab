@@ -1,11 +1,14 @@
 import os
 import random
-from os.path import join
+from os.path import join, isfile
+import invoke
 
 import gymnasium as gym
 import ale_py
 import numpy as np
 import torch
+
+from benchmarks.helpers.FileSystem import FileSystem
 
 
 def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=False):
@@ -55,6 +58,28 @@ def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=
     torch.manual_seed(seed)
 
 
+def build_cpp_library_and_wrapper(cpp_library_name="benchmarks", python_module_name="cpp"):
+    """
+    Build the C++ shared library and the python module wrapping the library.
+    :param cpp_library_name: the name of the shared library to create
+    :param python_module_name: the name of the python module
+    """
+
+    # Check if the shared libraries already exist.
+    build_directory = os.environ["BUILD_DIRECTORY"]
+    shared_library = join(build_directory, f"lib{cpp_library_name}.so")
+    module_directory = os.environ["CPP_MODULE_DIRECTORY"]
+    files = FileSystem.files_in(module_directory, fr"^{python_module_name}.*")
+    if isfile(shared_library) and len(files) != 0:
+        return
+
+    # Create the shared libraries.
+    invoke.run(
+        f"mkdir -p {build_directory} && cd {build_directory} && cmake .. && make && cd .. "
+        f"&& mv ./build/libbenchmarks_wrapper.so {module_directory}/{python_module_name}`python3.12-config --extension-suffix`"
+    )
+
+
 def device():
     """
     Retrieves the device on which the computation should be performed.
@@ -72,6 +97,8 @@ def config(key=None):
     conf = {
         "stack_size": 4,  # Number of frames per observation
         "frame_skip": 1,  # Number of times each action is repeated in the environment
+        "screen_size": 84,  # Size of the images used by the agent to learn
+        "compress_images": True,  # True, if in-memory compression must be performed, False otherwise
         "max_n_steps": 50000000,  # Maximum number of training iterations
         "checkpoint_frequency": 500000,  # Number of training iterations between two checkpoints
         "tensorboard_log_interval": 5000,  # Number of training iterations between two logging of values in tensorboard
