@@ -41,7 +41,7 @@ private:
     bool new_episode;
 
     // A compressor to encode and decode the stored frames, and a thread pool to parallelize the decompression.
-    ZCompressor png;
+    std::unique_ptr<Compressor> png;
     ThreadPool pool;
 
 public:
@@ -53,9 +53,13 @@ public:
      * @param n_steps the number of steps for which rewards are accumulated in multistep Q-learning
      * @param stack_size the number of stacked frame in each observation
      * @param screen_size: the size of the images used by the agent to learn
+     * @param type the type of compression to use
      * @param n_threads the number of threads to use for speeding up the decompression of tensors
      */
-    FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size, int screen_size=84, int n_threads=1);
+    FrameBuffer(
+        int capacity, int frame_skip, int n_steps, int stack_size, int screen_size=84,
+        CompressorType type=CompressorType::ZLIB, int n_threads=1
+    );
 
     /**
      * Add the frames of the next experience to the buffer.

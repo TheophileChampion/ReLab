@@ -3,6 +3,7 @@
 
 #include <torch/extension.h>
 #include "frame_buffer.hpp"
+#include "compressors.hpp"
 #include "data_buffer.hpp"
 #include "experience.hpp"
 
@@ -53,6 +54,7 @@ public:
      * @param frame_skip the number of times each action is repeated in the environment, if None use the configuration
      * @param stack_size the number of stacked frame in each observation, if None use the configuration
      * @param screen_size: the size of the images used by the agent to learn
+     * @param type the type of compression to use
      * @param p_args the prioritization arguments (None for no prioritization) composed of:
      *     - initial_priority: the maximum experience priority given to new transitions
      *     - omega: the prioritization exponent
@@ -63,7 +65,8 @@ public:
      *     - gamma: the discount factor
      */
     ReplayBuffer(
-        int capacity=10000, int batch_size=32, int frame_skip=1, int stack_size=4, int screen_size=84,
+        int capacity=10000, int batch_size=32, int frame_skip=1, int stack_size=4,
+        int screen_size=84, CompressorType type=CompressorType::ZLIB,
         std::map<std::string, float> p_args={}, std::map<std::string, float> m_args={}
     );
 

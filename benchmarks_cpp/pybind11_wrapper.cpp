@@ -3,6 +3,7 @@
 #include "priority_tree.hpp"
 #include "frame_buffer.hpp"
 #include "data_buffer.hpp"
+#include "compressors.hpp"
 #include "deque.hpp"
 
 namespace py = pybind11;
@@ -12,11 +13,15 @@ PYBIND11_MODULE(cpp, m) {
 
     m.doc() = "A C++ module providing a fast replay buffer.";
 
+    py::enum_<CompressorType>(m, "CompressorType")
+        .value("RAW", CompressorType::RAW)
+        .value("ZLIB", CompressorType::ZLIB);
+
     py::class_<ReplayBuffer>(m, "ReplayBuffer")
-        .def(py::init<int, int, int, int, int>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84)
-        .def(py::init<int, int, int, int, int, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "m_args"_a)
-        .def(py::init<int, int, int, int, int, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "p_args"_a)
-        .def(py::init<int, int, int, int, int, std::map<std::string, float>, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "p_args"_a, "m_args"_a)
+        .def(py::init<int, int, int, int, int, CompressorType>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "type"_a = CompressorType::ZLIB)
+        .def(py::init<int, int, int, int, int, CompressorType, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "type"_a = CompressorType::ZLIB, "m_args"_a)
+        .def(py::init<int, int, int, int, int, CompressorType, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "type"_a = CompressorType::ZLIB, "p_args"_a)
+        .def(py::init<int, int, int, int, int, CompressorType, std::map<std::string, float>, std::map<std::string, float>>(), "capacity"_a = 10000, "batch_size"_a = 32, "frame_skip"_a = 1, "stack_size"_a = 4, "screen_size"_a = 84, "type"_a = CompressorType::ZLIB, "p_args"_a, "m_args"_a)
         .def("append", &ReplayBuffer::append, "Add an experience to the replay buffer.")
         .def("sample", &ReplayBuffer::sample, "Sample a batch from the replay buffer.")
         .def("report", &ReplayBuffer::report, "Report the loss associated with all the transitions of the previous batch.")
@@ -69,5 +74,4 @@ PYBIND11_MODULE(cpp, m) {
         .def("pop", &Deque<int>::pop_back, "Remove an elements from the end of the deque.")
         .def("pop_left", &Deque<int>::pop_front, "Remove an elements from the front of the deque.")
         .def("length", &Deque<int>::size, "Return the size of the deque.");
-
 }

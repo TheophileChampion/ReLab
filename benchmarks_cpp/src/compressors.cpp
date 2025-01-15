@@ -1,6 +1,50 @@
 #include "compressors.hpp"
 #include "replay_buffer.hpp"
 
+/**
+ * Implementation of the Compressor methods.
+ */
+
+std::unique_ptr<Compressor> Compressor::create(int height, int width, CompressorType type) {
+    if (type == CompressorType::RAW) {
+        return std::make_unique<NoCompression>(height, width);
+    } else {
+        return std::make_unique<ZCompressor>(height, width);
+    }
+}
+
+Compressor::~Compressor() {}
+
+int Compressor::size_of(const torch::Tensor &tensor) const {
+    return tensor.numel() * torch::elementSize(torch::typeMetaToScalarType(tensor.dtype()));
+}
+
+/**
+ * Implementation of the NoCompressor methods.
+ */
+
+NoCompression::NoCompression(int height, int width) {
+    this->uncompressed_size = height * width * sizeof(float);
+}
+
+NoCompression::~NoCompression() {}
+
+torch::Tensor NoCompression::encode(const torch::Tensor &input) {
+    return input;
+}
+
+torch::Tensor NoCompression::decode(const torch::Tensor &input) {
+    return input;
+}
+
+void NoCompression::decode(const torch::Tensor &input, float *output) {
+    std::memcpy((void *)output, input.data_ptr(), this->uncompressed_size);
+}
+
+/**
+ * Implementation of the ZCompressor methods.
+ */
+
 ZCompressor::ZCompressor(int height, int width) {
 
     // Initialize the zlib deflate stream.
@@ -18,6 +62,8 @@ ZCompressor::ZCompressor(int height, int width) {
     this->max_compressed_size = this->uncompressed_size + (this->n_dims + 1) * sizeof(int);
     this->compressed_output.resize(this->max_compressed_size / sizeof(float));
 }
+
+ZCompressor::~ZCompressor() {}
 
 torch::Tensor ZCompressor::encode(const torch::Tensor &input) {
 
@@ -61,8 +107,4 @@ void ZCompressor::decode(const torch::Tensor &input, float *output) {
     inflateInit(&inflate_stream);
     inflate(&inflate_stream, Z_NO_FLUSH);
     inflateEnd(&inflate_stream);
-}
-
-int ZCompressor::size_of(const torch::Tensor &tensor) const {
-    return tensor.numel() * torch::elementSize(torch::typeMetaToScalarType(tensor.dtype()));
 }

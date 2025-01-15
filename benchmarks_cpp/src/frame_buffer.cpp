@@ -4,11 +4,12 @@
 
 using namespace torch::indexing;
 
-FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size, int screen_size, int n_threads)
-    : device(ReplayBuffer::getDevice()),
-      frame_skip(frame_skip), stack_size(stack_size), capacity(capacity), n_steps(n_steps), screen_size(screen_size),
-      frames(FrameStorage(capacity)), past_references(n_steps + 1),
-      png(screen_size, screen_size), pool(n_threads) {
+FrameBuffer::FrameBuffer(
+    int capacity, int frame_skip, int n_steps, int stack_size, int screen_size,
+    CompressorType type, int n_threads
+) : device(ReplayBuffer::getDevice()), frame_skip(frame_skip), stack_size(stack_size),
+    capacity(capacity), n_steps(n_steps), screen_size(screen_size),
+    frames(FrameStorage(capacity)), past_references(n_steps + 1), pool(n_threads) {
 
     // A list storing the observation references of each experience.
     std::vector<int> references_t(capacity);
@@ -16,6 +17,9 @@ FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_si
     std::vector<int> references_tn(capacity);
     this->references_tn = std::move(references_tn);
     this->current_ref = 0;
+
+    // Create the compressor used to compress and decompress the tensors.
+    this->png = Compressor::create(screen_size, screen_size, type);
 
     // A boolean keeping track of whether the next experience is the beginning of a new episode.
     this->new_episode = true;
@@ -97,14 +101,14 @@ std::tuple<torch::Tensor, torch::Tensor> FrameBuffer::operator[](const torch::Te
         this->pool.push([this, obs_batch_ptr, reference_t, frame_size] {
             float *ptr = obs_batch_ptr;
             for (auto j = 0; j < this->stack_size; j++) {
-                this->png.decode(this->frames[reference_t + j], ptr);
+                this->png->decode(this->frames[reference_t + j], ptr);
                 ptr += frame_size;
             }
         });
         this->pool.push([this, next_obs_batch_ptr, reference_tn, frame_size] {
             float *ptr = next_obs_batch_ptr;
             for (auto j = 0; j < this->stack_size; j++) {
-                this->png.decode(this->frames[reference_tn + j], ptr);
+                this->png->decode(this->frames[reference_tn + j], ptr);
                 ptr += frame_size;
             }
         });
@@ -157,9 +161,9 @@ int FrameBuffer::firstReference() {
 }
 
 torch::Tensor FrameBuffer::encode(const torch::Tensor &frame) {
-    return this->png.encode(frame);
+    return this->png->encode(frame);
 }
 
 torch::Tensor FrameBuffer::decode(const torch::Tensor &frame) {
-    return this->png.decode(frame);
+    return this->png->decode(frame);
 }

@@ -1,5 +1,5 @@
 from benchmarks import benchmarks
-from benchmarks.agents.memory.cpp import ReplayBuffer
+from benchmarks.agents.memory.cpp import ReplayBuffer, CompressorType
 
 
 class FastReplayBuffer:
@@ -30,11 +30,13 @@ class FastReplayBuffer:
         stack_size = benchmarks.config("stack_size") if stack_size is None else stack_size
         frame_skip = benchmarks.config("frame_skip") if frame_skip is None else frame_skip
         screen_size = benchmarks.config("screen_size") if screen_size is None else screen_size
+        compressor_type = CompressorType.ZLIB if benchmarks.config("compress_images") is True else CompressorType.RAW
+
         p_args = {} if p_args is None else p_args
         m_args = {} if m_args is None else m_args
         self.buffer = ReplayBuffer(
             capacity=capacity, batch_size=batch_size, frame_skip=frame_skip, stack_size=stack_size,
-            screen_size=screen_size, p_args=p_args, m_args=m_args
+            screen_size=screen_size, type=compressor_type, p_args=p_args, m_args=m_args
         )
 
     def append(self, experience):

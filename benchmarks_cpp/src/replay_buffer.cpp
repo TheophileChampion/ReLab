@@ -5,7 +5,7 @@
 #include "replay_buffer.hpp"
 
 ReplayBuffer::ReplayBuffer(
-    int capacity, int batch_size, int frame_skip, int stack_size, int screen_size,
+    int capacity, int batch_size, int frame_skip, int stack_size, int screen_size, CompressorType type,
     std::map<std::string, float> p_args, std::map<std::string, float> m_args
 ): device(ReplayBuffer::getDevice()) {
 
@@ -53,10 +53,14 @@ ReplayBuffer::ReplayBuffer(
 
     // The buffer storing the frames of all experiences.
     int n_threads = std::min(static_cast<int>(thread::hardware_concurrency()), batch_size);
-    this->observations = std::make_unique<FrameBuffer>(this->capacity, this->frame_skip, this->n_steps, this->stack_size, screen_size, n_threads);
+    this->observations = std::make_unique<FrameBuffer>(
+        this->capacity, this->frame_skip, this->n_steps, this->stack_size, screen_size, type, n_threads
+    );
 
     // The buffer storing the data (i.e., actions, rewards, dones and priorities) of all experiences.
-    this->data = std::make_unique<DataBuffer>(this->capacity, this->n_steps, this->gamma, this->initial_priority, this->n_children);
+    this->data = std::make_unique<DataBuffer>(
+        this->capacity, this->n_steps, this->gamma, this->initial_priority, this->n_children
+    );
 
     // TODO
     std::cout << "capacity: "<< this->capacity << " batch_size: " << this->batch_size << " stack_size: " << this->stack_size
