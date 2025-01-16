@@ -12,3 +12,4 @@ torchvision==0.20.1
 pybind11==2.13.6
 invoke==2.2.0
 psutil==6.1.1
+numpy==2.2.1
