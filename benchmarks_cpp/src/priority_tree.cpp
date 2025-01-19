@@ -1,4 +1,6 @@
 #include "priority_tree.hpp"
+#include "serialize.hpp"
+#include "debug.hpp"
 #include <cmath>
 
 using namespace torch::indexing;
@@ -29,7 +31,7 @@ SumTree PriorityTree::createSumTree(int depth, int n_children) {
 
     for (auto i = depth - 1; i >= 0; i--) {
         int n = std::pow(n_children, i);
-        std::vector<long double> row(n);
+        std::vector<double> row(n);
         tree.push_back(std::move(row));
     }
     return tree;
@@ -268,23 +270,24 @@ float PriorityTree::maxChildValue(int depth, int parent_index, int index, float 
     return max_value;
 }
 
-std::string PriorityTree::maxTreeToStr() {
+std::string PriorityTree::maxTreeToStr(int max_n_elements) {
 
     int n = static_cast<int>(this->max_tree.size());
+    if (max_n_elements == -1) {
+        max_n_elements = n;
+    }
     std::string tree_str = "[";
 
     // Iterate over all sub-lists.
     for (auto i = 0; i < n; i++) {
 
         // Open the bracket in the string.
-        if (i != 0)
-            tree_str += ", [";
-        else
-            tree_str += "[";
+        tree_str += ((i != 0) ? ", [" : "[");
 
         // Iterate over all elements.
         int m = this->max_tree[i].numel();
-        for (auto j = 0; j < m; j++) {
+        int max_j = std::min(m, max_n_elements);
+        for (auto j = 0; j < max_j; j++) {
 
             // Add all elements to the string.
             if (j != 0)
@@ -292,29 +295,33 @@ std::string PriorityTree::maxTreeToStr() {
             tree_str += this->toString(this->max_tree[i].index({j}).item<float>());
         }
 
-        // Close the bracket in the string.
+        // Close the bracket in the string, adding an ellipse if only part of inner tensor was displayed.
+        if (max_n_elements != m) {
+            tree_str += ((max_n_elements != 0) ? " ..." : "...");
+        }
         tree_str += "]";
     }
     return tree_str + "]";
 }
 
-std::string PriorityTree::sumTreeToStr() {
+std::string PriorityTree::sumTreeToStr(int max_n_elements) {
 
     int n = static_cast<int>(this->sum_tree.size());
+    if (max_n_elements == -1) {
+        max_n_elements = n;
+    }
     std::string tree_str = "[";
 
     // Iterate over all sub-lists.
     for (auto i = 0; i < n; i++) {
 
         // Open the bracket in the string.
-        if (i != 0)
-            tree_str += ", [";
-        else
-            tree_str += "[";
+        tree_str += ((i != 0) ? ", [" : "[");
 
         // Iterate over all elements.
         int m = static_cast<int>(this->sum_tree[i].size());
-        for (auto j = 0; j < m; j++) {
+        int max_j = std::min(m, max_n_elements);
+        for (auto j = 0; j < max_j; j++) {
 
             // Add all elements to the string.
             if (j != 0)
@@ -322,7 +329,10 @@ std::string PriorityTree::sumTreeToStr() {
             tree_str += this->toString(static_cast<float>(this->sum_tree[i][j]));
         }
 
-        // Close the bracket in the string.
+        // Close the bracket in the string, adding an ellipse if only part of inner vector was displayed.
+        if (max_n_elements != m) {
+            tree_str += ((max_n_elements != 0) ? " ..." : "...");
+        }
         tree_str += "]";
     }
     return tree_str + "]";
@@ -333,4 +343,56 @@ std::string PriorityTree::toString(float value, int precision) {
     out.precision(precision);
     out << std::fixed << value;
     return out.str();
+}
+
+void PriorityTree::load(std::istream &checkpoint) {
+
+    // Load the priority tree from the checkpoint.
+    this->initial_priority = serialize::load_value<float>(checkpoint);
+    this->capacity = serialize::load_value<int>(checkpoint);
+    this->n_children = serialize::load_value<int>(checkpoint);
+    this->depth = serialize::load_value<int>(checkpoint);
+    this->current_id = serialize::load_value<int>(checkpoint);
+    this->need_refresh_all = serialize::load_value<bool>(checkpoint);
+    this->priorities = serialize::load_tensor<float>(checkpoint);
+    this->sum_tree.clear();
+    this->sum_tree.reserve(this->depth);
+    for (auto i = 0; i < this->depth; i++) {
+        this->sum_tree.push_back(serialize::load_vector<double>(checkpoint));
+    }
+    this->max_tree = serialize::load_vector<torch::Tensor, float>(checkpoint);
+}
+
+void PriorityTree::save(std::ostream &checkpoint) {
+
+    // Save the priority tree in the checkpoint.
+    serialize::save_value(this->initial_priority, checkpoint);
+    serialize::save_value(this->capacity, checkpoint);
+    serialize::save_value(this->n_children, checkpoint);
+    serialize::save_value(this->depth, checkpoint);
+    serialize::save_value(this->current_id, checkpoint);
+    serialize::save_value(this->need_refresh_all, checkpoint);
+    serialize::save_tensor<float>(this->priorities, checkpoint);
+    for (auto i = 0; i < this->depth; i++) {
+        serialize::save_vector(this->sum_tree[i], checkpoint);
+    }
+    serialize::save_vector<torch::Tensor, float>(this->max_tree, checkpoint);
+}
+
+void PriorityTree::print(bool verbose, const std::string &prefix) {
+
+    // Display the most important information about the data buffer.
+    std::cout << "PriorityTree[initial_priority: " << this->initial_priority << ", capacity: " << this->capacity
+              << ", n_children: " << this->n_children << ", depth: " << this->depth << ", current_id: " << this->current_id
+              << ", need_refresh_all: ";
+    debug::print_bool(this->need_refresh_all);
+    std::cout << "]" << std::endl;
+
+    // Display optional information about the data buffer.
+    if (verbose == true) {
+        std::cout << prefix << " #-> priorities = ";
+        debug::print_tensor<float>(this->priorities, 10);
+        std::cout << prefix << " #-> sum_tree = " << this->sumTreeToStr(3) << std::endl;
+        std::cout << prefix << " #-> max_tree = " << this->maxTreeToStr(3) << std::endl;
+    }
 }

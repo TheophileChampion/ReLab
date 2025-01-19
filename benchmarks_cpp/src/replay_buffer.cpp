@@ -3,6 +3,8 @@
 #include <random>
 #include <cmath>
 #include "replay_buffer.hpp"
+#include "serialize.hpp"
+#include "debug.hpp"
 
 ReplayBuffer::ReplayBuffer(
     int capacity, int batch_size, int frame_skip, int stack_size, int screen_size, CompressorType type,
@@ -61,12 +63,6 @@ ReplayBuffer::ReplayBuffer(
     this->data = std::make_unique<DataBuffer>(
         this->capacity, this->n_steps, this->gamma, this->initial_priority, this->n_children
     );
-
-    // TODO
-    std::cout << "capacity: "<< this->capacity << " batch_size: " << this->batch_size << " stack_size: " << this->stack_size
-              << " frame_skip: " << this->frame_skip << " gamma: " << this->gamma << " n_steps: " << this->n_steps
-              << " initial_priority: " << this->initial_priority << " n_children: " << this->n_children
-              << " omega: " << this->omega << " omega_is: " << this->omega_is << " prioritized: " << this->prioritized << std::endl;
 }
 
 void ReplayBuffer::append(const ExperienceTuple &experience_tuple) {
@@ -124,6 +120,75 @@ torch::Tensor ReplayBuffer::report(torch::Tensor &loss) {
     torch::Tensor weights = this->size() * priorities.to(this->device) / sum_priorities;
     weights = torch::pow(weights, -this->omega_is);
     return loss * weights / weights.max();
+}
+
+void ReplayBuffer::load(const std::string &checkpoint_path) {
+
+    // Open the checkpoint file.
+    std::ifstream checkpoint;
+    checkpoint.open(checkpoint_path);
+
+    // Read the replay buffer from the checkpoint file.
+    this->prioritized = serialize::load_value<bool>(checkpoint);
+    this->capacity = serialize::load_value<int>(checkpoint);
+    this->batch_size = serialize::load_value<int>(checkpoint);
+    this->stack_size = serialize::load_value<int>(checkpoint);
+    this->frame_skip = serialize::load_value<int>(checkpoint);
+    this->gamma = serialize::load_value<float>(checkpoint);
+    this->n_steps = serialize::load_value<int>(checkpoint);
+    this->initial_priority = serialize::load_value<float>(checkpoint);
+    this->n_children = serialize::load_value<int>(checkpoint);
+    this->omega = serialize::load_value<float>(checkpoint);
+    this->omega_is = serialize::load_value<float>(checkpoint);
+    this->observations->load(checkpoint);
+    this->data->load(checkpoint);
+    this->indices = serialize::load_tensor<long>(checkpoint);
+}
+
+void ReplayBuffer::save(const std::string &checkpoint_path) {
+
+    // Open the checkpoint file.
+    std::ofstream checkpoint;
+    checkpoint.open(checkpoint_path);
+
+    // Write the replay buffer in the checkpoint file.
+    serialize::save_value(this->prioritized, checkpoint);
+    serialize::save_value(this->capacity, checkpoint);
+    serialize::save_value(this->batch_size, checkpoint);
+    serialize::save_value(this->stack_size, checkpoint);
+    serialize::save_value(this->frame_skip, checkpoint);
+    serialize::save_value(this->gamma, checkpoint);
+    serialize::save_value(this->n_steps, checkpoint);
+    serialize::save_value(this->initial_priority, checkpoint);
+    serialize::save_value(this->n_children, checkpoint);
+    serialize::save_value(this->omega, checkpoint);
+    serialize::save_value(this->omega_is, checkpoint);
+    this->observations->save(checkpoint);
+    this->data->save(checkpoint);
+    serialize::save_tensor<long>(this->indices, checkpoint);
+}
+
+void ReplayBuffer::print(bool verbose) {
+
+    // Display the most important information about the replay buffer.
+    std::cout << "ReplayBuffer[prioritized: ";
+    debug::print_bool(this->prioritized);
+    std::cout << ", capacity: " << this->capacity
+              << ", batch_size: " << this->batch_size << ", stack_size: " << this->stack_size
+              << ", frame_skip: " << this->frame_skip << ", gamma: " << this->gamma
+              << ", n_steps: " << this->n_steps << ", initial_priority: " << this->initial_priority
+              << ", n_children: " << this->n_children << ", omega: " << this->omega
+              << ", omega_is: " << this->omega_is << "]" << std::endl;
+
+    // Display optional information about the replay buffer.
+    if (verbose == true) {
+        std::cout << " #-> indices = ";
+        debug::print_tensor<long>(this->indices);
+        std::cout << " #-> observations: ";
+        this->observations->print(verbose, "     ");
+        std::cout << " #-> data: ";
+        this->data->print(verbose, "     ");
+    }
 }
 
 Batch ReplayBuffer::getExperiences(torch::Tensor &indices) {

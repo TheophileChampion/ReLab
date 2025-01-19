@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 import torch
+import logging
 
 import benchmarks
 from benchmarks import agents
@@ -42,9 +43,9 @@ def describe(parameters, n_copies=1, memory_unit="GB"):
     # Display the parameter summary on the standard output.
     if all([dtype == dtypes[0] for dtype in dtypes]) is True:
         dtypes = dtypes[0]
-    print(f"Parameter type: {dtypes}.")
-    print(f"Number of parameters: {total_n_params}.")
-    print(f"Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
+    logging.info(f"Parameter type: {dtypes}.")
+    logging.info(f"Number of parameters: {total_n_params}.")
+    logging.info(f"Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
 
 
 def describe_params(agent, env, seed):
@@ -68,7 +69,7 @@ def describe_params(agent, env, seed):
 if __name__ == "__main__":
 
     # Parse the script arguments.
-    parser = ArgumentParser(prog="run_demo", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(prog="describe_params", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
     parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
     parser.add_argument("--seed", type=int, default=0, help="random seed to use")

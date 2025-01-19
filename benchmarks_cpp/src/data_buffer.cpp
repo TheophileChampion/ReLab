@@ -1,6 +1,8 @@
 #include <cmath>
 #include "replay_buffer.hpp"
 #include "data_buffer.hpp"
+#include "serialize.hpp"
+#include "debug.hpp"
 
 DataBuffer::DataBuffer(int capacity, int n_steps, float gamma, float initial_priority, int n_children)
     : past_actions(n_steps), past_rewards(n_steps), past_dones(n_steps), device(ReplayBuffer::getDevice()) {
@@ -91,4 +93,61 @@ void DataBuffer::addDatum(int action, float reward, bool done) {
 
 std::unique_ptr<PriorityTree> &DataBuffer::getPriorities() {
     return this->priorities;
+}
+
+void DataBuffer::load(std::istream &checkpoint) {
+
+    // Load the data buffer from the checkpoint.
+    this->capacity = serialize::load_value<int>(checkpoint);
+    this->n_steps = serialize::load_value<int>(checkpoint);
+    this->gamma = serialize::load_value<float>(checkpoint);
+    this->past_actions.load(checkpoint);
+    this->past_rewards.load(checkpoint);
+    this->past_dones.load(checkpoint);
+    this->actions = serialize::load_tensor<int>(checkpoint);
+    this->rewards = serialize::load_tensor<float>(checkpoint);
+    this->dones = serialize::load_tensor<bool>(checkpoint);
+    this->priorities->load(checkpoint);
+    this->current_id = serialize::load_value<int>(checkpoint);
+}
+
+void DataBuffer::save(std::ostream &checkpoint) {
+
+    // Save the data buffer in the checkpoint.
+    serialize::save_value(this->capacity, checkpoint);
+    serialize::save_value(this->n_steps, checkpoint);
+    serialize::save_value(this->gamma, checkpoint);
+    this->past_actions.save(checkpoint);
+    this->past_rewards.save(checkpoint);
+    this->past_dones.save(checkpoint);
+    serialize::save_tensor<int>(this->actions, checkpoint);
+    serialize::save_tensor<float>(this->rewards, checkpoint);
+    serialize::save_tensor<bool>(this->dones, checkpoint);
+    this->priorities->save(checkpoint);
+    serialize::save_value(this->current_id, checkpoint);
+}
+
+void DataBuffer::print(bool verbose, const std::string &prefix) {
+
+    // Display the most important information about the data buffer.
+    std::cout << "DataBuffer[capacity: " << this->capacity << ", n_steps: " << this->n_steps
+              << ", gamma: " << this->gamma << ", current_id: " << this->current_id << "]" << std::endl;
+
+    // Display optional information about the data buffer.
+    if (verbose == true) {
+        std::cout << prefix << " #-> past_actions = ";
+        this->past_actions.print();
+        std::cout << prefix << " #-> past_rewards = ";
+        this->past_rewards.print();
+        std::cout << prefix << " #-> past_dones = ";
+        this->past_dones.print();
+        std::cout << prefix << " #-> actions = ";
+        debug::print_tensor<int>(this->actions, 10);
+        std::cout << prefix << " #-> rewards = ";
+        debug::print_tensor<float>(this->rewards, 10);
+        std::cout << prefix << " #-> dones = ";
+        debug::print_tensor<bool>(this->dones, 10);
+        std::cout << prefix  << " #-> priority_tree = ";
+        this->priorities->print(verbose, prefix + "     ");
+    }
 }

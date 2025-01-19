@@ -95,6 +95,24 @@ public:
     torch::Tensor report(torch::Tensor &loss);
 
     /**
+     * Load a replay buffer from the filesystem.
+     * @param checkpoint_path the full checkpoint path from which the replay buffer must be loaded
+     */
+    void load(const std::string &checkpoint_path);
+
+    /**
+     * Save the replay buffer on the filesystem.
+     * @param checkpoint_path the full checkpoint path in which the replay buffer must be saved
+     */
+    void save(const std::string &checkpoint_path);
+
+    /**
+     * Print the replay buffer on the standard output.
+     * @param verbose true if the full replay buffer should be displayed, false otherwise
+     */
+    void print(bool verbose=false);
+
+    /**
      * Retrieve the experiences whose indices are passed as parameters.
      * @param indices the experience indices
      * @return the experiences

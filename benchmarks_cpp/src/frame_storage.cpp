@@ -1,4 +1,6 @@
 #include "frame_storage.hpp"
+#include "serialize.hpp"
+#include "debug.hpp"
 
 FrameStorage::FrameStorage(int capacity, int capacity_incr)
     : initial_capacity(capacity), capacity(capacity), capacity_incr(capacity_incr),
@@ -18,7 +20,7 @@ int FrameStorage::append(const torch::Tensor &frame) {
     }
 
     // Add the frame to the vector of frames.
-    if (this->size() != this->capacity) {
+    if (static_cast<int>(this->frames.size()) != this->capacity) {
         this->frames.push_back(frame);
     } else {
         // Resize the vector of frames if it is full.
@@ -49,7 +51,7 @@ void FrameStorage::resize_frames() {
 }
 
 int FrameStorage::size() {
-    return static_cast<int>(this->frames.size());
+    return last_frame_index - first_frame_index;
 }
 
 void FrameStorage::pop() {
@@ -83,4 +85,45 @@ torch::Tensor FrameStorage::operator[](int index) {
     index -= this->first_frame_index;
     index = (index + this->first_frame) % this->capacity;
     return this->frames[index];
+}
+
+void FrameStorage::load(std::istream &checkpoint) {
+
+    // Load the frame buffer from the checkpoint.
+    this->initial_capacity = serialize::load_value<int>(checkpoint);
+    this->capacity = serialize::load_value<int>(checkpoint);
+    this->capacity_incr = serialize::load_value<int>(checkpoint);
+    this->frames = std::move(serialize::load_vector<torch::Tensor, float>(checkpoint));
+    this->first_frame_index = serialize::load_value<int>(checkpoint);
+    this->last_frame_index = serialize::load_value<int>(checkpoint);
+    this->first_frame = serialize::load_value<int>(checkpoint);
+    this->last_frame = serialize::load_value<int>(checkpoint);
+}
+
+void FrameStorage::save(std::ostream &checkpoint) {
+
+    // Save the frame buffer in the checkpoint.
+    serialize::save_value(this->initial_capacity, checkpoint);
+    serialize::save_value(this->capacity, checkpoint);
+    serialize::save_value(this->capacity_incr, checkpoint);
+    serialize::save_vector<torch::Tensor, float>(this->frames, checkpoint);
+    serialize::save_value(this->first_frame_index, checkpoint);
+    serialize::save_value(this->last_frame_index, checkpoint);
+    serialize::save_value(this->first_frame, checkpoint);
+    serialize::save_value(this->last_frame, checkpoint);
+}
+
+void FrameStorage::print(bool verbose, const std::string &prefix) {
+
+    // Display the most important information about the frame storage.
+    std::cout << "FrameStorage[initial_capacity: " << this->initial_capacity << ", capacity: " << this->capacity
+              << ", capacity_incr: " << this->capacity_incr << ", first_frame_index: " << this->first_frame_index
+              << ", last_frame_index: " << this->last_frame_index << ", first_frame: " << this->first_frame
+              << ", last_frame: " << this->last_frame << "]" << std::endl;
+
+    // Display optional information about the frame storage.
+    if (verbose == true) {
+        std::cout << prefix << " #-> frames = ";
+        debug::print_vector<torch::Tensor, float>(this->frames, this->first_frame, 2);
+    }
 }

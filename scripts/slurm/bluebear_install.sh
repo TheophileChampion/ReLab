@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script is only useful for running the code on BlueBear.
 # After executing this script, activate the virtual environment using:
-#     source ./venv/bin/activate
+#     source ./venv-relab/bin/activate
 # Launch a dummy script such as:
 #     python3 ./scripts/run_experiment.py --agents DQN --envs "ALE/Pong-v5" --seeds 0
 # When the slurm-xxxxxx.out indicates that the virtual environment installation is finished on the node, cancel the job using:
@@ -26,6 +26,6 @@ module load bear-apps/2023a
 module load Python/3.11.3-GCCcore-12.3.0
 
 # Create the virtual environment and install all the dependencies.
-python3 -m venv venv
-source ./venv/bin/activate
+python3 -m venv venv-relab
+source ./venv-relab/bin/activate
 pip install -r requirements.txt

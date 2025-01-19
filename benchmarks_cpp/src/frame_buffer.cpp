@@ -1,6 +1,8 @@
 #include "frame_buffer.hpp"
 #include "replay_buffer.hpp"
+#include "serialize.hpp"
 #include "timer.hpp"
+#include "debug.hpp"
 
 using namespace torch::indexing;
 
@@ -166,4 +168,59 @@ torch::Tensor FrameBuffer::encode(const torch::Tensor &frame) {
 
 torch::Tensor FrameBuffer::decode(const torch::Tensor &frame) {
     return this->png->decode(frame);
+}
+
+void FrameBuffer::load(std::istream &checkpoint) {
+
+    // Load the frame buffer from the checkpoint.
+    this->frame_skip = serialize::load_value<int>(checkpoint);
+    this->stack_size = serialize::load_value<int>(checkpoint);
+    this->capacity = serialize::load_value<int>(checkpoint);
+    this->n_steps = serialize::load_value<int>(checkpoint);
+    this->screen_size = serialize::load_value<int>(checkpoint);
+    this->frames.load(checkpoint);
+    this->references_t = std::move(serialize::load_vector<int>(checkpoint));
+    this->references_tn = std::move(serialize::load_vector<int>(checkpoint));
+    this->current_ref = serialize::load_value<int>(checkpoint);
+    this->past_references.load(checkpoint);
+    this->new_episode = serialize::load_value<bool>(checkpoint);
+}
+
+void FrameBuffer::save(std::ostream &checkpoint) {
+
+    // Save the frame buffer in the checkpoint.
+    serialize::save_value(this->frame_skip, checkpoint);
+    serialize::save_value(this->stack_size, checkpoint);
+    serialize::save_value(this->capacity, checkpoint);
+    serialize::save_value(this->n_steps, checkpoint);
+    serialize::save_value(this->screen_size, checkpoint);
+    this->frames.save(checkpoint);
+    serialize::save_vector(this->references_t, checkpoint);
+    serialize::save_vector(this->references_tn, checkpoint);
+    serialize::save_value(this->current_ref, checkpoint);
+    this->past_references.save(checkpoint);
+    serialize::save_value(this->new_episode, checkpoint);
+}
+
+void FrameBuffer::print(bool verbose, const std::string &prefix) {
+
+    // Display the most important information about the frame buffer.
+    std::cout << "FrameBuffer[frame_skip: " << this->frame_skip << ", stack_size: " << this->stack_size
+              << ", capacity: " << this->capacity << ", n_steps: " << this->n_steps
+              << ", screen_size: " << this->screen_size << ", current_ref: " << this->current_ref
+              << ", new_episode: ";
+    debug::print_bool(this->new_episode);
+    std::cout << "]" << std::endl;
+
+    // Display optional information about the frame buffer.
+    if (verbose == true) {
+        std::cout << prefix << " #-> frame_storage = ";
+        this->frames.print(verbose, prefix + "     ");
+        std::cout << prefix << " #-> references_t = ";
+        debug::print_vector<int>(this->references_t, 10);
+        std::cout << prefix << " #-> references_tn = ";
+        debug::print_vector<int>(this->references_tn, 10);
+        std::cout << prefix << " #-> past_references = ";
+        this->past_references.print();
+    }
 }

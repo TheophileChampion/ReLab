@@ -26,6 +26,8 @@ PYBIND11_MODULE(cpp, m) {
         .def("sample", &ReplayBuffer::sample, "Sample a batch from the replay buffer.")
         .def("report", &ReplayBuffer::report, "Report the loss associated with all the transitions of the previous batch.")
         .def("get_experiences", &ReplayBuffer::getExperiences, "Retrieve the experiences whose indices are passed as parameters.")
+        .def("load", &ReplayBuffer::load, "Load a replay buffer from the filesystem.")
+        .def("save", &ReplayBuffer::save, "Save the replay buffer on the filesystem.")
         .def("clear", &ReplayBuffer::clear, "Empty the replay buffer.")
         .def("length", &ReplayBuffer::size, "Retrieve the number of elements in the buffer.")
         .def("is_prioritized", &ReplayBuffer::getPrioritized, "Retrieve a boolean indicating whether the replay buffer is prioritized.")

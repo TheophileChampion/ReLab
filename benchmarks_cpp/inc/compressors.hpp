@@ -125,7 +125,7 @@ private:
     int n_dims;
     int max_compressed_size;
     std::vector<float> compressed_output;
-    std::vector<long int> shape;
+    std::vector<long> shape;
 
 public:
 

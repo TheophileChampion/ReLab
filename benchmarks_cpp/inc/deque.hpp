@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <cstdint>
+#include <fstream>
 
 
 /**
@@ -62,6 +63,23 @@ public:
      * @return the size of the deque
      */
     std::uint64_t size();
+
+    /*
+     * Load the deque from the checkpoint.
+     * @param checkpoint a stream reading from the checkpoint file
+     */
+    void load(std::istream &checkpoint);
+
+    /*
+     * Save the deque in the checkpoint.
+     * @param checkpoint a stream writing into the checkpoint file
+     */
+    void save(std::ostream &checkpoint);
+
+    /**
+     * Print the deque on the standard output.
+     */
+    void print();
 };
 
 // Explicit instantiation of double ended queue.

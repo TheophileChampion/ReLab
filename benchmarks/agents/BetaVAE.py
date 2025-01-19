@@ -42,7 +42,7 @@ class BetaVAE(VAE):
         """
 
         # Create the beta schedule.
-        beta_schedule = [(0.1, 0)] if beta_schedule is None else beta_schedule
+        beta_schedule = [(0, 0.1)] if beta_schedule is None else beta_schedule
 
         # Call the parent constructor.
         super().__init__(

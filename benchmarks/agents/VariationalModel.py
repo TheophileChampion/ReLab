@@ -1,3 +1,5 @@
+from abc import ABC
+import abc
 import logging
 import os
 from datetime import datetime
@@ -5,6 +7,8 @@ from os.path import join
 from enum import IntEnum
 from functools import partial
 import re
+
+import torch
 
 import benchmarks
 from benchmarks.agents.AgentInterface import AgentInterface, ReplayType
@@ -40,7 +44,7 @@ class LikelihoodType(IntEnum):
     BERNOULLI = 1  # Bernoulli likelihood
 
 
-class VariationalModel(AgentInterface):
+class VariationalModel(AgentInterface, ABC):
     """
     Implement an agent taking random actions, with support for learning world models.
     """
@@ -95,7 +99,7 @@ class VariationalModel(AgentInterface):
         self.omega_is = omega_is
         self.learning_rate = learning_rate
         self.adam_eps = adam_eps
-        self.beta_schedule = [(1.0, 0)] if beta_schedule is None else beta_schedule
+        self.beta_schedule = [(0, 1.0)] if beta_schedule is None else beta_schedule
         self.beta = PiecewiseLinearSchedule(self.beta_schedule)
         self.tau_schedule = (0.5, -3e-5) if tau_schedule is None else tau_schedule
         self.tau = ExponentialSchedule(self.tau_schedule)
@@ -110,6 +114,58 @@ class VariationalModel(AgentInterface):
         # Create the replay buffer.
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
+
+    @abc.abstractmethod
+    def learn(self):
+        """
+        Perform one step of gradient descent on the world model.
+        :return: the loss of the sampled batch, None if no loss should be logged in Tensorboard
+        """
+        ...
+
+    @abc.abstractmethod
+    def continuous_vfe(self, obs, actions, next_obs):
+        """
+        Compute the variational free energy for a continuous latent space.
+        :param obs: the observations at time t
+        :param actions: the actions at time t
+        :param next_obs: the observations at time t + 1
+        :return: the variational free energy
+        """
+        ...
+
+    @abc.abstractmethod
+    def discrete_vfe(self, obs, actions, next_obs):
+        """
+        Compute the variational free energy for a discrete latent space.
+        :param obs: the observations at time t
+        :param actions: the actions at time t
+        :param next_obs: the observations at time t + 1
+        :return: the variational free energy
+        """
+        ...
+
+    @abc.abstractmethod
+    def mixed_vfe(self, obs, actions, next_obs):
+        """
+        Compute the variational free energy for a mixed latent space.
+        :param obs: the observations at time t
+        :param actions: the actions at time t
+        :param next_obs: the observations at time t + 1
+        :return: the variational free energy
+        """
+        ...
+
+    @abc.abstractmethod
+    def draw_reconstructed_images(self, env, model_index, grid_size):
+        """
+        Draw the ground truth and reconstructed images.
+        :param env: the gym environment
+        :param model_index: the index of the model for which images are generated
+        :param grid_size: the size of the image grid to generate
+        :return: the figure containing the images
+        """
+        ...
 
     def get_model_loss(self, latent_space_type):
         """
@@ -187,36 +243,6 @@ class VariationalModel(AgentInterface):
         }[latent_space_type]
         return transition()
 
-    def continuous_vfe(self, obs, actions, next_obs):
-        """
-        Compute the variational free energy for a continuous latent space.
-        :param obs: the observations at time t
-        :param actions: the actions at time t
-        :param next_obs: the observations at time t + 1
-        :return: the variational free energy
-        """
-        raise Exception("Function 'continuous_vfe' not implemented in 'VariationalModel'.")
-
-    def discrete_vfe(self, obs, actions, next_obs):
-        """
-        Compute the variational free energy for a discrete latent space.
-        :param obs: the observations at time t
-        :param actions: the actions at time t
-        :param next_obs: the observations at time t + 1
-        :return: the variational free energy
-        """
-        raise Exception("Function 'discrete_vfe' not implemented in 'VariationalModel'.")
-
-    def mixed_vfe(self, obs, actions, next_obs):
-        """
-        Compute the variational free energy for a mixed latent space.
-        :param obs: the observations at time t
-        :param actions: the actions at time t
-        :param next_obs: the observations at time t + 1
-        :return: the variational free energy
-        """
-        raise Exception("Function 'mixed_vfe' not implemented in 'VariationalModel'.")
-
     def step(self, obs):
         """
         Select the next action to perform in the environment.
@@ -278,13 +304,6 @@ class VariationalModel(AgentInterface):
         # Close the environment.
         env.close()
 
-    def learn(self):
-        """
-        Perform one step of gradient descent on the world model.
-        :return: the loss of the sampled batch, None if no loss should be logged in Tensorboard
-        """
-        raise Exception("Function 'learn' not implemented in 'VariationalModel'.")
-
     def demo(self, env, gif_name, max_frames=10000):
         """
         Demonstrate the agent policy in the gym environment passed as parameters
@@ -306,26 +325,14 @@ class VariationalModel(AgentInterface):
         fig.savefig(figure_path)
         MatPlotLib.close()
 
-    def draw_reconstructed_images(self, env, model_index, grid_size):
+    def reconstructed_image_from(self, decoder_output):
         """
-        Draw the ground truth and reconstructed images.
-        :param env: the gym environment
-        :param model_index: the index of the model for which images are generated
-        :param grid_size: the size of the image grid to generate
-        :return: the figure containing the images
+        Compute the reconstructed image from the decoder output.
+        :param decoder_output: the tensor predicted by the decoder
+        :return: the reconstructed image
         """
-        raise Exception("Function 'draw_reconstructed_images' not implemented in 'VariationalModel'.")
-
-    def load(self, checkpoint_name=None):
-        """
-        Load an agent from the filesystem.
-        :param checkpoint_name: the name of the checkpoint to load
-        """
-        raise Exception("Function 'load' not implemented in 'VariationalModel'.")
-
-    def save(self, checkpoint_name):
-        """
-        Save the agent on the filesystem.
-        :param checkpoint_name: the name of the checkpoint in which to save the agent
-        """
-        raise Exception("Function 'save' not implemented in 'VariationalModel'.")
+        function = {
+            LikelihoodType.GAUSSIAN: partial(torch.clamp, min=0, max=1),
+            LikelihoodType.BERNOULLI: torch.sigmoid,
+        }[self.likelihood_type]
+        return function(decoder_output)

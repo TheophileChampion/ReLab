@@ -13,27 +13,27 @@ class DataBuffer {
 
 private:
 
-        // Store the data buffer's parameters.
-        int capacity;
-        int n_steps;
-        float gamma;
+    // Store the data buffer's parameters.
+    int capacity;
+    int n_steps;
+    float gamma;
 
-        // Queues keeping track of past actions, cumulated rewards, and dones.
-        Deque<int> past_actions;
-        Deque<float> past_rewards;
-        Deque<bool> past_dones;
+    // Queues keeping track of past actions, cumulated rewards, and dones.
+    Deque<int> past_actions;
+    Deque<float> past_rewards;
+    Deque<bool> past_dones;
 
-        // Torch tensors storing all the buffer's data.
-        torch::Device device;
-        torch::Tensor actions;
-        torch::Tensor rewards;
-        torch::Tensor dones;
+    // Torch tensors storing all the buffer's data.
+    torch::Device device;
+    torch::Tensor actions;
+    torch::Tensor rewards;
+    torch::Tensor dones;
 
-        // The priorities associated with all experiences in the replay buffer.
-        std::unique_ptr<PriorityTree> priorities;
+    // The priorities associated with all experiences in the replay buffer.
+    std::unique_ptr<PriorityTree> priorities;
 
-        // The index of the next datum to add in the buffer.
-        int current_id;
+    // The index of the next datum to add in the buffer.
+    int current_id;
 
 public:
 
@@ -84,6 +84,25 @@ public:
      * @return the priority tree
      */
     std::unique_ptr<PriorityTree> &getPriorities();
+
+    /*
+     * Load the data buffer from the checkpoint.
+     * @param checkpoint a stream reading from the checkpoint file
+     */
+    void load(std::istream &checkpoint);
+
+    /*
+     * Save the data buffer in the checkpoint.
+     * @param checkpoint a stream writing into the checkpoint file
+     */
+    void save(std::ostream &checkpoint);
+
+    /**
+     * Print the data buffer on the standard output.
+     * @param verbose true if the full data buffer should be displayed, false otherwise
+     * @param prefix the prefix to add an front of the optional information
+     */
+    void print(bool verbose=false, const std::string &prefix="");
 };
 
 #endif //DATA_BUFFER_HPP

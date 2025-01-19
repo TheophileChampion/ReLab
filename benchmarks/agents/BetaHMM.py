@@ -42,7 +42,7 @@ class BetaHMM(HMM):
         """
 
         # Create the beta schedule.
-        beta_schedule = [(0.0001, 0)] if beta_schedule is None else beta_schedule
+        beta_schedule = [(0, 0.0001)] if beta_schedule is None else beta_schedule
 
         # Call the parent constructor.
         super().__init__(

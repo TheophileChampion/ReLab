@@ -8,14 +8,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add compiler options.
-add_compile_options(-O3 -Wall -Werror -Wl,-rpath,.)
+add_compile_options(-O3 -Wall -Werror -Wl,-rpath,. -g)  # TODO
 
 # Specify the CMake version, as well as the project name and version.
 cmake_minimum_required(VERSION 3.10)
 project(benchmarks VERSION 1.0)
 
 # The name of the virtual environment.
-SET(VENV_DIR "venv-benchmarks")
+SET(VENV_DIR "venv-relab")
 
 # Add include directories required by shared libraries.
 execute_process(COMMAND python3.12 -m pybind11 --includes OUTPUT_VARIABLE ADDITIONAL_INCLUDES)
@@ -47,6 +47,8 @@ add_library(benchmarks SHARED
     benchmarks_cpp/src/data_buffer.cpp
     benchmarks_cpp/src/thread_pool.cpp
     benchmarks_cpp/src/experience.cpp
+    benchmarks_cpp/src/serialize.cpp
+    benchmarks_cpp/src/debug.cpp
     benchmarks_cpp/src/deque.cpp
     benchmarks_cpp/src/timer.cpp
 )
@@ -66,7 +68,7 @@ target_link_libraries(benchmarks_wrapper PRIVATE
 )
 
 # Add the testing executable with access to the shared library: libbenchmarks.so
-add_executable(test benchmarks_cpp/test/main.cpp)
+add_executable(test benchmarks_cpp/tests/main.cpp)
 target_link_libraries(test PRIVATE
     benchmarks_wrapper benchmarks
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}

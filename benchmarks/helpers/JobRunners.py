@@ -6,6 +6,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import wait
 from functools import partial
+import logging
 
 from scripts.draw_graph import draw_graph
 from scripts.run_demo import run_demo
@@ -139,7 +140,7 @@ class LocalJobRunner(JobRunnerInterface):
         :param kwargs: the keyword arguments of the task
         :param job_index: the index of the job to run
         """
-        print(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
+        logging.info(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
         future = self.pool.submit(task, **kwargs)
         future.add_done_callback(partial(self.check_jobs_to_submit, job_index=job_index))
         self.futures.append(future)
@@ -152,7 +153,7 @@ class LocalJobRunner(JobRunnerInterface):
         """
 
         # Lock the object to avoid simultaneously access to the class attributes.
-        print(f"Job {job_index} just finished.")
+        logging.info(f"Job {job_index} just finished.")
         self.lock(job_index)
 
         # Remove the index of job that terminated from the list of jobs not done.

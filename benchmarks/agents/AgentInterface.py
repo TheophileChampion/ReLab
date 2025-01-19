@@ -51,15 +51,16 @@ class AgentInterface(ABC):
         # The number of training steps performed.
         self.current_step = 0
 
+        # Create the queue containing the last variational free energy values.
+        self.vfe_losses = deque(maxlen=self.max_queue_len)
+        self.betas = deque(maxlen=self.max_queue_len)
+        self.log_likelihoods = deque(maxlen=self.max_queue_len)
+        self.kl_divergences = deque(maxlen=self.max_queue_len)
+
         # The current process, as well as queue used to track the memory usage of the program.
         self.process = psutil.Process()
         self.virtual_memory = deque(maxlen=self.max_queue_len)
         self.residential_memory = deque(maxlen=self.max_queue_len)
-
-        # Create the queue containing the last variational free energy values.
-        self.vfe_losses = deque(maxlen=self.max_queue_len)
-        self.log_likelihoods = deque(maxlen=self.max_queue_len)
-        self.kl_divergences = deque(maxlen=self.max_queue_len)
 
         # Create the queue containing the last episodic rewards.
         self.episodic_rewards = deque(maxlen=self.max_queue_len)
@@ -94,18 +95,19 @@ class AgentInterface(ABC):
         ...
 
     @abc.abstractmethod
-    def load(self, checkpoint_name=None):
+    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
         """
         Load an agent from the filesystem.
-        :param checkpoint_name: the name of the checkpoint to load
+        :param checkpoint_name: the name of the agent checkpoint to load
+        :param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
-        ...
 
     @abc.abstractmethod
-    def save(self, checkpoint_name):
+    def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """
         Save the agent on the filesystem.
         :param checkpoint_name: the name of the checkpoint in which to save the agent
+        :param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
         ...
 
@@ -170,6 +172,7 @@ class AgentInterface(ABC):
         # Keep track of the current variational free energy, log-likelihood and KL-divergence.
         if model_losses is not None:
             self.vfe_losses.append(model_losses["vfe"].item())
+            self.betas.append(model_losses["beta"])
             self.log_likelihoods.append(model_losses["log_likelihood"].item())
             self.kl_divergences.append(model_losses["kl_divergence"].item())
 
@@ -205,6 +208,7 @@ class AgentInterface(ABC):
         # Log the mean variational free energy, log-likelihood, and KL-divergence.
         if len(self.vfe_losses) >= 2:
             self.writer.add_scalar("variational_free_energy", np.mean(list(self.vfe_losses)), self.current_step)
+            self.writer.add_scalar("beta", np.mean(list(self.betas)), self.current_step)
             self.writer.add_scalar("log_likelihood", np.mean(list(self.log_likelihoods)), self.current_step)
             self.writer.add_scalar("kl_divergence", np.mean(list(self.kl_divergences)), self.current_step)
 

@@ -171,3 +171,9 @@ data/
 rl-bench-venv/
 rl-venv-3.11/
 venv-benchmarks/
+venv-relab/
+
+# Do not push the documentation
+docs/html/
+docs/latex/
+

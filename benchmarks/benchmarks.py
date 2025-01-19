@@ -1,7 +1,8 @@
 import os
 import random
-from os.path import join, isfile
+from os.path import join, isfile, abspath, dirname
 import invoke
+import logging
 
 import gymnasium as gym
 import ale_py
@@ -22,12 +23,10 @@ def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=
     :param paths_only: True to only initialize the framework paths, False otherwise
     """
 
-    # Check that the data directory has been provided by the user.
+    # Ensure the data directory is valid.
     if "DATA_DIRECTORY" not in os.environ.keys() and data_directory is None:
-        message = "You must provide the path to the data directory by either " + \
-                  "setting the environment variable 'DATA_DIRECTORY', " + \
-                  "or passing it as parameter to 'benchmarks.initialize()'."
-        raise RuntimeError(message)
+        os.environ["DATA_DIRECTORY"] = abspath(join(dirname(__file__), "..", "data")) + os.sep
+        logging.info(f"Using default data directory location: '{os.environ["DATA_DIRECTORY"]}'.")
 
     # Set the environment variable "DATA_DIRECTORY" if provided as parameters by the user.
     if data_directory is not None:
@@ -99,12 +98,13 @@ def config(key=None):
     :return: the configuration or the entry in the configuration corresponding to the key passed as parameters
     """
     conf = {
+        "max_n_steps": 50000000,  # Maximum number of training iterations
+        "checkpoint_frequency": 500000,  # Number of training iterations between two checkpoints
+        "tensorboard_log_interval": 5000,  # Number of training iterations between two logging of values in tensorboard
         "stack_size": 4,  # Number of frames per observation
         "frame_skip": 1,  # Number of times each action is repeated in the environment
         "screen_size": 84,  # Size of the images used by the agent to learn
         "compress_images": True,  # True, if in-memory compression must be performed, False otherwise
-        "max_n_steps": 50000000,  # Maximum number of training iterations
-        "checkpoint_frequency": 10000,  # Number of training iterations between two checkpoints TODO 500000
-        "tensorboard_log_interval": 100,  # Number of training iterations between two logging of values in tensorboard  TODO 5000
+        "save_all_replay_buffers": False,  # False, if only the last replay buffer must be saved, True otherwise
     }
     return conf if key is None else conf[key]

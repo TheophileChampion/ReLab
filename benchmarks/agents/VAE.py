@@ -35,9 +35,9 @@ class VAE(VariationalModel):
     def __init__(
         self, learning_starts=200000, n_actions=18, training=True,
         likelihood_type=LikelihoodType.BERNOULLI, latent_space_type=LatentSpaceType.CONTINUOUS,
-        n_continuous_vars=100, n_discrete_vars=20, n_discrete_vals=10,
-        learning_rate=0.00001, adam_eps=1.5e-4, beta_schedule=None, tau_schedule=None,
-        replay_type=ReplayType.DEFAULT, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0
+        n_continuous_vars=15, n_discrete_vars=20, n_discrete_vals=10,
+        learning_rate=0.0001, adam_eps=1e-8, beta_schedule=None, tau_schedule=None,
+        replay_type=ReplayType.PRIORITIZED, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0
     ):
         """
         Create a Variational Auto-Encoder agent taking random actions.
@@ -73,7 +73,11 @@ class VAE(VariationalModel):
 
         # Create the world model.
         self.encoder = self.get_encoder_network(self.latent_space_type)
+        self.encoder.train(training)
+        self.encoder.to(self.device)
         self.decoder = self.get_decoder_network(self.latent_space_type)
+        self.decoder.train(training)
+        self.decoder.to(self.device)
 
         # Create the optimizer.
         self.optimizer = optim.Adam(
@@ -107,6 +111,7 @@ class VAE(VariationalModel):
         self.optimizer.step()
         return {
             "vfe": loss,
+            "beta": self.beta(self.current_step),
             "log_likelihood": log_likelihood.mean(),
             "kl_divergence": kl_divergence.mean(),
         }
@@ -213,11 +218,11 @@ class VAE(VariationalModel):
 
                 # Retrieve the ground truth and reconstructed images.
                 obs, _ = env.reset()
-                obs = torch.unsqueeze(obs, dim=0)
+                obs = torch.unsqueeze(obs, dim=0).to(self.device)
                 obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
                 parameters = self.encoder(obs)
                 state = self.reparameterize(parameters, tau=tau)
-                reconstructed_obs = torch.sigmoid(self.decoder(state))
+                reconstructed_obs = self.reconstructed_image_from(self.decoder(state))
                 obs = obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
                 reconstructed_obs = reconstructed_obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
 
@@ -236,10 +241,11 @@ class VAE(VariationalModel):
         plt.tight_layout(pad=0.1)
         return fig
 
-    def load(self, checkpoint_name=None):
+    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
         """
         Load an agent from the filesystem.
-        :param checkpoint_name: the name of the checkpoint to load
+        :param checkpoint_name: the name of the agent checkpoint to load
+        :param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
 
         # Retrieve the full checkpoint path.
@@ -272,6 +278,9 @@ class VAE(VariationalModel):
         self.adam_eps = self.safe_load(checkpoint, "adam_eps")
         self.likelihood_type = self.safe_load(checkpoint, "likelihood_type")
         self.latent_space_type = self.safe_load(checkpoint, "latent_space_type")
+        self.n_continuous_vars = self.safe_load(checkpoint, "n_continuous_vars")
+        self.n_discrete_vars = self.safe_load(checkpoint, "n_discrete_vars")
+        self.n_discrete_vals = self.safe_load(checkpoint, "n_discrete_vals")
         self.beta_schedule = self.safe_load(checkpoint, "beta_schedule")
         self.beta = PiecewiseLinearSchedule(self.beta_schedule)
         self.tau_schedule = self.safe_load(checkpoint, "tau_schedule")
@@ -283,11 +292,16 @@ class VAE(VariationalModel):
 
         # Update the world model using the checkpoint.
         self.encoder = self.get_encoder_network(self.latent_space_type)
+        self.encoder.train(self.training)
+        self.encoder.to(self.device)
         self.decoder = self.get_decoder_network(self.latent_space_type)
+        self.decoder.train(self.training)
+        self.decoder.to(self.device)
 
         # Update the replay buffer.
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
+        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
 
         # Get the reparameterization function to use with the world model.
         self.reparameterize = self.get_reparameterization(self.latent_space_type)
@@ -298,10 +312,11 @@ class VAE(VariationalModel):
             lr=self.learning_rate, eps=self.adam_eps
         )
 
-    def save(self, checkpoint_name):
+    def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """
         Save the agent on the filesystem.
         :param checkpoint_name: the name of the checkpoint in which to save the agent
+        :param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
         
         # Create the checkpoint directory and file, if they do not exist.
@@ -325,6 +340,12 @@ class VAE(VariationalModel):
             "adam_eps": self.adam_eps,
             "likelihood_type": self.likelihood_type,
             "latent_space_type": self.latent_space_type,
+            "n_continuous_vars": self.n_continuous_vars,
+            "n_discrete_vars": self.n_discrete_vars,
+            "n_discrete_vals": self.n_discrete_vals,
             "beta_schedule": self.beta_schedule,
             "tau_schedule": self.tau_schedule
         }, checkpoint_path)
+
+        # Save the replay buffer.
+        self.buffer.save(checkpoint_path, buffer_checkpoint_name)

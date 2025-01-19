@@ -1,7 +1,7 @@
 import math
 
 import torch
-from torch.nn.functional import gumbel_softmax
+from torch.nn.functional import gumbel_softmax, binary_cross_entropy_with_logits
 
 
 class VariationalInference:
@@ -68,10 +68,11 @@ class VariationalInference:
         :param alpha: the log-probabilities of all pixels
         :return: the log-likelihood
         """
-        one = torch.ones_like(alpha)
-        zero = torch.zeros_like(alpha)
-        out = - torch.maximum(alpha, zero) + alpha * obs - torch.log(one + torch.exp(-torch.abs(alpha)))
-        return out.sum(dim=(1, 2, 3))
+        return - binary_cross_entropy_with_logits(alpha, obs, reduction="none").sum(dim=(1, 2, 3))
+        # TODO one = torch.ones_like(alpha)
+        # TODO zero = torch.zeros_like(alpha)
+        # TODO out = - torch.maximum(alpha, zero) + alpha * obs - torch.log(one + torch.exp(-torch.abs(alpha)))
+        # TODO return out.sum(dim=(1, 2, 3))
 
     @staticmethod
     def gaussian_reparameterization(mean, log_var):

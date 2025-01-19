@@ -1,4 +1,5 @@
 import time
+import logging
 
 
 class Timer:
@@ -27,5 +28,5 @@ class Timer:
         :param traceback: traceback object (unused)
         """
         if self.name:
-            print("[%s]" % self.name,)
-        print("Elapsed: %s" % ((time.time() - self.start_time) * 1000))
+            logging.info("[%s]" % self.name,)
+        logging.info("Elapsed: %s" % ((time.time() - self.start_time) * 1000))

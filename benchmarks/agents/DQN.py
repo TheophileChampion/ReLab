@@ -497,13 +497,14 @@ class DQN(AgentInterface):
         loss /= self.n_atoms
         return loss
 
-    def load(self, checkpoint_name=None):
+    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
         """
         Load an agent from the filesystem.
-        :param checkpoint_name: the name of the checkpoint to load
+        :param checkpoint_name: the name of the agent checkpoint to load
+        :param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
 
-        # Retrieve the full checkpoint path.
+        # Retrieve the full agent checkpoint path.
         if checkpoint_name is None:
             checkpoint_path = self.get_latest_checkpoint()
         else:
@@ -563,15 +564,17 @@ class DQN(AgentInterface):
         # Update the optimizer and replay buffer.
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
+        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
         self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
 
-    def save(self, checkpoint_name):
+    def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """
         Save the agent on the filesystem.
         :param checkpoint_name: the name of the checkpoint in which to save the agent
+        :param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
 
-        # Create the checkpoint directory and file, if they do not exist.
+        # Create the agent checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)
 
@@ -602,3 +605,6 @@ class DQN(AgentInterface):
             "value_net": self.value_net.state_dict(),
             "target_net": self.target_net.state_dict(),
         }, checkpoint_path)
+
+        # Save the replay buffer.
+        self.buffer.save(checkpoint_path, buffer_checkpoint_name)

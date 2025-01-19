@@ -42,7 +42,7 @@ public:
     FrameStorage(int capacity, int capacity_incr=100000);
 
     /**
-     * Add an frame to the storage.
+     * Add a frame to the storage.
      * @param frame the frame to add
      * @return the unique index of the frame that was added to the buffer
      */
@@ -54,7 +54,8 @@ public:
     void resize_frames();
 
     /**
-     * Retrieve the size of the vector of frames.
+     * Retrieve the number of frames stored in the frame storage.
+     * @return the number of frames stored in the frame storage
      */
     int size();
 
@@ -80,6 +81,25 @@ public:
      * @return the frame
      */
     torch::Tensor operator[](int index);
+
+    /*
+     * Load the frame storage from the checkpoint.
+     * @param checkpoint a stream reading from the checkpoint file
+     */
+    void load(std::istream &checkpoint);
+
+    /*
+     * Save the frame storage in the checkpoint.
+     * @param checkpoint a stream writing into the checkpoint file
+     */
+    void save(std::ostream &checkpoint);
+
+    /**
+     * Print the frame storage on the standard output.
+     * @param verbose true if the full frame storage should be displayed, false otherwise
+     * @param prefix the prefix to add an front of the optional information
+     */
+    void print(bool verbose=false, const std::string &prefix="");
 };
 
 #endif //FRAME_STORAGE_HPP

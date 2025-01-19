@@ -97,6 +97,7 @@ class HMM(VariationalModel):
         self.optimizer.step()
         return {
             "vfe": loss,
+            "beta": self.beta(self.current_step),
             "log_likelihood": log_likelihood.mean(),
             "kl_divergence": kl_divergence.mean(),
         }
@@ -226,7 +227,7 @@ class HMM(VariationalModel):
             obs = torch.unsqueeze(obs, dim=0)
             parameters = self.encoder(obs)
             states = self.reparameterize(parameters, tau=tau)
-            reconstructed_obs = torch.sigmoid(self.decoder(states))
+            reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
 
             # Iterate over the grid's columns.
             for w in range(width):
@@ -265,10 +266,11 @@ class HMM(VariationalModel):
         plt.tight_layout(pad=0.1)
         return fig
 
-    def load(self, checkpoint_name=None):
+    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
         """
         Load an agent from the filesystem.
-        :param checkpoint_name: the name of the checkpoint to load
+        :param checkpoint_name: the name of the agent checkpoint to load
+        :param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
 
         # Retrieve the full checkpoint path.
@@ -318,6 +320,7 @@ class HMM(VariationalModel):
         # Update the replay buffer.
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
+        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
 
         # Update the reparameterization function to use with the world model.
         self.reparameterize = self.get_reparameterization(self.latent_space_type)
@@ -328,10 +331,11 @@ class HMM(VariationalModel):
             lr=self.learning_rate, eps=self.adam_eps
         )
 
-    def save(self, checkpoint_name):
+    def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """
         Save the agent on the filesystem.
         :param checkpoint_name: the name of the checkpoint in which to save the agent
+        :param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
         
         # Create the checkpoint directory and file, if they do not exist.
@@ -358,3 +362,6 @@ class HMM(VariationalModel):
             "beta_schedule": self.beta_schedule,
             "tau_schedule": self.tau_schedule
         }, checkpoint_path)
+
+        # Save the replay buffer.
+        self.buffer.save(checkpoint_path, buffer_checkpoint_name)

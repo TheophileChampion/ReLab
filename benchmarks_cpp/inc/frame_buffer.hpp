@@ -118,6 +118,25 @@ public:
      * @return the decoded frame
      */
     torch::Tensor decode(const torch::Tensor &frame);
+
+    /*
+     * Load the frame buffer from the checkpoint.
+     * @param checkpoint a stream reading from the checkpoint file
+     */
+    void load(std::istream &checkpoint);
+
+    /*
+     * Save the frame buffer in the checkpoint.
+     * @param checkpoint a stream writing into the checkpoint file
+     */
+    void save(std::ostream &checkpoint);
+
+    /**
+     * Print the frame buffer on the standard output.
+     * @param verbose true if the full frame buffer should be displayed, false otherwise
+     * @param prefix the prefix to add an front of the optional information
+     */
+    void print(bool verbose=false, const std::string &prefix="");
 };
 
 #endif //FRAME_BUFFER_HPP

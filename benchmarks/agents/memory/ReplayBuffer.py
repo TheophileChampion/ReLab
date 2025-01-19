@@ -1,6 +1,11 @@
+import logging
+
 from benchmarks import benchmarks
 from benchmarks.agents.memory.cpp import FastReplayBuffer, CompressorType
 import collections
+from benchmarks.helpers.FileSystem import FileSystem
+import os
+from os.path import join, isfile
 
 
 #
@@ -65,6 +70,50 @@ class ReplayBuffer:
         - next_observations: the observations received after performing the actions
         """
         return self.buffer.sample()
+
+    def load(self, checkpoint_path=None, checkpoint_name=None):
+        """
+        Load a replay buffer from the filesystem.
+        :param checkpoint_path: the full checkpoint path from which the agent has been loaded
+        :param checkpoint_name: the name of the checkpoint from which the replay buffer must be loaded (None for default name)
+        """
+
+        # TODO move this to c++ code
+        # Retrieve the full replay buffer checkpoint path.
+        if checkpoint_name is None and benchmarks.config("save_all_replay_buffers") is False:
+            checkpoint_name = "buffer.pt"
+        if checkpoint_name is None:
+            buffer_checkpoint_path = checkpoint_path.replace("model_", "buffer_")
+        else:
+            buffer_checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+
+        # Check that the replay buffer checkpoint exist.
+        if not isfile(buffer_checkpoint_path):
+            logging.info(f"Could not load the replay buffer from: {buffer_checkpoint_path}.")
+            return
+
+        # Load the replay buffer from the filesystem.
+        self.buffer.load(buffer_checkpoint_path)
+
+    def save(self, checkpoint_path=None, checkpoint_name=None):
+        """
+        Save the replay buffer on the filesystem.
+        :param checkpoint_path: the full checkpoint path in which the agent has been saved
+        :param checkpoint_name: the name of the checkpoint in which the replay buffer must be saved (None for default name)
+        """
+
+        # TODO move this to c++ code
+        # Create the replay buffer checkpoint directory and file, if they do not exist.
+        if checkpoint_name is None and benchmarks.config("save_all_replay_buffers") is False:
+            checkpoint_name = "buffer.pt"
+        if checkpoint_name is None:
+            buffer_checkpoint_path = checkpoint_path.replace("model_", "buffer_")
+        else:
+            buffer_checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+        FileSystem.create_directory_and_file(buffer_checkpoint_path)
+
+        # Save the replay buffer on the filesystem.
+        self.buffer.save(buffer_checkpoint_path)
 
     def report(self, loss):
         """

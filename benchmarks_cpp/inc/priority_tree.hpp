@@ -6,7 +6,7 @@
 
 
 // Alias for a sum-tree.
-using SumTree = std::vector<std::vector<long double>>;
+using SumTree = std::vector<std::vector<double>>;
 
 // Alias for a max-tree.
 using MaxTree = std::vector<torch::Tensor>;
@@ -174,15 +174,17 @@ public:
 
     /**
      * Create a string representation of the max-tree.
+     * @param max_n_elements the maximum number of elements to display, by default all elements are displayed
      * @return a string representing the tree
      */
-    std::string maxTreeToStr();
+    std::string maxTreeToStr(int max_n_elements=-1);
 
     /**
      * Create a string representation of the sum-tree.
+     * @param max_n_elements the maximum number of elements to display, by default all elements are displayed
      * @return a string representing the tree
      */
-    std::string sumTreeToStr();
+    std::string sumTreeToStr(int max_n_elements=-1);
 
     /**
      * Convert a float into a string with the specified number of decimals.
@@ -191,6 +193,25 @@ public:
      * @return the string
      */
     std::string toString(float value, int precision=1);
+
+    /*
+     * Load the priority tree from the checkpoint.
+     * @param checkpoint a stream reading from the checkpoint file
+     */
+    void load(std::istream &checkpoint);
+
+    /*
+     * Save the priority tree in the checkpoint.
+     * @param checkpoint a stream writing into the checkpoint file
+     */
+    void save(std::ostream &checkpoint);
+
+    /**
+     * Print the priority tree on the standard output.
+     * @param verbose true if the full priority tree should be displayed, false otherwise
+     * @param prefix the prefix to add an front of the optional information
+     */
+    void print(bool verbose=false, const std::string &prefix="");
 };
 
 #endif //PRIORITY_TREE_HPP
