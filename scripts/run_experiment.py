@@ -2,9 +2,9 @@ import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from functools import partial
 
-import benchmarks
-from benchmarks.environments import small_benchmark_atari_games as atari_games
-from benchmarks.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
+import relab
+from relab.environments import small_benchmark_atari_games as atari_games
+from relab.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
 
 
 def run_experiment(agent_names, env_names, seeds, local=True):
@@ -49,7 +49,7 @@ def run_experiment(agent_names, env_names, seeds, local=True):
                 # Demonstrate the policy learned by the agent on the environment with the specified seed.
                 job_runner.launch_job(
                     task=prefix + os.sep + "run_demo.sh",
-                    kwargs={"agent": agent, "env": env, "seed": seed, "index": benchmarks.config(key="max_n_steps")},
+                    kwargs={"agent": agent, "env": env, "seed": seed, "index": relab.config(key="max_n_steps")},
                     dependencies=[job_id]
                 )
 

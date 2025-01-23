@@ -1,4 +1,4 @@
-from benchmarks import version
+from relab import version
 
 
 if __name__ == "__main__":

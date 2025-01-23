@@ -4,7 +4,7 @@ from os.path import join
 
 import torch
 
-import benchmarks
+import relab
 
 
 def update_checkpoint(agent, env, seed, index, updates):
@@ -18,11 +18,11 @@ def update_checkpoint(agent, env, seed, index, updates):
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent, env, seed)
+    relab.initialize(agent, env, seed)
 
     # Load the checkpoint.
     checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], f"model_{index}.pt")
-    checkpoint = torch.load(checkpoint_path, map_location=benchmarks.device(), weights_only=False)
+    checkpoint = torch.load(checkpoint_path, map_location=relab.device(), weights_only=False)
 
     # Update key-value pair in the checkpoint.
     for key, value in updates.items():

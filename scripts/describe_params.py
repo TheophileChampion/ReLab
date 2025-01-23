@@ -3,8 +3,8 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import torch
 import logging
 
-import benchmarks
-from benchmarks import agents
+import relab
+from relab import agents
 
 
 def describe(parameters, n_copies=1, memory_unit="GB"):
@@ -57,7 +57,7 @@ def describe_params(agent, env, seed):
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent, env, seed)
+    relab.initialize(agent, env, seed)
 
     # Create the requested agent.
     agent = agents.make(agent, training=True)

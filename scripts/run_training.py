@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-from benchmarks import agents
-import benchmarks
-from benchmarks import environments
+from relab import agents
+import relab
+from relab import environments
 
 
 def run_training(agent, env, seed):
@@ -14,7 +14,7 @@ def run_training(agent, env, seed):
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent, env, seed)
+    relab.initialize(agent, env, seed)
 
     # Create the environment.
     env = environments.make(env)

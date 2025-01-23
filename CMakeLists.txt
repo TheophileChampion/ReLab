@@ -8,11 +8,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add compiler options.
-add_compile_options(-O3 -Wall -Werror -Wl,-rpath,. -g)  # TODO
+add_compile_options(-O3 -Wall -Werror -Wl,-rpath,.)
 
 # Specify the CMake version, as well as the project name and version.
 cmake_minimum_required(VERSION 3.10)
-project(benchmarks VERSION 1.0)
+project(relab VERSION 1.0)
 
 # The name of the virtual environment.
 SET(VENV_DIR "venv-relab")
@@ -21,7 +21,8 @@ SET(VENV_DIR "venv-relab")
 execute_process(COMMAND python3.12 -m pybind11 --includes OUTPUT_VARIABLE ADDITIONAL_INCLUDES)
 string(REPLACE "-I" "" ADDITIONAL_INCLUDES ${ADDITIONAL_INCLUDES})
 string(REPLACE " " ";" ADDITIONAL_INCLUDES ${ADDITIONAL_INCLUDES})
-include_directories(${PROJECT_SOURCE_DIR}/benchmarks_cpp/inc/ ${ADDITIONAL_INCLUDES})
+include_directories(${PROJECT_SOURCE_DIR}/relab_cpp/inc/ ${ADDITIONAL_INCLUDES})
+include_directories(${PROJECT_SOURCE_DIR}/tests/inc/)
 
 # Add link directories required by shared libraries.
 link_directories(${PROJECT_SOURCE_DIR}/scripts/ ${PROJECT_SOURCE_DIR}/scripts/build/)
@@ -37,40 +38,69 @@ find_library(TORCH_PYTHON_LIBRARY torch_python PATH "${TORCH_INSTALL_PREFIX}/lib
 # Add the zlib library.
 find_package(ZLIB REQUIRED)
 
-# Add the shared library: libbenchmarks.so
-add_library(benchmarks SHARED
-    benchmarks_cpp/src/frame_storage.cpp
-    benchmarks_cpp/src/replay_buffer.cpp
-    benchmarks_cpp/src/priority_tree.cpp
-    benchmarks_cpp/src/frame_buffer.cpp
-    benchmarks_cpp/src/compressors.cpp
-    benchmarks_cpp/src/data_buffer.cpp
-    benchmarks_cpp/src/thread_pool.cpp
-    benchmarks_cpp/src/experience.cpp
-    benchmarks_cpp/src/serialize.cpp
-    benchmarks_cpp/src/debug.cpp
-    benchmarks_cpp/src/deque.cpp
-    benchmarks_cpp/src/timer.cpp
+# Download and make Google test available.
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
-target_link_libraries(benchmarks PRIVATE
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+enable_testing()
+
+# Add the shared library: librelab.so
+add_library(relab SHARED
+    relab_cpp/src/agents/memory/frame_storage.cpp
+    relab_cpp/src/agents/memory/replay_buffer.cpp
+    relab_cpp/src/agents/memory/priority_tree.cpp
+    relab_cpp/src/agents/memory/frame_buffer.cpp
+    relab_cpp/src/agents/memory/compressors.cpp
+    relab_cpp/src/agents/memory/data_buffer.cpp
+    relab_cpp/src/agents/memory/experience.cpp
+    relab_cpp/src/helpers/thread_pool.cpp
+    relab_cpp/src/helpers/serialize.cpp
+    relab_cpp/src/helpers/debug.cpp
+    relab_cpp/src/helpers/deque.cpp
+    relab_cpp/src/helpers/timer.cpp
+)
+target_link_libraries(relab PRIVATE
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
     ZLIB::ZLIB
     pthread
 )
 
-# Add the wrapper shared library: libbenchmarks_wrapper.so
-add_library(benchmarks_wrapper SHARED benchmarks_cpp/pybind11_wrapper.cpp)
-target_link_libraries(benchmarks_wrapper PRIVATE
-    benchmarks
+# Add the wrapper shared library: librelab_wrapper.so
+add_library(relab_wrapper SHARED relab_cpp/pybind11_wrapper.cpp)
+target_link_libraries(relab_wrapper PRIVATE
+    relab
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
     ZLIB::ZLIB
     pthread
 )
 
-# Add the testing executable with access to the shared library: libbenchmarks.so
-add_executable(test benchmarks_cpp/tests/main.cpp)
-target_link_libraries(test PRIVATE
-    benchmarks_wrapper benchmarks
+# Create an executable running unit tests.
+add_executable(all_tests
+    tests/src/agents/memory/test_replay_buffer.cpp
+    tests/src/agents/memory/test_priority_tree.cpp
+    tests/src/agents/memory/test_frame_buffer.cpp
+    tests/src/agents/memory/test_data_buffer.cpp
+    tests/src/agents/memory/test_deque.cpp
+    tests/src/relab_test.cpp
+)
+target_link_libraries(all_tests
+    relab
+    ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
+    ZLIB::ZLIB
+    python3.12
+    GTest::gtest_main
+)
+include(GoogleTest)
+gtest_discover_tests(all_tests)
+
+# Add the testing executable with access to the shared library: librelab.so
+add_executable(main_test tests/main.cpp)
+target_link_libraries(main_test PRIVATE
+    relab_wrapper relab
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
     ZLIB::ZLIB
     pthread

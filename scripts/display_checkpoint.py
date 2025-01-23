@@ -6,7 +6,7 @@ import logging
 
 import torch
 
-import benchmarks
+import relab
 
 
 def display_checkpoint(agent, env, seed, index, verbose=False):
@@ -20,11 +20,11 @@ def display_checkpoint(agent, env, seed, index, verbose=False):
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent, env, seed)
+    relab.initialize(agent, env, seed)
 
     # Load the checkpoint.
     checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], f"model_{index}.pt")
-    checkpoint = torch.load(checkpoint_path, map_location=benchmarks.device(), weights_only=False)
+    checkpoint = torch.load(checkpoint_path, map_location=relab.device(), weights_only=False)
 
     # Display key-value pair in the checkpoint.
     for key, value in checkpoint.items():

@@ -1,4 +1,4 @@
-## ReLab
+## 🚀 ReLab
 ## Installation
 
 ### Clone the ReLab source code
@@ -84,19 +84,19 @@ After running the above command, ReLab will generate a GIF of the agent's behavi
 
 ReLab also provides a script to generate graphs summarizing the agent performance:
 ```
-draw_graph --agents DQN --env ALE/Pong-v5 --seeds 0 --metric mean_episodic_reward
+python ./scripts/draw_graph --agents DQN --env ALE/Pong-v5 --seeds 0 --metric mean_episodic_reward
 ```
 Importantly, the parameters `--agents` and `--seeds` are now plural because the script accepts a list of agents and seeds.
 The `--metric` parameter allows you to compare agents based on various metrics, such as episodic mean reward, training speed, or memory usage.
 This script can also be used to compare multiple agents across different seeds, as shown below:
 ```
-draw_graph --agents DQN RainbowDQN --env ALE/Pong-v5 --seeds 0 1 2 3 4 --metric mean_episodic_reward
+python ./scripts/draw_graph --agents DQN RainbowDQN --env ALE/Pong-v5 --seeds 0 1 2 3 4 --metric mean_episodic_reward
 ```
 When multiple seeds are provided, the graph will display a solid line representing the average metric, along with a shaded area indicating the metric's standard deviation.
 
 // TODO add figures comparing the agents performances
 
-For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](TUTORIAL.md).
+For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](Tutorial).
 
 ## Releases and Contributing
 
@@ -114,4 +114,4 @@ ReLab is still in beta. The latest version of ReLab is version 1.0.0-b.
 
 ## License
 
-ReLab has a MIT license, as found in the [LICENSE](LICENSE) file.
+ReLab has a MIT license, as found in the LICENSE file.
