@@ -15,10 +15,24 @@ namespace relab::agents::memory {
 
     public:
 
+        /// @var obs
+        /// The observation tensor at time t.
         torch::Tensor obs;
+
+        /// @var action
+        /// The action taken at time t.
         int action;
+
+        /// @var reward
+        /// The reward received at time t + 1.
         float reward;
+
+        /// @var done
+        /// Flag indicating if the episode ended after this transition.
         bool done;
+
+        /// @var next_obs
+        /// The observation tensor at time t + 1.
         torch::Tensor next_obs;
 
     public:

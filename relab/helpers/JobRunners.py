@@ -78,25 +78,32 @@ class LocalJobRunner(JobRunnerInterface):
         @param max_worker: the maximum number of worker
         """
 
-        # !< The pool of workers for executing tasks concurrently.
+        ## @var pool
+        # The pool of workers for executing tasks concurrently.
         self.pool = ProcessPoolExecutor(max_workers=max_worker)
 
-        # !< The maximum number of workers allowed in the process pool.
+        ## @var max_worker
+        # The maximum number of concurrent workers allowed in the process pool
         self.max_worker = max_worker
 
-        #!< A list to track the future objects returned when submitting tasks.
+        ## @var futures
+        # List of future objects returned when submitting tasks.
         self.futures = []
 
-        # !< The current job index, incremented as new jobs are added.
+        ## @var job_index
+        # Counter for assigning unique job IDs, incremented with each new job.
         self.job_index = -1
 
-        # !< The lock index, used to synchronize access to shared resources.
+        ## @var lock_index
+        # Counter for synchronization mechanisms, used to coordinate access to shared resources
         self.lock_index = -1
 
-        # !< A list of jobs that have not yet completed.
+        ## @var jobs_not_done
+        # List tracking jobs that are currently in progress or pending execution
         self.jobs_not_done = []
 
-        # !< A dictionary of jobs that are waiting to be submitted because their dependencies are not yet satisfied.
+        ## @var jobs_to_submit
+        # Dictionary of jobs waiting for their dependencies to complete before submission.
         self.jobs_to_submit = {}
 
     def set_lock_index(self, job_index=None):
@@ -152,7 +159,9 @@ class LocalJobRunner(JobRunnerInterface):
         """
         logging.info(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
         future = self.pool.submit(task, **kwargs)
+        # @cond IGNORED_BY_DOXYGEN
         future.add_done_callback(partial(self.check_jobs_to_submit, job_index=job_index))
+        # @endcond
         self.futures.append(future)
 
     def check_jobs_to_submit(self, future, job_index):

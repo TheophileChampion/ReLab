@@ -18,6 +18,9 @@ class SpritesALE:
         Constructor.
         @param env: the d-sprites environment for which the ALE is created
         """
+        
+        ## @var env
+        # Reference to the d-sprites environment being wrapped.
         self.env = env
 
     def getScreenGrayscale(self, obs):
@@ -55,36 +58,77 @@ class SpritesEnv(Env):
     https://github.com/zfountas/deep-active-inference-mc/blob/master/src/game_environment.py
     """
 
+    ## @var metadata
+    # Dictionary specifying the environment's rendering capabilities:
+    # - render_modes: List of supported rendering modes (rgb_array only)
+    # - render_fps: Frame rate for rendering (30 FPS)
     metadata = {"render_modes": ["rgb_array"], "render_fps": 30}
 
-    def __init__(self, max_episode_length=1000, difficulty="hard", **_):
+    def __init__(self, max_episode_length=1000, difficulty="hard", **kwargs):
         """!
         Constructor (compatible with OpenAI gym environment)
         @param max_episode_length: the maximum length of an episode
         @param difficulty: the difficulty of the task, i.e., either easy or hard
+        @param kwargs: unused
         """
 
-        # Gymnasium compatibility.
+        # Call the parent constructor.
         super(SpritesEnv, self).__init__()
+
+        ## @var np_precision
+        # The numpy data type used for observations.
         self.np_precision = np.uint8
-        self.action_space = spaces.Discrete(4)
+
+        ## @var action_space
+        # The space of possible actions.
+        self.action_space = spaces.Discrete(18)
+
+        ## @var observation_space
+        # The space of possible observations.
         self.observation_space = spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=self.np_precision)
 
-        # Initialize fields.
+        ## @var images
+        # The images of the d-sprites dataset.
+        ## @var s_sizes
+        # The number of values per latent variable.
+        ## @var s_dim
+        # The number of latent variables.
+        ## @var s_bases
+        # The base values used for state indexing.
         self.images, self.s_sizes, self.s_dim, self.s_bases = DataSet.get()
-        self.state = np.zeros(self.s_dim, dtype=self.np_precision)
-        self.last_r = 0.0
-        self.frame_id = 0
-        self.max_episode_length = max_episode_length
-        self.device = relab.device()
-        self.actions_fn = [self.idle, self.idle, self.down, self.up, self.left, self.right] + [self.idle] * 12
-        self.ale = SpritesALE(self)
-        self.reset()
 
-        # Store environment difficulty.
+        ## @var state
+        # The current state vector of the environment.
+        self.state = np.zeros(self.s_dim, dtype=self.np_precision)
+
+        ## @var last_r
+        # The last reward received.
+        self.last_r = 0.0
+
+        ## @var frame_id
+        # Counter for the current frame in the episode.
+        self.frame_id = 0
+
+        ## @var max_episode_length
+        # Maximum number of frames in an episode.
+        self.max_episode_length = max_episode_length
+
+        ## @var actions_fn
+        # List of action functions that can be performed in the environment.
+        self.actions_fn = [self.idle, self.idle, self.down, self.up, self.left, self.right] + [self.idle] * 12
+
+        ## @var ale
+        # A mock of the Arcade Learning Environment interface for compatibility with Atari wrappers.
+        self.ale = SpritesALE(self)
+
+        ## @var difficulty
+        # The difficulty level of the environment ('easy' or 'hard').
         self.difficulty = difficulty
         if self.difficulty != "hard" and self.difficulty != "easy":
             raise Exception("Invalid difficulty level, must be either 'easy' or 'hard'.")
+
+        # Reset the environment.
+        self.reset()
 
     @staticmethod
     def state_to_one_hot(state):
@@ -217,45 +261,54 @@ class SpritesEnv(Env):
         Execute the action "down" in the environment.
         @return true if the object crossed the bottom line
         """
+        # @cond IGNORED_BY_DOXYGEN
 
-        # Increase y coordinate
+        # Increase y coordinate.
         self.y_pos += 1.0
 
-        # If the object did not cross the bottom line, return false
+        # If the object did not cross the bottom line, return false.
         if self.y_pos < 32:
             return False
 
+        # If the object did cross the bottom line, compute the reward and return true.
         if self.difficulty == "hard":
             self.last_r = self.compute_hard_reward()
         self.y_pos -= 1.0
         return True
+        # @endcond
 
     def up(self):
         """!
         Execute the action "up" in the environment.
         @return false (the object never cross the bottom line when moving up)
         """
+        # @cond IGNORED_BY_DOXYGEN
         if self.y_pos > 0:
             self.y_pos -= 1.0
         return False
+        # @endcond
 
     def right(self):
         """!
         Execute the action "right" in the environment.
         @return false (the object never cross the bottom line when moving left)
         """
+        # @cond IGNORED_BY_DOXYGEN
         if self.x_pos < 31:
             self.x_pos += 1.0
         return False
+        # @endcond
 
     def left(self):
         """!
         Execute the action "left" in the environment.
         @return false (the object never cross the bottom line when moving right)
         """
+        # @cond IGNORED_BY_DOXYGEN
         if self.x_pos > 0:
             self.x_pos -= 1.0
         return False
+        # @endcond
 
     #
     # Reward computation
@@ -266,28 +319,34 @@ class SpritesEnv(Env):
         Compute the obtained by the agent when a square crosses the bottom wall
         @return the reward.
         """
+        # @cond IGNORED_BY_DOXYGEN
         if self.x_pos > 15:
             return float(15.0 - self.x_pos) / 16.0
         else:
             return float(16.0 - self.x_pos) / 16.0
+        # @endcond
 
     def compute_non_square_reward(self):
         """!
         Compute the obtained by the agent when an ellipse or heart crosses the bottom wall.
         @return the reward
         """
+        # @cond IGNORED_BY_DOXYGEN
         if self.x_pos > 15:
             return float(self.x_pos - 15.0) / 16.0
         else:
             return float(self.x_pos - 16.0) / 16.0
+        # @endcond
 
     def compute_easy_reward(self):
         """!
         Compute the reward obtained by the agent if the environment difficulty is easy.
         @return the reward
         """
+        # @cond IGNORED_BY_DOXYGEN
         tx, ty = (0, 31) if self.state[1] < 0.5 else (31, 31)
         return -1.0 + (62 - abs(tx - self.x_pos) - abs(ty - self.y_pos)) / 31.0
+        # @endcond
 
     def compute_hard_reward(self):
         """!

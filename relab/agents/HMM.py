@@ -60,18 +60,20 @@ class HMM(VariationalModel):
             learning_rate=learning_rate, adam_eps=adam_eps, beta_schedule=beta_schedule, tau_schedule=tau_schedule,
         )
 
-        # Create the world model.
+        ## @var encoder
+        # Neural network that encodes observations into latent states.
         self.encoder = self.get_encoder_network(self.latent_space_type)
-        self.encoder.train(self.training)
-        self.encoder.to(self.device)
-        self.decoder = self.get_decoder_network(self.latent_space_type)
-        self.decoder.train(self.training)
-        self.decoder.to(self.device)
-        self.transition = self.get_transition_network(self.latent_space_type)
-        self.transition.train(self.training)
-        self.transition.to(self.device)
 
-        # Create the optimizer.
+        ## @var decoder
+        # Neural network that decodes latent states into observations.
+        self.decoder = self.get_decoder_network(self.latent_space_type)
+
+        ## @var transition
+        # Neural network that models the transition dynamics in latent space.
+        self.transition = self.get_transition_network(self.latent_space_type)
+
+        ## @var optimizer
+        # Adam optimizer for training the encoder, decoder, and transition networks.
         self.optimizer = optim.Adam(
             list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters()),
             lr=self.learning_rate, eps=self.adam_eps
@@ -82,6 +84,7 @@ class HMM(VariationalModel):
         Perform one step of gradient descent on the world model.
         @return the loss of the sampled batch
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Sample the replay buffer.
         obs, actions, _, _, next_obs = self.buffer.sample()
@@ -107,6 +110,7 @@ class HMM(VariationalModel):
             "log_likelihood": log_likelihood.mean(),
             "kl_divergence": kl_divergence.mean(),
         }
+        # @endcond
 
     def continuous_vfe(self, obs, actions, next_obs):
         """!
@@ -142,6 +146,7 @@ class HMM(VariationalModel):
         @param next_obs: the observations at time t + 1
         @return the variational free energy
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Compute required vectors.
         tau = self.tau(self.current_step)
@@ -165,6 +170,7 @@ class HMM(VariationalModel):
             self.likelihood_loss(next_obs, next_reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
+        # @endcond
 
     def mixed_vfe(self, obs, actions, next_obs):
         """!
@@ -174,6 +180,7 @@ class HMM(VariationalModel):
         @param next_obs: the observations at time t + 1
         @return the variational free energy
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Compute required vectors.
         tau = self.tau(self.current_step)
@@ -197,6 +204,7 @@ class HMM(VariationalModel):
             self.likelihood_loss(next_obs, next_reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
+        # @endcond
 
     def draw_reconstructed_images(self, env, model_index, grid_size):
         """!
@@ -278,6 +286,7 @@ class HMM(VariationalModel):
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Retrieve the full checkpoint path.
         if checkpoint_name is None:
@@ -346,6 +355,7 @@ class HMM(VariationalModel):
             lr=self.learning_rate, eps=self.adam_eps
         )
         self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
+        # @endcond
 
     def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """!
@@ -353,6 +363,7 @@ class HMM(VariationalModel):
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
+        # @cond IGNORED_BY_DOXYGEN
         
         # Create the checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
@@ -385,3 +396,4 @@ class HMM(VariationalModel):
 
         # Save the replay buffer.
         self.buffer.save(checkpoint_path, buffer_checkpoint_name)
+        # @endcond

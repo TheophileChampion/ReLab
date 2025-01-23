@@ -194,13 +194,13 @@ namespace relab::agents::memory::impl {
          */
         std::string toString(float value, int precision=1);
 
-        /*
+        /**
          * Load the priority tree from the checkpoint.
          * @param checkpoint a stream reading from the checkpoint file
          */
         void load(std::istream &checkpoint);
 
-        /*
+        /**
          * Save the priority tree in the checkpoint.
          * @param checkpoint a stream writing into the checkpoint file
          */

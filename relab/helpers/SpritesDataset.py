@@ -13,6 +13,8 @@ class DataSet:
     Singleton used to access the dSprites dataset.
     """
 
+    ## @var instance
+    # The unique instance of the d-sprites dataset (singleton design pattern).
     instance = None
 
     @staticmethod

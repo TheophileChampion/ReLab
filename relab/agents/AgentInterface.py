@@ -25,10 +25,22 @@ class ReplayType(IntEnum):
     """!
     The replay buffer supported by the DQN agent.
     """
-    DEFAULT = 0  # Standard replay buffer
-    PRIORITIZED = 1  # Prioritized replay buffer
-    MULTISTEP = 2  # Multistep replay buffer (used in multistep Q-learning)
-    MULTISTEP_PRIORITIZED = 3  # Multistep prioritized replay buffer (used in multistep Q-learning)
+
+    ## @var DEFAULT
+    # Standard replay buffer with uniform sampling.
+    DEFAULT = 0
+
+    ## @var PRIORITIZED
+    # Prioritized experience replay buffer that samples transitions based on their associated loss values.
+    PRIORITIZED = 1
+
+    ## @var MULTISTEP
+    # Replay buffer that stores n-step transitions for multistep Q-learning.
+    MULTISTEP = 2
+
+    ## @var MULTISTEP_PRIORITIZED
+    # Combination of prioritized experience replay and n-step transitions.
+    MULTISTEP_PRIORITIZED = 3
 
 
 class AgentInterface(ABC):
@@ -42,39 +54,72 @@ class AgentInterface(ABC):
         @param training: True if the agent is being training, False otherwise
         """
 
-        # Retrieve the device to use for training.
+        ## @var device
+        # The device (CPU/GPU) used for training computations.
         self.device = relab.device()
 
-        # The number of episodes for which to track metrics.
+        ## @var max_queue_len
+        # Maximum length for metric tracking queues (e.g., rewards, losses).
         self.max_queue_len = 100
 
-        # The number of training steps performed.
+        ## @var current_step
+        # Counter tracking the number of training steps performed.
         self.current_step = 0
 
-        # Create the queue containing the last variational free energy values.
+        ## @var vfe_losses
+        # Queue containing the last variational free energy loss values.
         self.vfe_losses = deque(maxlen=self.max_queue_len)
+
+        ## @var betas
+        # Queue containing the last beta values for variational inference.
         self.betas = deque(maxlen=self.max_queue_len)
+
+        ## @var log_likelihoods
+        # Queue containing the last log-likelihood values.
         self.log_likelihoods = deque(maxlen=self.max_queue_len)
+
+        ## @var kl_divergences
+        # Queue containing the last KL-divergence values.
         self.kl_divergences = deque(maxlen=self.max_queue_len)
 
-        # The current process, as well as queue used to track the memory usage of the program.
+        ## @var process
+        # Object representing the current process, used to track memory usage.
         self.process = psutil.Process()
+
+        ## @var virtual_memory
+        # Queue tracking virtual memory usage over time.
         self.virtual_memory = deque(maxlen=self.max_queue_len)
+
+        ## @var residential_memory
+        # Queue tracking residential memory usage over time.
         self.residential_memory = deque(maxlen=self.max_queue_len)
 
-        # Create the queue containing the last episodic rewards.
+        ## @var episodic_rewards
+        # Queue containing the last episodic reward values.
         self.episodic_rewards = deque(maxlen=self.max_queue_len)
+
+        ## @var current_episodic_reward
+        # Accumulator for the current episode's reward.
         self.current_episodic_reward = 0
 
-        # Create the queue containing the time elapsed between training iterations.
+        ## @var time_elapsed
+        # Queue containing the time elapsed between consecutive training iterations.
         self.time_elapsed = deque(maxlen=self.max_queue_len)
+
+        ## @var last_time
+        # Timestamp of the last training iteration.
         self.last_time = None
 
-        # Create the queue containing the last episode lengths.
+        ## @var episode_lengths
+        # Queue containing the lengths of recent episodes.
         self.episode_lengths = deque(maxlen=self.max_queue_len)
+
+        ## @var current_episode_length
+        # Counter for the current episode's length.
         self.current_episode_length = 0
 
-        # Create the summary writer for monitoring with TensorBoard.
+        ## @var writer
+        # TensorBoard summary writer for logging training metrics.
         self.writer = SummaryWriter(os.environ["TENSORBOARD_DIRECTORY"]) if training is True else None
 
     @abc.abstractmethod

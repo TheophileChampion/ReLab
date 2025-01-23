@@ -51,7 +51,7 @@ namespace relab::agents::memory {
 
         /**
          * Decompress the tensor passed as parameters.
-         * @param tensor the tensor to decompress
+         * @param input the tensor to decompress
          * @param output the buffer in which to decompress the tensor
          */
         virtual void decode(const torch::Tensor &input, float *output) = 0;
@@ -105,7 +105,7 @@ namespace relab::agents::memory {
 
         /**
          * Decompress the tensor passed as parameters.
-         * @param tensor the tensor to decompress
+         * @param input the tensor to decompress
          * @param output the buffer in which to decompress the tensor
          */
         void decode(const torch::Tensor &input, float *output);
@@ -158,7 +158,7 @@ namespace relab::agents::memory {
 
         /**
          * Decompress the tensor passed as parameters.
-         * @param tensor the tensor to decompress
+         * @param input the tensor to decompress
          * @param output the buffer in which to decompress the tensor
          */
         void decode(const torch::Tensor &input, float *output);

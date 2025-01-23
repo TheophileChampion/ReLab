@@ -64,6 +64,7 @@ namespace relab::helpers {
         std::cout << "])" << std::endl;
     }
 
+    // @cond IGNORED_BY_DOXYGEN
     template<>
     void Deque<bool>::print() {
         std::cout << "Deque(max_size: " << this->max_size << ", values: [";
@@ -77,6 +78,7 @@ namespace relab::helpers {
         }
         std::cout << "])" << std::endl;
     }
+    // @endcond
 
     template<class Type>
     bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs) {

@@ -12,25 +12,36 @@ namespace relab::agents::memory {
 
     public:
 
-        // The initial and current number of frames that can be stored in the vector of frames.
+        /// @var initial_capacity
+        /// The initial number of frames that can be stored in the vector.
         int initial_capacity;
+
+        /// @var capacity
+        /// The current number of frames that can be stored in the vector.
         int capacity;
 
-        // The number by which the capacity is increased when no space is left in the vector of frames.
+        /// @var capacity_incr
+        /// The increment size when expanding the storage's capacity.
         int capacity_incr;
 
-        // The vector of frames.
+        /// @var frames
+        /// The vector storing all frames.
         std::vector<torch::Tensor> frames;
 
-        // The unique indices of the first and last frames stored in the vector of frames.
-        // Note: unique in this context means that each frame has a different index.
-        // Note: these indices may be larger than the tensor's capacity.
+        /// @var first_frame_index
+        /// The unique index of the first frame in storage (may exceed capacity).
         int first_frame_index;
+
+        /// @var last_frame_index
+        /// The unique index of the last frame in storage (may exceed capacity).
         int last_frame_index;
 
-        // The indices at which the first and last frames are stored in the vector of frames.
-        // Note: these indices are always smaller than the tensor's capacity.
+        /// @var first_frame
+        /// The storage index of the first frame (always less than capacity).
         int first_frame;
+
+        /// @var last_frame
+        /// The storage index of the last frame (always less than capacity).
         int last_frame;
 
     public:
@@ -83,13 +94,13 @@ namespace relab::agents::memory {
          */
         torch::Tensor operator[](int index);
 
-        /*
+        /**
          * Load the frame storage from the checkpoint.
          * @param checkpoint a stream reading from the checkpoint file
          */
         void load(std::istream &checkpoint);
 
-        /*
+        /**
          * Save the frame storage in the checkpoint.
          * @param checkpoint a stream writing into the checkpoint file
          */

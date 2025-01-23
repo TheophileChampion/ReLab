@@ -28,31 +28,88 @@ class LossType(IntEnum):
     """!
     The loss functions supported by the DQN agent.
     """
-    DQN_MSE = 0  # Q-value loss with Mean Square Error
-    DQN_SL1 = 1  # Q-value loss with Smooth L1 norm
-    DDQN_MSE = 2  # Double Q-value loss with Mean Square Error
-    DDQN_SL1 = 3  # Double Q-value loss with Smooth L1 norm
-    KL_DIVERGENCE = 4  # Categorical DQN loss
-    QUANTILE = 5  # Huber quantile loss
-    IMPLICIT_QUANTILE = 6  # Implicit quantile loss
-    RAINBOW = 7  # Rainbow loss
-    RAINBOW_IQN = 8  # Rainbow IQN loss
+
+    ## @var DQN_MSE
+    # Q-learning loss using Mean Square Error.
+    DQN_MSE = 0
+
+    ## @var DQN_SL1
+    # Q-learning loss using Smooth L1 loss.
+    DQN_SL1 = 1
+
+    ## @var DDQN_MSE
+    # Double Q-learning loss using Mean Square Error.
+    DDQN_MSE = 2
+
+    ## @var DDQN_SL1
+    # Double Q-learning loss using Smooth L1 loss.
+    DDQN_SL1 = 3
+
+    ## @var KL_DIVERGENCE
+    # KL-divergence loss for Categorical DQN.
+    KL_DIVERGENCE = 4
+
+    ## @var QUANTILE
+    # Huber quantile regression loss for QR-DQN.
+    QUANTILE = 5
+
+    ## @var IMPLICIT_QUANTILE
+    # Loss function for Implicit Quantile Networks (IQN).
+    IMPLICIT_QUANTILE = 6
+
+    ## @var RAINBOW
+    # Combined loss function for Rainbow DQN.
+    RAINBOW = 7
+
+    ## @var RAINBOW_IQN
+    # Combined loss function for Rainbow with IQN.
+    RAINBOW_IQN = 8
 
 
 class NetworkType(IntEnum):
     """!
     The networks supported by the DQN agent.
     """
-    DEFAULT = 0  # Standard Deep Q-Network
-    NOISY = 1  # Deep Q-Network with noisy linear layer
-    DUELING = 2  # Dueling Deep Q-Network
-    NOISY_DUELING = 3  # Dueling Deep Q-Network with noisy linear layer
-    CATEGORICAL = 4  # Categorical Deep Q-network
-    NOISY_CATEGORICAL = 5  # Categorical Deep Q-network with noisy linear layer
-    QUANTILE = 6  # Quantile Deep Q-network
-    IMPLICIT_QUANTILE = 7  # Implicit quantile network
-    RAINBOW = 8  # Rainbow Deep Q-network
-    RAINBOW_IQN = 9  # Rainbow Implicit Q-network
+
+    ## @var DEFAULT
+    # Standard Deep Q-Network architecture.
+    DEFAULT = 0
+
+    ## @var NOISY
+    # DQN with noisy linear layers for exploration.
+    NOISY = 1
+
+    ## @var DUELING
+    # Dueling architecture separating state value and action advantage.
+    DUELING = 2
+
+    ## @var NOISY_DUELING
+    # Dueling architecture with noisy linear layers.
+    NOISY_DUELING = 3
+
+    ## @var CATEGORICAL
+    # Categorical Deep Q-network architecture.
+    CATEGORICAL = 4
+
+    ## @var NOISY_CATEGORICAL
+    # Categorical Deep Q-network network with noisy linear layers.
+    NOISY_CATEGORICAL = 5
+
+    ## @var QUANTILE
+    # Network for Quantile Regression DQN.
+    QUANTILE = 6
+
+    ## @var IMPLICIT_QUANTILE
+    # Network architecture for Implicit Quantile Networks.
+    IMPLICIT_QUANTILE = 7
+
+    ## @var RAINBOW
+    # Combined architecture used in Rainbow DQN.
+    RAINBOW = 8
+
+    ## @var RAINBOW_IQN
+    # Rainbow architecture with Implicit Quantile Networks.
+    RAINBOW_IQN = 9
 
 
 class DQN(AgentInterface):
@@ -115,52 +172,115 @@ class DQN(AgentInterface):
         # Call the parent constructor.
         super().__init__(training=training)
 
-        # Store the agent's parameters.
+        ## @var gamma
+        # Discount factor for future rewards (between 0 and 1).
         self.gamma = gamma
+
+        ## @var learning_rate
+        # Learning rate for the optimizer.
         self.learning_rate = learning_rate
+
+        ## @var buffer_size
+        # Maximum number of transitions stored in the replay buffer.
         self.buffer_size = buffer_size
+
+        ## @var batch_size
+        # Number of transitions sampled per learning update.
         self.batch_size = batch_size
+
+        ## @var target_update_interval
+        # Number of training steps between target network updates.
         self.target_update_interval = target_update_interval
+
+        ## @var learning_starts
+        # Step count at which learning begins.
         self.learning_starts = learning_starts
+
+        ## @var kappa
+        # Parameter for the quantile Huber loss (used in QR-DQN).
         self.kappa = kappa
+
+        ## @var adam_eps
+        # Epsilon parameter for the Adam optimizer.
         self.adam_eps = adam_eps
+
+        ## @var n_atoms
+        # Number of atoms used to approximate the return distribution.
         self.n_atoms = n_atoms
+
+        ## @var v_min
+        # Minimum value for the return distribution support.
         self.v_min = v_min
+
+        ## @var v_max
+        # Maximum value for the return distribution support.
         self.v_max = v_max
+
+        ## @var n_actions
+        # Number of possible actions in the environment.
         self.n_actions = n_actions
+
+        ## @var n_steps
+        # Number of steps for multi-step learning.
         self.n_steps = n_steps
+
+        ## @var omega
+        # Exponent for prioritization in the replay buffer.
         self.omega = omega
+
+        ## @var omega_is
+        # Exponent for importance sampling correction.
         self.omega_is = omega_is
+
+        ## @var replay_type
+        # Type of experience replay buffer being used.
         self.replay_type = replay_type
+
+        ## @var loss_type
+        # Type of loss function used for training.
         self.loss_type = loss_type
+
+        ## @var network_type
+        # Type of neural network architecture used.
         self.network_type = network_type
+
+        ## @var training
+        # Flag indicating whether the agent is in training mode.
         self.training = training
+
+        ## @var epsilon_schedule
+        # Schedule for the exploration parameter epsilon.
         self.epsilon_schedule = [
             (0, 1), (self.learning_starts, 1), (1e6, 0.1), (10e6, 0.01)
         ] if epsilon_schedule is None else epsilon_schedule
+
+        ## @var epsilon
+        # Scheduler for the exploration parameter epsilon.
         self.epsilon = PiecewiseLinearSchedule(self.epsilon_schedule)
 
-        # The loss function, value network, and replay buffer.
+        ## @var loss
+        # Loss function used for computing gradients.
         self.loss = self.get_loss(self.loss_type)
-        network = self.get_value_network(self.network_type)
-        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
 
-        # Create the value network.
-        self.value_net = network()
-        self.value_net.train(training)
-        self.value_net.to(self.device)
+        ## @var value_net
+        # The value network that approximates the Q-value function.
+        self.value_net = self.get_value_network(self.network_type)
 
-        # Create the target network (copy value network's weights and avoid gradient computation).
-        self.target_net = network()
-        self.target_net.train(training)
-        self.target_net.to(self.device)
+        ## @var target_net
+        # The target network, which is a copy of the value network synchronized periodically.
+        self.target_net = self.get_value_network(self.network_type)
         self.update_target_network()
         for param in self.target_net.parameters():
             param.requires_grad = False
 
-        # Create the optimizer and replay buffer.
+        ## @var optimizer
+        # Adam optimizer for training the value network.
         self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
-        self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
+
+        ## @var buffer
+        # Experience replay buffer for storing transitions.
+        buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
+        self.buffer = buffer(capacity=self.buffer_size, batch_size=self.batch_size)
 
     def get_loss(self, loss_type):
         """!
@@ -168,6 +288,7 @@ class DQN(AgentInterface):
         @param loss_type: the loss to use during gradient descent
         @return the loss
         """
+        # @cond IGNORED_BY_DOXYGEN
         return {
             LossType.DQN_MSE: partial(self.q_learning_loss, loss_fc=MSELoss(reduction="none")),
             LossType.DQN_SL1: partial(self.q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")),
@@ -179,6 +300,7 @@ class DQN(AgentInterface):
             LossType.RAINBOW: self.rainbow_loss,
             LossType.RAINBOW_IQN: partial(self.rainbow_iqn_loss, kappa=self.kappa),
         }[loss_type]
+        # @endcond
 
     def get_value_network(self, network_type):
         """!
@@ -186,7 +308,8 @@ class DQN(AgentInterface):
         @param network_type: the network architecture to use for the value and target networks
         @return the constructor of the value network
         """
-        return {
+        # @cond IGNORED_BY_DOXYGEN
+        network = {
             NetworkType.DEFAULT: partial(DeepQNetwork, n_actions=self.n_actions),
             NetworkType.NOISY: partial(NoisyDeepQNetwork, n_actions=self.n_actions),
             NetworkType.DUELING: partial(DuelingDeepQNetwork, n_actions=self.n_actions),
@@ -197,7 +320,11 @@ class DQN(AgentInterface):
             NetworkType.IMPLICIT_QUANTILE: partial(ImplicitQuantileNetwork, n_actions=self.n_actions),
             NetworkType.RAINBOW: partial(RainbowDeepQNetwork, n_actions=self.n_actions, n_atoms=self.n_atoms, v_min=self.v_min, v_max=self.v_max),
             NetworkType.RAINBOW_IQN: partial(RainbowImplicitQuantileNetwork, n_actions=self.n_actions),
-        }[network_type]
+        }[network_type]()
+        network.train(self.training)
+        network.to(self.device)
+        return network
+        # @endcond
 
     def update_target_network(self):
         """!
@@ -211,15 +338,18 @@ class DQN(AgentInterface):
         @param obs: the observation available to make the decision
         @return the next action to perform
         """
+        # @cond IGNORED_BY_DOXYGEN
         if not self.training or np.random.random() > self.epsilon(self.current_step):
             return torch.argmax(self.value_net.q_values(obs), dim=1).item()
         return np.random.choice(self.n_actions)
+        # @endcond
 
     def train(self, env):
         """!
         Train the agent in the gym environment passed as parameters
         @param env: the gym environment
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Retrieve the initial observation from the environment.
         obs, _ = env.reset()
@@ -265,6 +395,7 @@ class DQN(AgentInterface):
 
         # Close the environment.
         env.close()
+        # @endcond
 
     def learn(self):
         """!
@@ -415,6 +546,7 @@ class DQN(AgentInterface):
         @param kappa: the kappa parameter of the quantile Huber loss see Equation (10) in QR-DQN paper
         @return the categorical loss
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Compute the best actions at time t + 1.
         next_atoms = self.target_net(next_obs)
@@ -441,6 +573,7 @@ class DQN(AgentInterface):
                 loss += torch.abs(tau - mask).to(self.device) * huber_loss(next_atom_j, atom_i) / kappa
         loss /= self.n_atoms
         return loss
+        # @endcond
 
     def implicit_quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
         """!
@@ -453,6 +586,7 @@ class DQN(AgentInterface):
         @param kappa: the kappa parameter of the quantile Huber loss see Equation (10) in QR-DQN paper
         @return the categorical loss
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Compute the best actions at time t + 1.
         next_q_values = self.target_net.q_values(next_obs)
@@ -478,6 +612,7 @@ class DQN(AgentInterface):
                 loss += torch.abs(taus[:, i] - mask).to(self.device) * huber_loss(next_atom_j, atom_i) / kappa
         loss /= self.n_atoms
         return loss
+        # @endcond
 
     def rainbow_iqn_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
         """!
@@ -490,6 +625,7 @@ class DQN(AgentInterface):
         @param kappa: the kappa parameter of the quantile Huber loss see Equation (3) in IQN paper
         @return the rainbow IQN loss
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Compute the best actions at time t + 1 using the value network.
         next_actions = torch.argmax(self.value_net.q_values(next_obs), dim=1).detach()
@@ -514,6 +650,7 @@ class DQN(AgentInterface):
                 loss += torch.abs(taus[:, i] - mask).to(self.device) * huber_loss(next_atom_j, atom_i) / kappa
         loss /= self.n_atoms
         return loss
+        # @endcond
 
     def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
         """!
@@ -521,6 +658,7 @@ class DQN(AgentInterface):
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Retrieve the full agent checkpoint path.
         if checkpoint_name is None:
@@ -565,17 +703,11 @@ class DQN(AgentInterface):
         self.loss = self.get_loss(self.loss_type)
 
         # Update the agent's networks using the checkpoint.
-        network = self.get_value_network(self.network_type)
-
-        self.value_net = network()
+        self.value_net = self.get_value_network(self.network_type)
         self.value_net.load_state_dict(self.safe_load(checkpoint, "value_net"))
-        self.value_net.train(self.training)
-        self.value_net.to(self.device)
 
-        self.target_net = network()
+        self.target_net = self.get_value_network(self.network_type)
         self.target_net.load_state_dict(self.safe_load(checkpoint, "target_net"))
-        self.target_net.train(self.training)
-        self.target_net.to(self.device)
         for param in self.target_net.parameters():
             param.requires_grad = False
 
@@ -585,6 +717,7 @@ class DQN(AgentInterface):
         self.buffer.load(checkpoint_path, buffer_checkpoint_name)
         self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
         self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
+        # @endcond
 
     def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """!
@@ -592,6 +725,7 @@ class DQN(AgentInterface):
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Create the agent checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
@@ -628,3 +762,4 @@ class DQN(AgentInterface):
 
         # Save the replay buffer.
         self.buffer.save(checkpoint_path, buffer_checkpoint_name)
+        # @endcond

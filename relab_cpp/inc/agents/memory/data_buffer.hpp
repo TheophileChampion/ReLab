@@ -88,13 +88,13 @@ namespace relab::agents::memory::impl {
          */
         std::unique_ptr<PriorityTree> &getPriorities();
 
-        /*
+        /**
          * Load the data buffer from the checkpoint.
          * @param checkpoint a stream reading from the checkpoint file
          */
         void load(std::istream &checkpoint);
 
-        /*
+        /**
          * Save the data buffer in the checkpoint.
          * @param checkpoint a stream writing into the checkpoint file
          */

@@ -12,7 +12,14 @@ class Timer:
         Create a timer.
         @param name: the name of the block of code whose time is being tracked
         """
+
+        ## @var name
+        # The name of the block of code whose time is being tracked.
         self.name = name
+
+        ## @var start_time
+        # The time when the timer was started.
+        self.start_time = 0.0
 
     def __enter__(self):
         """!

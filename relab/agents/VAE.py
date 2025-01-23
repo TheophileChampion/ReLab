@@ -71,15 +71,16 @@ class VAE(VariationalModel):
             learning_rate=learning_rate, adam_eps=adam_eps, beta_schedule=beta_schedule, tau_schedule=tau_schedule,
         )
 
-        # Create the world model.
+        ## @var encoder
+        # Neural network that encodes observations into a distribution over latent states.
         self.encoder = self.get_encoder_network(self.latent_space_type)
-        self.encoder.train(training)
-        self.encoder.to(self.device)
-        self.decoder = self.get_decoder_network(self.latent_space_type)
-        self.decoder.train(training)
-        self.decoder.to(self.device)
 
-        # Create the optimizer.
+        ## @var decoder
+        # Neural network that decodes latent states into reconstructed observations.
+        self.decoder = self.get_decoder_network(self.latent_space_type)
+
+        ## @var optimizer
+        # Adam optimizer for training both the encoder and decoder networks.
         self.optimizer = optim.Adam(
             list(self.encoder.parameters()) + list(self.decoder.parameters()),
             lr=self.learning_rate, eps=self.adam_eps
@@ -90,6 +91,7 @@ class VAE(VariationalModel):
         Perform one step of gradient descent on the world model.
         @return the loss of the sampled batch
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Sample the replay buffer.
         obs, actions, _, _, next_obs = self.buffer.sample()
@@ -115,6 +117,7 @@ class VAE(VariationalModel):
             "log_likelihood": log_likelihood.mean(),
             "kl_divergence": kl_divergence.mean(),
         }
+        # @endcond
 
     def continuous_vfe(self, obs, actions, next_obs):
         """!
@@ -124,6 +127,7 @@ class VAE(VariationalModel):
         @param next_obs: the observations at time t + 1 (unused)
         @return the variational free energy
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
 
@@ -137,6 +141,7 @@ class VAE(VariationalModel):
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
+        # @endcond
 
     def discrete_vfe(self, obs, actions, next_obs):
         """!
@@ -146,6 +151,7 @@ class VAE(VariationalModel):
         @param next_obs: the observations at time t + 1 (unused)
         @return the variational free energy
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Compute required tensors.
         tau = self.tau(self.current_step)
@@ -160,6 +166,7 @@ class VAE(VariationalModel):
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
+        # @endcond
 
     def mixed_vfe(self, obs, actions, next_obs):
         """!
@@ -169,6 +176,7 @@ class VAE(VariationalModel):
         @param next_obs: the observations at time t + 1 (unused)
         @return the variational free energy
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Compute required tensors.
         tau = self.tau(self.current_step)
@@ -183,6 +191,7 @@ class VAE(VariationalModel):
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
+        # @endcond
 
     def draw_reconstructed_images(self, env, model_index, grid_size):
         """!
@@ -192,6 +201,7 @@ class VAE(VariationalModel):
         @param grid_size: the size of the image grid to generate
         @return the figure containing the images
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Create the figure and the grid specification.
         height, width = grid_size
@@ -240,6 +250,7 @@ class VAE(VariationalModel):
         plt.subplots_adjust(wspace=0, hspace=0)
         plt.tight_layout(pad=0.1)
         return fig
+        # @endcond
 
     def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
         """!
@@ -247,6 +258,7 @@ class VAE(VariationalModel):
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Retrieve the full checkpoint path.
         if checkpoint_name is None:
@@ -293,12 +305,8 @@ class VAE(VariationalModel):
         # Update the world model using the checkpoint.
         self.encoder = self.get_encoder_network(self.latent_space_type)
         self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
-        self.encoder.train(self.training)
-        self.encoder.to(self.device)
         self.decoder = self.get_decoder_network(self.latent_space_type)
         self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
-        self.decoder.train(self.training)
-        self.decoder.to(self.device)
 
         # Update the replay buffer.
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
@@ -314,6 +322,7 @@ class VAE(VariationalModel):
             lr=self.learning_rate, eps=self.adam_eps
         )
         self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
+        # @endcond
 
     def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """!
@@ -321,7 +330,8 @@ class VAE(VariationalModel):
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
-        
+        # @cond IGNORED_BY_DOXYGEN
+
         # Create the checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)
@@ -355,3 +365,4 @@ class VAE(VariationalModel):
 
         # Save the replay buffer.
         self.buffer.save(checkpoint_path, buffer_checkpoint_name)
+        # @endcond

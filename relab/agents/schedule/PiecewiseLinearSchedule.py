@@ -8,6 +8,10 @@ class PiecewiseLinearSchedule:
         Create the piecewise linear schedule.
         @param schedule: a list of tuples of the form (value, time_step)
         """
+        
+        ## @var schedule
+        # List of tuples defining the schedule breakpoints. Each tuple contains (time_step, value).
+        # The schedule linearly interpolates between these points.
         self.schedule = schedule if isinstance(schedule, list) else [schedule]
 
     def __call__(self, current_step):

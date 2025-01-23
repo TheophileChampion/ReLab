@@ -17,19 +17,18 @@ class Random(AgentInterface):
     Implement an agent taking random actions.
     """
 
-    def __init__(self, n_actions=18, training=False):
+    def __init__(self, n_actions=18):
         """!
         Create an agent taking random actions.
         @param n_actions: the number of actions available to the agent
-        @param training: True if the agent is being trained, False otherwise
         """
 
         # Call the parent constructor.
         super().__init__(training=training)
 
-        # Store the agent's parameters.
+        ## @var n_actions
+        # Number of possible actions available to the agent.
         self.n_actions = n_actions
-        self.training = training
 
     def step(self, obs):
         """!
@@ -44,6 +43,7 @@ class Random(AgentInterface):
         Train the agent in the gym environment passed as parameters
         @param env: the gym environment
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Retrieve the initial observation from the environment.
         obs, _ = env.reset()
@@ -81,6 +81,7 @@ class Random(AgentInterface):
 
         # Close the environment.
         env.close()
+        # @endcond
 
     def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
         """!
@@ -88,6 +89,7 @@ class Random(AgentInterface):
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
         """
+        # @cond IGNORED_BY_DOXYGEN
 
         # Retrieve the full checkpoint path.
         if checkpoint_name is None:
@@ -106,8 +108,8 @@ class Random(AgentInterface):
 
         # Update the agent's parameters using the checkpoint.
         self.n_actions = self.safe_load(checkpoint, "n_actions")
-        self.training = self.safe_load(checkpoint, "training")
         self.current_step = self.safe_load(checkpoint, "current_step")
+        # @endcond
 
     def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """!
@@ -115,7 +117,8 @@ class Random(AgentInterface):
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
-        
+        # @cond IGNORED_BY_DOXYGEN
+
         # Create the checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)
@@ -124,6 +127,6 @@ class Random(AgentInterface):
         logging.info("Saving agent to the following file: " + checkpoint_path)
         torch.save({
             "n_actions": self.n_actions,
-            "training": self.training,
             "current_step": self.current_step,
         }, checkpoint_path)
+        # @endcond

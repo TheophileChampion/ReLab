@@ -2,10 +2,10 @@ import torch.nn as nn
 import math
 
 
-#
-# Class wrapping the nn.ConvTranspose2d layer to add the padding='same' feature.
-#
 class ConvTranspose2d(nn.Module):
+    """!
+    Class implementing a convolutional transpose layer with the ability to apply the padding same.
+    """
 
     def __init__(
         self, in_channels, out_channels, kernel_size, stride=1,
@@ -13,23 +13,23 @@ class ConvTranspose2d(nn.Module):
         padding_mode='zeros', device=None, dtype=None
     ):
         """!
-        Constructor of the convolutional transpose layer.
-        @param in_channels: see documentation of torch.nn.ConvTranspose2d.
-        @param out_channels: see documentation of torch.nn.ConvTranspose2d.
-        @param kernel_size: see documentation of torch.nn.ConvTranspose2d.
-        @param stride: see documentation of torch.nn.ConvTranspose2d.
-        @param padding: in addition to what is described in the documentation of
-        torch.nn.ConvTranspose2d, this parameter can be a string equals to either
-        'valid' or 'same'. If set to 'valid', then no padding is performed. If set
-        to 'same', the layer will ensure that: output shape = input shape * stride.
-        @param output_padding: see documentation of torch.nn.ConvTranspose2d.
-        @param groups: see documentation of torch.nn.ConvTranspose2d.
-        @param bias: see documentation of torch.nn.ConvTranspose2d.
-        @param dilation: see documentation of torch.nn.ConvTranspose2d.
-        @param padding_mode: see documentation of torch.nn.ConvTranspose2d.
-        @param device: see documentation of torch.nn.ConvTranspose2d.
-        @param dtype: see documentation of torch.nn.ConvTranspose2d.
+        Create a convolutional transpose layer.
+        @param in_channels: number of channels in the input image
+        @param out_channels: number of channels produced by the convolution
+        @param kernel_size: size of the convolving kernel
+        @param stride: stride of the convolution
+        @param padding: `dilation * (kernel_size - 1) - padding` zero-padding added to both sides of the input.
+        Can also be `valid` (no padding) or `same` (padding to ensure `output shape = input shape * stride`)
+        @param output_padding: additional size added to one side of each dimension in the output shape
+        @param groups: number of blocked connections from input channels to output channels
+        @param bias: if True, adds a learnable bias to the output
+        @param dilation: spacing between kernel elements
+        @param padding_mode: only `zeros` padding mode is supported
+        @param device: the device on which the tensors are allocated
+        @param dtype: the data type of the tensors
         """
+
+        # Call parent constructor.
         super().__init__()
 
         # Check that the padding parameter is set to a proper value.

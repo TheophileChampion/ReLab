@@ -72,7 +72,7 @@ namespace relab::agents::memory::impl {
 
         /**
          * Retrieve the observations of the experience whose index is passed as parameters.
-         * @param idx the index of the experience whose observations must be retrieved
+         * @param indices the indices of the experiences whose observations must be retrieved
          * @return the observations at time t and t + n_steps
          */
         std::tuple<torch::Tensor, torch::Tensor> operator[](const torch::Tensor &indices);
@@ -122,13 +122,13 @@ namespace relab::agents::memory::impl {
          */
         torch::Tensor decode(const torch::Tensor &frame);
 
-        /*
+        /**
          * Load the frame buffer from the checkpoint.
          * @param checkpoint a stream reading from the checkpoint file
          */
         void load(std::istream &checkpoint);
 
-        /*
+        /**
          * Save the frame buffer in the checkpoint.
          * @param checkpoint a stream writing into the checkpoint file
          */

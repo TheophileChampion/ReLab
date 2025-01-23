@@ -8,7 +8,7 @@
 namespace relab::helpers {
 
     /**
-     * A deque with a maximum length.
+     * A double-ended queue with a maximum length.
      */
     template<class T>
     class Deque : public std::deque<T> {
@@ -20,7 +20,7 @@ namespace relab::helpers {
     public:
 
         /**
-         * Create a deque.
+         * Create a double ended queue.
          * @param max_size the maximum length of the queue
          */
         Deque(int max_size=-1);
@@ -40,32 +40,32 @@ namespace relab::helpers {
         /**
          * Retrieve the element whose index is passed as parameters.
          * @param index the index
-         * @return the element
+         * @return the element at the given index
          */
         T get(int index);
 
-        /*
-         * Load the deque from the checkpoint.
+        /**
+         * Load the double ended queue from the checkpoint.
          * @param checkpoint a stream reading from the checkpoint file
          */
         void load(std::istream &checkpoint);
 
-        /*
-         * Save the deque in the checkpoint.
+        /**
+         * Save the double ended queue in the checkpoint.
          * @param checkpoint a stream writing into the checkpoint file
          */
         void save(std::ostream &checkpoint);
 
         /**
-         * Print the deque on the standard output.
+         * Print the double ended queue on the standard output.
          */
         void print();
 
         /**
-         * Compare two deques.
-         * @param lhs the deque on the left-hand-side of the equal sign
-         * @param rhs the deque on the right-hand-side of the equal sign
-         * @return true if the deques are identical, false otherwise
+         * Compare two double ended queues.
+         * @param lhs the double ended queue on the left-hand-side of the equal sign
+         * @param rhs the double ended queue on the right-hand-side of the equal sign
+         * @return true if the double ended queues are identical, false otherwise
          */
         template<class Type>
         friend bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs);

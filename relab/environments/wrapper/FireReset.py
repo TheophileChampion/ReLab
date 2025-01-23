@@ -8,11 +8,20 @@ class FireReset(gym.Wrapper):
     """
 
     def __init__(self, env: gym.Env) -> None:
+        """!
+        Initialize the wrapper.
+        @param env: environment to wrap
+        """
         super().__init__(env)
         assert env.unwrapped.get_action_meanings()[1] == "FIRE"  # type: ignore[attr-defined]
         assert len(env.unwrapped.get_action_meanings()) >= 3  # type: ignore[attr-defined]
 
     def reset(self, **kwargs):
+        """!
+        Reset the environment and take the firing action if it is available in the environment.
+        @param kwargs: the keyword arguments to pass to the environment's reset function
+        @return the first observation and the corresponding info dictionary
+        """
         self.env.reset(**kwargs)
         obs, _, terminated, truncated, _ = self.env.step(1)
         if terminated or truncated:

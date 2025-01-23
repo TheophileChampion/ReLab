@@ -32,13 +32,16 @@ class ReplayBuffer:
             - n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
             - gamma: the discount factor
         """
+
         stack_size = relab.config("stack_size") if stack_size is None else stack_size
         frame_skip = relab.config("frame_skip") if frame_skip is None else frame_skip
         screen_size = relab.config("screen_size") if screen_size is None else screen_size
         compressor_type = CompressorType.ZLIB if relab.config("compress_images") is True else CompressorType.RAW
-
         p_args = {} if p_args is None else p_args
         m_args = {} if m_args is None else m_args
+
+        ## @var buffer
+        # The C++ implementation of the replay buffer.
         self.buffer = FastReplayBuffer(
             capacity=capacity, batch_size=batch_size, frame_skip=frame_skip, stack_size=stack_size,
             screen_size=screen_size, type=compressor_type, p_args=p_args, m_args=m_args
@@ -116,14 +119,6 @@ class ReplayBuffer:
         """
         return self.buffer.report(loss)
 
-    def get_experiences(self, indices):
-        """!
-        Retrieve the experiences whose indices are passed as parameters.
-        @param indices: the experience indices
-        @return the experiences
-        """
-        return self.buffer.get_experiences(indices)
-
     def clear(self):
         """!
         Empty the replay buffer.
@@ -136,25 +131,3 @@ class ReplayBuffer:
         @return the number of elements contained in the replay buffer
         """
         return self.buffer.length()
-
-    def is_prioritized(self):
-        """!
-        Retrieve a boolean indicating whether the replay buffer is prioritized.
-        @return true if the replay buffer is prioritized, false otherwise
-        """
-        return self.buffer.is_prioritized()
-
-    def get_last_indices(self):
-        """!
-        Retrieves the last sampled indices.
-        @return the last sampled indices
-        """
-        return self.buffer.get_last_indices()
-
-    def get_priority(self, index):
-        """!
-        Retrieves the priority at the provided index.
-        @param index: the index
-        @return the priority
-        """
-        return self.buffer.get_priority(index)
