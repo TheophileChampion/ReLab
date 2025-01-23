@@ -292,9 +292,11 @@ class VAE(VariationalModel):
 
         # Update the world model using the checkpoint.
         self.encoder = self.get_encoder_network(self.latent_space_type)
+        self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
         self.encoder.train(self.training)
         self.encoder.to(self.device)
         self.decoder = self.get_decoder_network(self.latent_space_type)
+        self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
         self.decoder.train(self.training)
         self.decoder.to(self.device)
 
@@ -311,6 +313,7 @@ class VAE(VariationalModel):
             list(self.encoder.parameters()) + list(self.decoder.parameters()),
             lr=self.learning_rate, eps=self.adam_eps
         )
+        self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
 
     def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """!
@@ -344,7 +347,10 @@ class VAE(VariationalModel):
             "n_discrete_vars": self.n_discrete_vars,
             "n_discrete_vals": self.n_discrete_vals,
             "beta_schedule": self.beta_schedule,
-            "tau_schedule": self.tau_schedule
+            "tau_schedule": self.tau_schedule,
+            "encoder": self.encoder.state_dict(),
+            "decoder": self.decoder.state_dict(),
+            "optimizer": self.optimizer.state_dict()
         }, checkpoint_path)
 
         # Save the replay buffer.

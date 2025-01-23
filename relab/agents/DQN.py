@@ -57,10 +57,28 @@ class NetworkType(IntEnum):
 
 class DQN(AgentInterface):
     """!
-    Implement the Deep Q-Network agent from:
-    Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves,
-    Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
-    Human-level control through deep reinforcement learning. nature, 2015.
+    @brief Implements a Deep Q-Network (DQN) agent.
+
+    This implementation is based on the paper:
+    <b>Human-level control through deep reinforcement learning</b>,
+    published in Nature, 2015.
+
+    @details
+    Authors:
+    - Volodymyr Mnih
+    - Koray Kavukcuoglu
+    - David Silver
+    - Andrei A. Rusu
+    - Joel Veness
+    - Marc G. Bellemare
+    - Alex Graves
+    - Martin Riedmiller
+    - Andreas K. Fidjeland
+    - Georg Ostrovski, et al.
+
+    The paper introduced the DQN algorithm, combining Q-learning
+    with deep neural networks to achieve human-level performance in
+    Atari 2600 games.
     """
 
     def __init__(
@@ -566,6 +584,7 @@ class DQN(AgentInterface):
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
         self.buffer.load(checkpoint_path, buffer_checkpoint_name)
         self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
+        self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
 
     def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """!
@@ -604,6 +623,7 @@ class DQN(AgentInterface):
             "current_step": self.current_step,
             "value_net": self.value_net.state_dict(),
             "target_net": self.target_net.state_dict(),
+            "optimizer": self.optimizer.state_dict()
         }, checkpoint_path)
 
         # Save the replay buffer.

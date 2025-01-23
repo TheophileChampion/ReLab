@@ -71,7 +71,7 @@ class ReplayBuffer:
         @param checkpoint_name: the name of the checkpoint from which the replay buffer must be loaded (None for default name)
         """
 
-        # TODO move this to c++ code
+        # TODO move this to c++ code?
         # Retrieve the full replay buffer checkpoint path.
         if checkpoint_name is None and relab.config("save_all_replay_buffers") is False:
             checkpoint_name = "buffer.pt"
@@ -95,7 +95,7 @@ class ReplayBuffer:
         @param checkpoint_name: the name of the checkpoint in which the replay buffer must be saved (None for default name)
         """
 
-        # TODO move this to c++ code
+        # TODO move this to c++ code?
         # Create the replay buffer checkpoint directory and file, if they do not exist.
         if checkpoint_name is None and relab.config("save_all_replay_buffers") is False:
             checkpoint_name = "buffer.pt"

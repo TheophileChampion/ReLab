@@ -62,8 +62,14 @@ class HMM(VariationalModel):
 
         # Create the world model.
         self.encoder = self.get_encoder_network(self.latent_space_type)
+        self.encoder.train(self.training)
+        self.encoder.to(self.device)
         self.decoder = self.get_decoder_network(self.latent_space_type)
+        self.decoder.train(self.training)
+        self.decoder.to(self.device)
         self.transition = self.get_transition_network(self.latent_space_type)
+        self.transition.train(self.training)
+        self.transition.to(self.device)
 
         # Create the optimizer.
         self.optimizer = optim.Adam(
@@ -314,8 +320,17 @@ class HMM(VariationalModel):
 
         # Update the world model using the checkpoint.
         self.encoder = self.get_encoder_network(self.latent_space_type)
+        self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
+        self.encoder.train(self.training)
+        self.encoder.to(self.device)
         self.decoder = self.get_decoder_network(self.latent_space_type)
+        self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
+        self.decoder.train(self.training)
+        self.decoder.to(self.device)
         self.transition = self.get_transition_network(self.latent_space_type)
+        self.transition.load_state_dict(self.safe_load(checkpoint, "transition"))
+        self.transition.train(self.training)
+        self.transition.to(self.device)
 
         # Update the replay buffer.
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
@@ -327,9 +342,10 @@ class HMM(VariationalModel):
 
         # Update the optimizer.
         self.optimizer = optim.Adam(
-            list(self.encoder.parameters()) + list(self.decoder.parameters()),
+            list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters()),
             lr=self.learning_rate, eps=self.adam_eps
         )
+        self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
 
     def save(self, checkpoint_name, buffer_checkpoint_name=None):
         """!
@@ -360,7 +376,11 @@ class HMM(VariationalModel):
             "likelihood_type": self.likelihood_type,
             "latent_space_type": self.latent_space_type,
             "beta_schedule": self.beta_schedule,
-            "tau_schedule": self.tau_schedule
+            "tau_schedule": self.tau_schedule,
+            "encoder": self.encoder.state_dict(),
+            "decoder": self.decoder.state_dict(),
+            "transition": self.transition.state_dict(),
+            "optimizer": self.optimizer.state_dict()
         }, checkpoint_path)
 
         # Save the replay buffer.
