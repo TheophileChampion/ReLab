@@ -3,13 +3,14 @@
 #include "agents/memory/data_buffer.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"
+#include "helpers/torch.hpp"
 
 using namespace relab::helpers;
 
-namespace relab::agents::memory {
+namespace relab::agents::memory::impl {
 
     DataBuffer::DataBuffer(int capacity, int n_steps, float gamma, float initial_priority, int n_children)
-        : past_actions(n_steps), past_rewards(n_steps), past_dones(n_steps), device(ReplayBuffer::getDevice()) {
+        : past_actions(n_steps), past_rewards(n_steps), past_dones(n_steps), device(getDevice()) {
 
         // Store the data buffer's parameters.
         this->capacity = capacity;
@@ -152,5 +153,43 @@ namespace relab::agents::memory {
             std::cout << prefix  << " #-> priority_tree = ";
             this->priorities->print(verbose, prefix + "     ");
         }
+    }
+
+    bool operator==(const DataBuffer &lhs, const DataBuffer &rhs) {
+
+        // Check that all attributes of standard types are identical.
+        if (
+            lhs.capacity != rhs.capacity ||
+            lhs.n_steps != rhs.n_steps ||
+            lhs.gamma != rhs.gamma ||
+            lhs.current_id != rhs.current_id
+        ) {
+            return false;
+        }
+
+        // Compare the double ended queues.
+        if (
+            lhs.past_actions != rhs.past_actions ||
+            lhs.past_rewards != rhs.past_rewards ||
+            lhs.past_dones != rhs.past_dones
+        ) {
+            return false;
+        }
+
+        // Compare the tensors.
+        if (
+            !tensorsAreEqual(lhs.actions, rhs.actions) ||
+            !tensorsAreEqual(lhs.rewards, rhs.rewards) ||
+            !tensorsAreEqual(lhs.dones, rhs.dones)
+        ) {
+            return false;
+        }
+
+        // Compare the priority tree.
+        return *lhs.priorities == *rhs.priorities;
+    }
+
+    bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs) {
+        return !(lhs == rhs);
     }
 }

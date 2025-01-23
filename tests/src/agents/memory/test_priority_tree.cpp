@@ -1,6 +1,5 @@
 #include "agents/memory/test_priority_tree.hpp"
 #include <torch/extension.h>
-#include "agents/memory/priority_tree.hpp"
 #include "relab_test.hpp"
 
 using namespace relab::agents::memory;
@@ -10,43 +9,60 @@ namespace relab::test::agents::memory {
     PriorityTreeParameters::PriorityTreeParameters(const std::initializer_list<float> &elements, float result)
         : elements(elements), result(result) {}
 
-    TEST_P(TestPriorityTree, TestSum) {
+    PriorityTreeParameters::PriorityTreeParameters() : PriorityTreeParameters({}, 0) {}
 
-        // Arrange.
-        auto params = GetParam();
+    void TestPriorityTree::SetUp() {
+
+        // Create a priority tree.
+        this->params = GetParam();
         int capacity = 4;
         int initial_priority = 1.0;
         int n_children = 2;
-        auto priority_tree = PriorityTree(capacity, initial_priority, n_children);
+        this->priority_tree = std::make_unique<PriorityTree>(capacity, initial_priority, n_children);
+    }
+
+    TEST_P(TestPriorityTree, TestSum) {
 
         // Act.
         for (auto element : params.elements) {
-            priority_tree.append(element);
+            priority_tree->append(element);
         }
 
         // Assert.
-        EXPECT_EQ(priority_tree.sum(), params.result);
+        EXPECT_EQ(priority_tree->sum(), params.result);
     }
 
     TEST_P(TestPriorityTree, TestClear) {
 
-        // Arrange.
-        auto params = GetParam();
-        int capacity = 4;
-        int initial_priority = 1.0;
-        int n_children = 2;
-        auto priority_tree = PriorityTree(capacity, initial_priority, n_children);
-
          // Act.
          for (auto element : params.elements) {
-             priority_tree.append(element);
+             priority_tree->append(element);
          }
-         priority_tree.clear();
+         priority_tree->clear();
 
         // Assert.
-        EXPECT_EQ(priority_tree.size(), 0);
-        EXPECT_TRUE(priority_tree.maxTreeToStr() == "[[0.0, 0.0], [0.0]]");
-        EXPECT_TRUE(priority_tree.sumTreeToStr() == "[[0.0, 0.0], [0.0]]");
+        EXPECT_EQ(priority_tree->size(), 0);
+        EXPECT_TRUE(priority_tree->maxTreeToStr() == "[[0.0, 0.0], [0.0]]");
+        EXPECT_TRUE(priority_tree->sumTreeToStr() == "[[0.0, 0.0], [0.0]]");
+    }
+
+    TEST_P(TestPriorityTree, TestSaveAndLoad) {
+
+        // Add all elements to the priority tree.
+        for (auto element : params.elements) {
+            priority_tree->append(element);
+        }
+
+        // Save the priority tree.
+        std::stringstream ss;
+        priority_tree->save(ss);
+
+        // Load the priority tree.
+        auto loaded_priority_tree = PriorityTree(10, 10, 10);
+        loaded_priority_tree.load(ss);
+
+        // Check that the saved and loaded priority trees are identical.
+        EXPECT_EQ(*priority_tree, loaded_priority_tree);
     }
 
     INSTANTIATE_TEST_SUITE_P(UnitTests, TestPriorityTree, testing::Values(

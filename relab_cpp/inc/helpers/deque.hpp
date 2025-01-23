@@ -44,27 +44,6 @@ namespace relab::helpers {
          */
         T get(int index);
 
-        /**
-         * Remove all the elements of the deque.
-         */
-        void clear();
-
-        /**
-         * Remove an elements from the end of the deque.
-         */
-        void pop_back();
-
-        /**
-         * Remove an elements from the front of the deque.
-         */
-        void pop_front();
-
-        /**
-         * Return the size of the deque.
-         * @return the size of the deque
-         */
-        std::uint64_t size();
-
         /*
          * Load the deque from the checkpoint.
          * @param checkpoint a stream reading from the checkpoint file
@@ -81,6 +60,15 @@ namespace relab::helpers {
          * Print the deque on the standard output.
          */
         void print();
+
+        /**
+         * Compare two deques.
+         * @param lhs the deque on the left-hand-side of the equal sign
+         * @param rhs the deque on the right-hand-side of the equal sign
+         * @return true if the deques are identical, false otherwise
+         */
+        template<class Type>
+        friend bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs);
     };
 
     // Explicit instantiation of double ended queue.

@@ -106,6 +106,22 @@ namespace relab::agents::memory::impl {
          * @param prefix the prefix to add an front of the optional information
          */
         void print(bool verbose=false, const std::string &prefix="");
+
+        /**
+         * Check if two data buffers are identical.
+         * @param lhs the data buffer on the left-hand-side of the equal sign
+         * @param rhs the data buffer on the right-hand-side of the equal sign
+         * @return true if the data buffers are identical, false otherwise
+         */
+        friend bool operator==(const DataBuffer &lhs, const DataBuffer &rhs);
+
+        /**
+         * Check if two data buffers are different.
+         * @param lhs the data buffer on the left-hand-side of the different sign
+         * @param rhs the data buffer on the right-hand-side of the different sign
+         * @return true if the data buffers are different, false otherwise
+         */
+        friend bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs);
     };
 }
 

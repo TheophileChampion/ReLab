@@ -3,15 +3,17 @@
 #include "helpers/serialize.hpp"
 #include "helpers/timer.hpp"
 #include "helpers/debug.hpp"
+#include "helpers/torch.hpp"
 
 using namespace torch::indexing;
+using namespace relab::helpers;
 
-namespace relab::agents::memory {
+namespace relab::agents::memory::impl {
 
     FrameBuffer::FrameBuffer(
         int capacity, int frame_skip, int n_steps, int stack_size, int screen_size,
         CompressorType type, int n_threads
-    ) : device(ReplayBuffer::getDevice()), frame_skip(frame_skip), stack_size(stack_size),
+    ) : device(getDevice()), frame_skip(frame_skip), stack_size(stack_size),
         capacity(capacity), n_steps(n_steps), screen_size(screen_size),
         frames(FrameStorage(capacity)), past_references(n_steps + 1), pool(n_threads) {
 
@@ -223,5 +225,48 @@ namespace relab::agents::memory {
             std::cout << prefix << " #-> past_references = ";
             this->past_references.print();
         }
+    }
+
+    bool operator==(const FrameBuffer &lhs, const FrameBuffer &rhs) {
+
+        // Check that all attributes of standard types and container sizes are identical.
+        if (
+            lhs.frame_skip != rhs.frame_skip ||
+            lhs.stack_size != rhs.stack_size ||
+            lhs.capacity != rhs.capacity ||
+            lhs.n_steps != rhs.n_steps ||
+            lhs.screen_size != rhs.screen_size ||
+            lhs.current_ref != rhs.current_ref ||
+            lhs.new_episode != rhs.new_episode ||
+            lhs.references_t.size() != rhs.references_t.size() ||
+            lhs.references_tn.size() != rhs.references_tn.size()
+        ) {
+            return false;
+        }
+
+        // Compare the double ended queue.
+        if (lhs.past_references != rhs.past_references) {
+            return false;
+        }
+
+        // Compare the vector of references.
+        if (lhs.references_t.size() != lhs.references_tn.size()) {
+            return false;
+        }
+        for (size_t i = 0; i < lhs.references_t.size(); i++) {
+            if (
+                lhs.references_t[i] != rhs.references_t[i] ||
+                lhs.references_tn[i] != rhs.references_tn[i]
+            ) {
+                return false;
+            }
+        }
+
+        // Compare the frame storage.
+        return lhs.frames == rhs.frames;
+    }
+
+    bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs) {
+        return !(lhs == rhs);
     }
 }

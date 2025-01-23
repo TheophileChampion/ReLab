@@ -102,10 +102,22 @@ namespace relab::agents::memory {
         void load(const std::string &checkpoint_path);
 
         /**
+         * Load a replay buffer from the filesystem.
+         * @param checkpoint a stream reading from the checkpoint file
+         */
+        void loadFromFile(std::istream &checkpoint);
+
+        /**
          * Save the replay buffer on the filesystem.
          * @param checkpoint_path the full checkpoint path in which the replay buffer must be saved
          */
         void save(const std::string &checkpoint_path);
+
+        /**
+         * Save the replay buffer on the filesystem.
+         * @param checkpoint a stream writing into the checkpoint file
+         */
+        void saveToFile(std::ostream &checkpoint);
 
         /**
          * Print the replay buffer on the standard output.
@@ -138,12 +150,6 @@ namespace relab::agents::memory {
         bool getPrioritized();
 
         /**
-         * Retrieves the device on which the computation should be performed.
-         * @return the device
-         */
-        static torch::Device getDevice();
-
-        /**
          * Retrieve the last sampled indices.
          * @return the indices
          */
@@ -155,8 +161,15 @@ namespace relab::agents::memory {
          * @return the priority
          */
         float getPriority(int index);
+
+        /**
+         * Compare two replay buffers.
+         * @param lhs the replay buffer on the left-hand-side of the equal sign
+         * @param rhs the replay buffer on the right-hand-side of the equal sign
+         * @return true if the replay buffers are identical, false otherwise
+         */
+        friend bool operator==(const ReplayBuffer &lhs, const ReplayBuffer &rhs);
     };
 }
-
 
 #endif //REPLAY_BUFFER_HPP

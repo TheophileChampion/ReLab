@@ -4,6 +4,8 @@
 #include "agents/memory/data_buffer.hpp"
 #include "relab_test.hpp"
 
+using namespace relab::agents::memory;
+
 namespace relab::test::agents::memory {
 
     DataBufferParameters::DataBufferParameters(int capacity, int n_steps, float gamma, float initial_priority, int n_children)
@@ -96,6 +98,29 @@ namespace relab::test::agents::memory {
             EXPECT_TRUE(std::abs(rewards[t].item<float>() - results[t + params.capacity].reward) < TEST_EPSILON);
             EXPECT_EQ(dones[t].item<bool>(), results[t + params.capacity].done);
         }
+    }
+
+    TEST_P(TestDataBuffer, TestSaveAndLoad) {
+
+        // Create the experiences at time t.
+        auto experiences = getExperiences(observations, observations.size() - 1);
+
+        // Fill the buffer with experiences.
+        int n_experiences = params.capacity + params.n_steps - 1;
+        for (int t = 0; t < n_experiences; t++) {
+            buffer->append(experiences[t]);
+        }
+
+        // Save the data buffer.
+        std::stringstream ss;
+        buffer->save(ss);
+
+        // Load the data buffer.
+        auto loaded_buffer = DataBuffer(10, 10, 10, 10, 10);
+        loaded_buffer.load(ss);
+
+        // Check that the saved and loaded data buffers are identical.
+        EXPECT_EQ(*buffer, loaded_buffer);
     }
 
     INSTANTIATE_TEST_SUITE_P(UnitTests, TestDataBuffer, testing::Values(

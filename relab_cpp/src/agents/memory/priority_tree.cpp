@@ -1,12 +1,13 @@
 #include "agents/memory/priority_tree.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"
+#include "helpers/torch.hpp"
 #include <cmath>
 
 using namespace torch::indexing;
 using namespace relab::helpers;
 
-namespace relab::agents::memory {
+namespace relab::agents::memory::impl {
 
     PriorityTree::PriorityTree(int capacity, float initial_priority, int n_children) {
 
@@ -395,5 +396,47 @@ namespace relab::agents::memory {
             std::cout << prefix << " #-> sum_tree = " << this->sumTreeToStr(3) << std::endl;
             std::cout << prefix << " #-> max_tree = " << this->maxTreeToStr(3) << std::endl;
         }
+    }
+
+    bool operator==(const PriorityTree &lhs, const PriorityTree &rhs) {
+
+        // Check that all attributes of standard types and container sizes are identical.
+        if (
+            lhs.initial_priority != rhs.initial_priority ||
+            lhs.capacity != rhs.capacity ||
+            lhs.n_children != rhs.n_children ||
+            lhs.depth != rhs.depth ||
+            lhs.current_id != rhs.current_id ||
+            lhs.need_refresh_all != rhs.need_refresh_all ||
+            lhs.sum_tree.size() != rhs.sum_tree.size() ||
+            lhs.max_tree.size() != rhs.max_tree.size()
+        ) {
+            return false;
+        }
+
+        // Compare the priorities.
+        if (!tensorsAreEqual(lhs.priorities, rhs.priorities)) {
+            return false;
+        }
+
+        // Compare the sum-trees.
+        for (size_t i = 0; i < lhs.sum_tree.size(); i++) {
+            if (lhs.sum_tree[i].size() != rhs.sum_tree[i].size()) {
+                return false;
+            }
+            for (size_t j = 0; j < lhs.sum_tree[i].size(); j++) {
+                if (lhs.sum_tree[i][j] != rhs.sum_tree[i][j]) {
+                    return false;
+                }
+            }
+        }
+
+        // Compare the max-trees.
+        for (size_t i = 0; i < lhs.max_tree.size(); i++) {
+            if (!tensorsAreEqual(lhs.max_tree[i], rhs.max_tree[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

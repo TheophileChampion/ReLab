@@ -2,9 +2,11 @@
 #include <torch/extension.h>
 #include "agents/memory/test_replay_buffer.hpp"
 #include "agents/memory/compressors.hpp"
+#include "helpers/torch.hpp"
 #include "relab_test.hpp"
 
 using namespace relab::agents::memory;
+using namespace relab::helpers;
 
 namespace relab::test::agents::memory {
 
@@ -103,6 +105,29 @@ namespace relab::test::agents::memory {
         compareExperiences(batch, results.begin() + params.capacity, params.capacity);
     }
 
+    TEST_P(TestReplayBuffer, TestSaveAndLoad) {
+
+        // Create the experiences at time t.
+        auto experiences = getExperiences(observations, observations.size() - 1);
+
+        // Fill the buffer with experiences.
+        int n_experiences = params.capacity + params.n_steps - 1;
+        for (int t = 0; t < n_experiences; t++) {
+            buffer->append(experiences[t]);
+        }
+
+        // Save the frame buffer.
+        std::stringstream ss;
+        buffer->saveToFile(ss);
+
+        // Load the frame buffer.
+        auto loaded_buffer = ReplayBuffer();
+        loaded_buffer.loadFromFile(ss);
+
+        // Check that the saved and loaded frame buffers are identical.
+        EXPECT_EQ(*buffer, loaded_buffer);
+    }
+
     INSTANTIATE_TEST_SUITE_P(UnitTests, TestReplayBuffer, testing::Values(
         ReplayBufferParameters(5, 1, 1),
         ReplayBufferParameters(5, 1, 0.9),
@@ -133,7 +158,7 @@ namespace relab::test::agents::memory {
             buffer.append(experiences[t]);
         }
         buffer.sample();
-        auto loss = 2 * torch::ones({2}).to(ReplayBuffer::getDevice());
+        auto loss = 2 * torch::ones({2}).to(getDevice());
         loss = buffer.report(loss);
 
         // Assert.

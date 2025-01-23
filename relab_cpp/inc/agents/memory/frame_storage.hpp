@@ -101,6 +101,14 @@ namespace relab::agents::memory {
          * @param prefix the prefix to add an front of the optional information
          */
         void print(bool verbose=false, const std::string &prefix="");
+
+        /**
+         * Compare two frame storages.
+         * @param lhs the frame storage on the left-hand-side of the equal sign
+         * @param rhs the frame storage on the right-hand-side of the equal sign
+         * @return true if the frame storages are identical, false otherwise
+         */
+        friend bool operator==(const FrameStorage &lhs, const FrameStorage &rhs);
     };
 }
 

@@ -6,7 +6,7 @@
 #include "helpers/deque.hpp"
 #include "agents/memory/experience.hpp"
 
-namespace relab::test::agents::memory::impl {
+namespace relab::test::helpers::impl {
 
     using namespace relab::helpers;
 
@@ -91,7 +91,7 @@ namespace relab::test::agents::memory::impl {
     };
 }
 
-namespace relab::test::agents::memory {
+namespace relab::test::helpers {
     using impl::DequeParameters;
     using impl::PushType;
     using impl::PopType;

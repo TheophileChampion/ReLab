@@ -4,7 +4,7 @@
 #include <torch/extension.h>
 #include <vector>
 
-namespace relab::agents::memory {
+namespace relab::agents::memory::impl {
 
     // Alias for a sum-tree.
     using SumTree = std::vector<std::vector<double>>;
@@ -212,7 +212,19 @@ namespace relab::agents::memory {
          * @param prefix the prefix to add an front of the optional information
          */
         void print(bool verbose=false, const std::string &prefix="");
+
+        /**
+         * Compare two priority trees.
+         * @param lhs the priority tree on the left-hand-side of the equal sign
+         * @param rhs the priority tree on the right-hand-side of the equal sign
+         * @return true if the priority trees are identical, false otherwise
+         */
+        friend bool operator==(const PriorityTree &lhs, const PriorityTree &rhs);
     };
+}
+
+namespace relab::agents::memory {
+    using impl::PriorityTree;
 }
 
 #endif //PRIORITY_TREE_HPP

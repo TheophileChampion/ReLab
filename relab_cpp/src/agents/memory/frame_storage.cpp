@@ -1,6 +1,7 @@
 #include "agents/memory/frame_storage.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"
+#include "helpers/torch.hpp"
 
 using namespace relab::helpers;
 
@@ -130,5 +131,30 @@ namespace relab::agents::memory {
             std::cout << prefix << " #-> frames = ";
             print_vector<torch::Tensor, float>(this->frames, this->first_frame, 2);
         }
+    }
+
+    bool operator==(const FrameStorage &lhs, const FrameStorage &rhs) {
+
+        // Check that all attributes of standard types and container sizes are identical.
+        if (
+            lhs.initial_capacity != rhs.initial_capacity ||
+            lhs.capacity != rhs.capacity ||
+            lhs.capacity_incr != rhs.capacity_incr ||
+            lhs.first_frame_index != rhs.first_frame_index ||
+            lhs.last_frame_index != rhs.last_frame_index ||
+            lhs.first_frame != rhs.first_frame ||
+            lhs.last_frame != rhs.last_frame ||
+            lhs.frames.size() != rhs.frames.size()
+        ) {
+            return false;
+        }
+
+        // Compare the vector of frames.
+        for (size_t i = 0; i < lhs.frames.size(); i++) {
+            if (!tensorsAreEqual(lhs.frames[i], rhs.frames[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

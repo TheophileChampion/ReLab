@@ -29,26 +29,6 @@ namespace relab::helpers {
     }
 
     template<class T>
-    void Deque<T>::clear() {
-        this->std::deque<T>::clear();
-    }
-
-    template<class T>
-    void Deque<T>::pop_back() {
-        this->std::deque<T>::pop_back();
-    }
-
-    template<class T>
-    void Deque<T>::pop_front() {
-        this->std::deque<T>::pop_front();
-    }
-
-    template<class T>
-    std::uint64_t Deque<T>::size() {
-        return this->std::deque<T>::size();
-    }
-
-    template<class T>
     void Deque<T>::load(std::istream &checkpoint) {
 
         // Load the deque from the checkpoint.
@@ -97,4 +77,22 @@ namespace relab::helpers {
         }
         std::cout << "])" << std::endl;
     }
+
+    template<class Type>
+    bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs) {
+        if (lhs.max_size != rhs.max_size || lhs.size() != rhs.size()) {
+            return false;
+        }
+        for (size_t i = 0; i < lhs.size(); i++) {
+            if (lhs[i] != rhs[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Explicit instantiation of double ended queue.
+    template bool operator==(const Deque<int> &lhs, const Deque<int> &rhs);
+    template bool operator==(const Deque<float> &lhs, const Deque<float> &rhs);
+    template bool operator==(const Deque<bool> &lhs, const Deque<bool> &rhs);
 }

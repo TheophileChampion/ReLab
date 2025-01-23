@@ -5,6 +5,7 @@
 #include "agents/memory/replay_buffer.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"
+#include "helpers/torch.hpp"
 
 using namespace relab::helpers;
 
@@ -13,7 +14,7 @@ namespace relab::agents::memory {
     ReplayBuffer::ReplayBuffer(
         int capacity, int batch_size, int frame_skip, int stack_size, int screen_size, CompressorType type,
         std::map<std::string, float> p_args, std::map<std::string, float> m_args
-    ): device(ReplayBuffer::getDevice()) {
+    ): device(getDevice()) {
 
         // A map storing all the prioritization and multistep arguments.
         std::map<std::string, float> args;
@@ -131,6 +132,10 @@ namespace relab::agents::memory {
         // Open the checkpoint file.
         std::ifstream checkpoint;
         checkpoint.open(checkpoint_path);
+        this->loadFromFile(checkpoint);
+    }
+
+    void ReplayBuffer::loadFromFile(std::istream &checkpoint) {
 
         // Read the replay buffer from the checkpoint file.
         this->prioritized = load_value<bool>(checkpoint);
@@ -154,6 +159,10 @@ namespace relab::agents::memory {
         // Open the checkpoint file.
         std::ofstream checkpoint;
         checkpoint.open(checkpoint_path);
+        this->saveToFile(checkpoint);
+    }
+
+    void ReplayBuffer::saveToFile(std::ostream &checkpoint) {
 
         // Write the replay buffer in the checkpoint file.
         save_value(this->prioritized, checkpoint);
@@ -219,16 +228,39 @@ namespace relab::agents::memory {
         return this->prioritized;
     }
 
-    torch::Device ReplayBuffer::getDevice() {
-        bool use_cuda = (torch::cuda::is_available() and torch::cuda::device_count() >= 1);
-        return torch::Device((use_cuda == true) ? torch::kCUDA: torch::kCPU);
-    }
-
     torch::Tensor ReplayBuffer::getLastIndices() {
         return this->indices;
     }
 
     float ReplayBuffer::getPriority(int index) {
         return this->data->getPriorities()->get(index);
+    }
+
+    bool operator==(const ReplayBuffer &lhs, const ReplayBuffer &rhs) {
+
+        // Check that all attributes of standard types are identical.
+        if (
+            lhs.prioritized != rhs.prioritized ||
+            lhs.capacity != rhs.capacity ||
+            lhs.batch_size != rhs.batch_size ||
+            lhs.stack_size != rhs.stack_size ||
+            lhs.frame_skip != rhs.frame_skip ||
+            lhs.gamma != rhs.gamma ||
+            lhs.n_steps != rhs.n_steps ||
+            lhs.initial_priority != rhs.initial_priority ||
+            lhs.n_children != rhs.n_children ||
+            lhs.omega != rhs.omega ||
+            lhs.omega_is != rhs.omega_is
+        ) {
+            return false;
+        }
+
+        // Compare the frame and data buffers are identical.
+        if (*lhs.observations != *rhs.observations || *lhs.data != *rhs.data) {
+            return false;
+        }
+
+        // Compare the indices.
+        return tensorsAreEqual(lhs.indices, rhs.indices);
     }
 }

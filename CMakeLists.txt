@@ -62,6 +62,7 @@ add_library(relab SHARED
     relab_cpp/src/helpers/debug.cpp
     relab_cpp/src/helpers/deque.cpp
     relab_cpp/src/helpers/timer.cpp
+    relab_cpp/src/helpers/torch.cpp
 )
 target_link_libraries(relab PRIVATE
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
@@ -84,7 +85,7 @@ add_executable(all_tests
     tests/src/agents/memory/test_priority_tree.cpp
     tests/src/agents/memory/test_frame_buffer.cpp
     tests/src/agents/memory/test_data_buffer.cpp
-    tests/src/agents/memory/test_deque.cpp
+    tests/src/helpers/test_deque.cpp
     tests/src/relab_test.cpp
 )
 target_link_libraries(all_tests

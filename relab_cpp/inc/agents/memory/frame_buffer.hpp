@@ -140,6 +140,22 @@ namespace relab::agents::memory::impl {
          * @param prefix the prefix to add an front of the optional information
          */
         void print(bool verbose=false, const std::string &prefix="");
+
+        /**
+         * Check if two frame buffers are identical.
+         * @param lhs the frame buffer on the left-hand-side of the equal sign
+         * @param rhs the frame buffer on the right-hand-side of the equal sign
+         * @return true if the frame buffers are identical, false otherwise
+         */
+        friend bool operator==(const FrameBuffer &lhs, const FrameBuffer &rhs);
+
+        /**
+         * Check if two frame buffers are different.
+         * @param lhs the frame buffer on the left-hand-side of the different sign
+         * @param rhs the frame buffer on the right-hand-side of the different sign
+         * @return true if the frame buffers are different, false otherwise
+         */
+        friend bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs);
     };
 }
 

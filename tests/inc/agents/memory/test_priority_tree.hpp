@@ -2,8 +2,11 @@
 #define TEST_PRIORITY_TREE_HPP
 
 #include <gtest/gtest.h>
+#include "agents/memory/priority_tree.hpp"
 
-namespace relab::test::agents::memory {
+namespace relab::test::agents::memory::impl {
+
+    using namespace relab::agents::memory;
 
     /**
      * A class storing the parameters of the priority tree tests.
@@ -23,12 +26,30 @@ namespace relab::test::agents::memory {
          * @param result the test result
          */
         PriorityTreeParameters(const std::initializer_list<float> &elements, float result=0);
+
+        /**
+         * Create a structure storing the parameters of the priority tree tests.
+         */
+        PriorityTreeParameters();
     };
 
     /**
      * A fixture class for testing the priority tree.
      */
-    class TestPriorityTree : public testing::TestWithParam<PriorityTreeParameters> {};
+    class TestPriorityTree : public testing::TestWithParam<PriorityTreeParameters> {
+
+    public:
+
+        PriorityTreeParameters params;
+        std::unique_ptr<PriorityTree> priority_tree;
+
+    public:
+
+        /**
+         * Setup of th fixture class before calling a unit test.
+         */
+        void SetUp();
+    };
 
     /**
      * A fixture class for testing the priority tree.
@@ -229,6 +250,24 @@ namespace relab::test::agents::memory {
      * A fixture class for testing the priority tree.
      */
     class TestPriorityTree9 : public testing::TestWithParam<PriorityTreeParameters9> {};
+}
+
+namespace relab::test::agents::memory {
+    using impl::PriorityTreeParameters;
+    using impl::TestPriorityTree;
+    using impl::TestPriorityTree2;
+    using impl::PriorityTreeParameters4;
+    using impl::TestPriorityTree4;
+    using impl::PriorityTreeParameters5;
+    using impl::TestPriorityTree5;
+    using impl::PriorityTreeParameters6;
+    using impl::TestPriorityTree6;
+    using impl::PriorityTreeParameters7;
+    using impl::TestPriorityTree7;
+    using impl::PriorityTreeParameters8;
+    using impl::TestPriorityTree8;
+    using impl::PriorityTreeParameters9;
+    using impl::TestPriorityTree9;
 }
 
 #endif //TEST_PRIORITY_TREE_HPP

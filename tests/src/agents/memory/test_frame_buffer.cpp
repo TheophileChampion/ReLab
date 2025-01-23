@@ -97,6 +97,29 @@ namespace relab::test::agents::memory {
         }
     }
 
+    TEST_P(TestFrameBuffer, TestSaveAndLoad) {
+
+        // Create the experiences at time t.
+        auto experiences = getExperiences(observations, observations.size() - 1);
+
+        // Fill the buffer with experiences.
+        int n_experiences = params.capacity + params.n_steps - 1;
+        for (int t = 0; t < n_experiences; t++) {
+            buffer->append(experiences[t]);
+        }
+
+        // Save the frame buffer.
+        std::stringstream ss;
+        buffer->save(ss);
+
+        // Load the frame buffer.
+        auto loaded_buffer = FrameBuffer(10, 10, 10, 10);
+        loaded_buffer.load(ss);
+
+        // Check that the saved and loaded frame buffers are identical.
+        EXPECT_EQ(*buffer, loaded_buffer);
+    }
+
     INSTANTIATE_TEST_SUITE_P(UnitTests, TestFrameBuffer, testing::Values(
         FrameBufferParameters(5, 1, 1, 2), FrameBufferParameters(5, 1, 1, 4),
         FrameBufferParameters(5, 1, 2, 4), FrameBufferParameters(5, 2, 2, 4),

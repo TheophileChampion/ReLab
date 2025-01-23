@@ -1,10 +1,12 @@
 #include <gtest/gtest.h>
 #include <torch/extension.h>
-#include "agents/memory/test_deque.hpp"
+#include "helpers/test_deque.hpp"
 #include "helpers/deque.hpp"
 #include "relab_test.hpp"
 
-namespace relab::test::agents::memory {
+using namespace relab::helpers;
+
+namespace relab::test::helpers {
 
     DequeParameters::DequeParameters(const std::initializer_list<int> &elements, int max_size, int n_pops, int length)
         : elements(elements), max_size(max_size), n_pops(n_pops), length(length) {}
@@ -146,8 +148,29 @@ namespace relab::test::agents::memory {
         EXPECT_EQ(queue->size(), params.length);
     }
 
+    TEST_P(TestDeque, TestSaveAndLoad) {
+
+        // Add all elements to the end of the double ended queue.
+        for (auto element : params.elements) {
+            queue->push_back(element);
+        }
+
+        // Save the double ended queue.
+        std::stringstream ss;
+        queue->save(ss);
+
+        // Load the double ended queue.
+        auto loaded_queue = Deque<int>(params.max_size + 1);
+        loaded_queue.load(ss);
+
+        // Check that the saved and loaded queue are identical.
+        EXPECT_EQ(*queue, loaded_queue);
+    }
+
     INSTANTIATE_TEST_SUITE_P(UnitTests, TestDeque, testing::Values(
-        DequeParameters({5, 1, 1}, 2, 1, 2), DequeParameters({}, 4, 0, 0),
-        DequeParameters({1, 2, 3, 4}, 4, 3, 4), DequeParameters({10, 2}, 4, 2, 2)
+        DequeParameters({5, 1, 1}, 2, 1, 2),
+        DequeParameters({}, 4, 0, 0),
+        DequeParameters({1, 2, 3, 4}, 4, 3, 4),
+        DequeParameters({10, 2}, 4, 2, 2)
     ));
 }
