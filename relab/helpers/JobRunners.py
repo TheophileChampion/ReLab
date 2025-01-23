@@ -78,15 +78,25 @@ class LocalJobRunner(JobRunnerInterface):
         @param max_worker: the maximum number of worker
         """
 
-        # Store attributes related to multi-processing.
+        # !< The pool of workers for executing tasks concurrently.
         self.pool = ProcessPoolExecutor(max_workers=max_worker)
+
+        # !< The maximum number of workers allowed in the process pool.
         self.max_worker = max_worker
+
+        #!< A list to track the future objects returned when submitting tasks.
         self.futures = []
 
-        # Store attributes used to handle dependencies between jobs.
+        # !< The current job index, incremented as new jobs are added.
         self.job_index = -1
+
+        # !< The lock index, used to synchronize access to shared resources.
         self.lock_index = -1
+
+        # !< A list of jobs that have not yet completed.
         self.jobs_not_done = []
+
+        # !< A dictionary of jobs that are waiting to be submitted because their dependencies are not yet satisfied.
         self.jobs_to_submit = {}
 
     def set_lock_index(self, job_index=None):

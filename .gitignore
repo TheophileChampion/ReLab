@@ -176,5 +176,6 @@ venv-relab/
 # Do not push the documentation
 docs/html/
 docs/latex/
+docs/README.md
 *.html.bak
 *.css.bak
