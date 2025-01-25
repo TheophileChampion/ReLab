@@ -7,7 +7,7 @@ from relab.agents.VAE import VAE
 
 class DiscreteVAE(VAE):
     """!
-    @brief Implements a Discrete Variational Autoencoder (DiscreteVAE) agent.
+    @brief Implements a Discrete Variational Auto-Encoder.
 
     @details
     This implementation extends upon the paper:

@@ -3,7 +3,7 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class DDQN(DQN):
     """!
-    @brief Implements a Double Deep Q-Network (DDQN) agent.
+    @brief Implements a Double Deep Q-Network.
 
     @details
     This implementation is based on the paper:

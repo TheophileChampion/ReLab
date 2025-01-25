@@ -7,7 +7,7 @@ from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 
 class JointHMM(HMM):
     """!
-    @brief Implements a Joint Hidden Markov Model (JointHMM) agent.
+    @brief Implements a Joint Hidden Markov Model.
 
     @details
     This implementation extends upon the paper:

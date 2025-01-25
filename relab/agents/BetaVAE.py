@@ -7,7 +7,7 @@ from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 
 class BetaVAE(VAE):
     """!
-    @brief Implements a Beta Variational Autoencoder (β-VAE) agent.
+    @brief Implements a Beta Variational Auto-Encoder.
 
     @details
     This implementation is based on the paper:

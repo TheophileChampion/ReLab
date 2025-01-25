@@ -3,7 +3,7 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class IQN(DQN):
     """!
-    @brief Implement an Implicit Quantile Network (IQN).
+    @brief Implement an Implicit Quantile Network.
 
     @details
     This implementation is based on the paper:
@@ -17,9 +17,9 @@ class IQN(DQN):
     - David Silver
     - Rémi Munos
 
-    The paper introduced the IQN algorithm, combining quantile regression with distributional
-    deep reinforcement learning. Importantly, the number of quantiles is independent of the network size,
-    and can be adjusted depending on the amount of compute available.
+    The paper introduced the Implicit Quantile Network (IQN), which combines quantile regression with
+    distributional deep reinforcement learning. Importantly, the number of quantiles is independent
+    of the network size, and can be adjusted depending on the amount of compute available.
     """
 
     def __init__(

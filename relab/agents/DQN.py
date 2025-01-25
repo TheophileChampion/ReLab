@@ -118,7 +118,7 @@ class NetworkType(IntEnum):
 
 class DQN(AgentInterface):
     """!
-    @brief Implements a Deep Q-Network (DQN) agent.
+    @brief Implements a Deep Q-Network.
 
     @details
     This implementation is based on the paper:

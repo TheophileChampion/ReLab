@@ -21,7 +21,7 @@ from relab.helpers.VariationalInference import VariationalInference
 
 class HMM(VariationalModel):
     """!
-    @brief Implements a Hidden Markov Model (HMM) agent.
+    @brief Implements a Hidden Markov Model.
 
     @details
     This implementation extends upon the paper:

@@ -7,7 +7,7 @@ from relab.agents.VAE import VAE
 
 class JointVAE(VAE):
     """!
-    @brief Implements a Joint Variational Auto-Encoder (JointVAE) agent.
+    @brief Implements a Joint Variational Auto-Encoder.
 
     @details
     This implementation is based on the paper:
@@ -18,7 +18,7 @@ class JointVAE(VAE):
     Authors:
     - Emilien Dupont
 
-    The paper introduced the VAE equipped with both a continuous and discrete latent spaces.
+    The paper introduced the JointVAE equipped with both a continuous and discrete latent spaces.
     Note, this agent takes random actions.
     """
 

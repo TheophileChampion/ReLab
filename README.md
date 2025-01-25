@@ -2,7 +2,13 @@
 
 --------------------------------------------------------------------------------
 
-ReLab is a Python package that provides high-performance reinforcement learning benchmarks.
+ReLab is a powerful and user-friendly library designed to streamline 
+reinforcement learning experiments. With a curated collection of well-known
+RL agents and seamless integration with Gym environments, ReLab empowers you
+to train agents effortlessly, visualize their learned behaviors, and compare
+their performance across diverse metrics. Whether you're a researcher exploring 
+state-of-the-art algorithms or a practitioner fine-tuning agents for real-world 
+applications, ReLab simplifies the process, saving you time and effort.
 
 <!-- toc -->
 - [Installation](#installation)

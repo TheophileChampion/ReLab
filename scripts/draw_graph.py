@@ -12,7 +12,7 @@ import relab
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.TensorBoard import TensorBoard
-from relab.helpers.Typing import DataFrame
+from pandas import DataFrame
 
 
 def display_name(metric : str) -> str:

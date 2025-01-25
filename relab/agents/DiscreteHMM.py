@@ -7,7 +7,7 @@ from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 
 class DiscreteHMM(HMM):
     """!
-    @brief Implements a Discrete Hidden Markov Model (DiscreteHMM) agent.
+    @brief Implements a Discrete Hidden Markov Model.
 
     @details
     This implementation extends upon the paper:

@@ -7,7 +7,7 @@ from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 
 class BetaHMM(HMM):
     """!
-    @brief Implements a Beta Hidden Markov Model (β-HMM) agent.
+    @brief Implements a Beta Hidden Markov Model.
 
     @details
     This implementation extends upon the paper:

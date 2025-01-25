@@ -3,7 +3,7 @@ from relab.agents.DQN import ReplayType, NetworkType, LossType, DQN
 
 class MDQN(DQN):
     """!
-    @brief Implements a Multistep Deep Q-Network (MDQN) agent.
+    @brief Implements a multistep Deep Q-Network.
 
     @details
     This implementation is based on the paper:

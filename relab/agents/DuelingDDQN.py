@@ -3,7 +3,7 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class DuelingDDQN(DQN):
     """!
-    @brief Implements a Dueling Double Deep Q-Network (DuelingDDQN) agent.
+    @brief Implements a Dueling Double Deep Q-Network.
 
     @details
     For more information about the original papers, please refer to the documentation of DDQN and DuelingDQN.

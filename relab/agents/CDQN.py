@@ -3,7 +3,7 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class CDQN(DQN):
     """!
-    @brief Implements a Categorical Deep Q-Network (CDQN) agent.
+    @brief Implements a Categorical Deep Q-Network.
 
     @details
     This implementation is based on the paper:
@@ -16,8 +16,8 @@ class CDQN(DQN):
     - Will Dabney
     - Rémi Munos
 
-    The paper introduced the distributional perspective to value-based reinforcement
-    learning, by learning a categorical distribution over returns instead of the expectation returns.
+    The paper introduced the CDQN, which takes a distributional perspective on value-based reinforcement
+    learning, by learning a categorical distribution over returns instead of the expected returns.
     """
 
     def __init__(
