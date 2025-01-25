@@ -7,8 +7,19 @@ from relab.agents.VAE import VAE
 
 class JointVAE(VAE):
     """!
-    Implement an agent taking random actions, and learning a world model using a Variational Auto-Encoder from:
-    Emilien Dupont. Learning Disentangled Joint Continuous and Discrete Representations. NeurIPS, 2018.
+    @brief Implements a Joint Variational Auto-Encoder (JointVAE) agent.
+
+    @details
+    This implementation is based on the paper:
+
+    <b>Learning Disentangled Joint Continuous and Discrete Representations</b>,
+    published in NeurIPS, 2018.
+
+    Authors:
+    - Emilien Dupont
+
+    The paper introduced the VAE equipped with both a continuous and discrete latent spaces.
+    Note, this agent takes random actions.
     """
 
     def __init__(

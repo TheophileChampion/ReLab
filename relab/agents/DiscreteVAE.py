@@ -21,7 +21,7 @@ class DiscreteVAE(VAE):
     - Shixiang Gu
     - Ben Poole
 
-    More precisely, the DiscreteVAE framework replaces the continuous latent space by a discrete one.
+    More precisely, the DiscreteVAE framework replaces the continuous latent space of standard VAE by a discrete one.
     Note, this agent takes random actions.
     """
 

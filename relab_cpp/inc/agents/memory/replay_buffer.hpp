@@ -18,6 +18,7 @@ namespace relab::agents::memory {
      * @brief Class implementing a replay buffer.
      *
      * @details
+     * TODO normal format for papers
      * It supports prioritization [1] and multistep Q-learning [2] from:
      * [1] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
      * [2] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.

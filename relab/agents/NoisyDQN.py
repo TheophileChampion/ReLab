@@ -3,14 +3,10 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class NoisyDQN(DQN):
     """!
-    Implement the Deep Q-Network agent [1] with noisy linear layers [2] from:
+    @brief Implement a DQN with noisy linear layers.
 
-    [1] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves,
-        Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
-        Human-level control through deep reinforcement learning. nature, 2015.
-    [2] Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Ian Osband, Alex Graves, Vlad Mnih,
-        Rémi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, and Shane Legg.
-        Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
+    @details
+    For more information about the original papers, please refer to the documentation of DQN and NoisyDQN.
     """
 
     def __init__(

@@ -8,10 +8,7 @@ from relab import relab
 
 class DeepQNetwork(nn.Module):
     """!
-    Implement the DQN's value network from:
-    Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves,
-    Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
-    Human-level control through deep reinforcement learning. nature, 2015.
+    @brief Implement the value network of a DQN.
     """
 
     def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
@@ -69,14 +66,7 @@ class DeepQNetwork(nn.Module):
 
 class NoisyDeepQNetwork(nn.Module):
     """!
-    Implement the DQN's value network [1] with noisy linear layers [2] from:
-
-    [1] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves,
-        Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
-        Human-level control through deep reinforcement learning. nature, 2015.
-    [2] Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Ian Osband, Alex Graves, Vlad Mnih,
-        Rémi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, and Shane Legg.
-        Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
+    @brief Implement the value network of a DQN with noisy linear layers.
     """
 
     def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:

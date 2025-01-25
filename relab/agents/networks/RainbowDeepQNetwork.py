@@ -10,10 +10,7 @@ import relab
 
 class RainbowDeepQNetwork(nn.Module):
     """!
-    Implement the rainbow DQN's value network from:
-    Matteo Hessel, Joseph Modayil, Hado Van Hasselt, Tom Schaul, Georg Ostrovski, Will Dabney, Dan Horgan, Bilal Piot,
-    Mohammad Azar, and David Silver. Rainbow: Combining improvements in deep reinforcement learning.
-    In Proceedings of the AAAI, volume 32, 2018.
+    @brief Implement the value network of rainbow DQN.
     """
 
     def __init__(
@@ -133,10 +130,7 @@ class RainbowDeepQNetwork(nn.Module):
 
 class RainbowImplicitQuantileNetwork(nn.Module):
     """!
-    Implement the rainbow IQN's value network from:
-    Marin Toromanoff, Emilie Wirbel, and Fabien Moutarde.
-    Is deep reinforcement learning really superhuman on atari? leveling the playing field.
-    arXiv preprint arXiv:1908.04683, 2019.
+    @brief Implement the value network of rainbow IQN.
     """
 
     def __init__(self, n_actions : int = 18, n_tau : int = 64, stack_size : Optional[int] = None) -> None:

@@ -3,10 +3,21 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class RainbowIQN(DQN):
     """!
-    Implement the rainbow implicit quantile network from:
-    Marin Toromanoff, Emilie Wirbel, and Fabien Moutarde.
-    Is deep reinforcement learning really superhuman on atari? leveling the playing field.
-    arXiv preprint arXiv:1908.04683, 2019.
+    @brief Implement a rainbow implicit quantile network.
+
+    @details
+    This implementation is based on the paper:
+
+    <b>Is deep reinforcement learning really superhuman on atari? leveling the playing field</b>,
+    published in arXiv, 2019.
+
+    Authors:
+    - Marin Toromanoff
+    - Emilie Wirbel
+    - Fabien Moutarde
+
+    The paper introduced RainbowIQN which improves upon RainbowDQN by replacing
+    its distributional reinforcement learning part by an implicit quantile network.
     """
 
     def __init__(

@@ -15,7 +15,7 @@ namespace relab::agents::memory::impl {
     using namespace relab::helpers;
 
     /**
-     * @brief A buffer allowing for storage and retrieval of experience datum, i.e., action, reward, done, and priority.
+     * @brief A buffer allowing for storage and retrieval of experience actions, rewards, dones, and priorities.
      */
     class DataBuffer {
 

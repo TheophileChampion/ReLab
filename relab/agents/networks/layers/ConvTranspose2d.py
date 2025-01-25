@@ -6,7 +6,7 @@ from relab.helpers.Typing import ScalarOrTuple, Device, DataType
 
 class ConvTranspose2d(nn.Module):
     """!
-    Class implementing a convolutional transpose layer with the ability to apply the padding same.
+    @brief Class implementing an up-convolutional layer with support for padding same.
     """
 
     def __init__(

@@ -3,13 +3,10 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class NoisyCDQN(DQN):
     """!
-    Implement the categorical Deep Q-Network agent [1] with noisy linear layers [2] from:
+    @brief Implement a Categorical Deep Q-Network with noisy linear layers (NoisyCDQN).
 
-    [1] Marc G Bellemare, Will Dabney, and Rémi Munos. A distributional perspective on reinforcement learning.
-        In International conference on machine learning. PMLR, 2017.
-    [2] Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Ian Osband, Alex Graves, Vlad Mnih,
-        Rémi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, and Shane Legg.
-        Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
+    @details
+    For more information about the original papers, please refer to the documentation of CDQN and NoisyDQN.
     """
 
     def __init__(

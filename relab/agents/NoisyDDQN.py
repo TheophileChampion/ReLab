@@ -3,13 +3,10 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class NoisyDDQN(DQN):
     """!
-    Implement the Double Deep Q-Network agent [1] with noisy linear layers [2] from:
+    @brief Implement a Double DQN with noisy linear layers.
 
-    [1] Hado Van Hasselt, Arthur Guez, and David Silver. Deep reinforcement learning with double q-learning.
-        In Proceedings of the AAAI, 2016.
-    [2] Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Ian Osband, Alex Graves, Vlad Mnih,
-        Rémi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, and Shane Legg.
-        Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
+    @details
+    For more information about the original papers, please refer to the documentation of DDQN and NoisyDQN.
     """
 
     def __init__(

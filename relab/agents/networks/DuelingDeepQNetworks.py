@@ -9,10 +9,7 @@ from relab import relab
 
 class DuelingDeepQNetwork(nn.Module):
     """!
-    Implement a Dueling Deep Q-Network from:
-    Ziyu Wang, Tom Schaul, Matteo Hessel, Hado Hasselt, Marc Lanctot, and Nando Freitas.
-    Dueling network architectures for deep reinforcement learning.
-    In International conference on machine learning. PMLR, 2016.
+    @brief Implement the value network of a dueling DQN.
     """
 
     def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
@@ -94,14 +91,7 @@ class DuelingDeepQNetwork(nn.Module):
 
 class NoisyDuelingDeepQNetwork(nn.Module):
     """!
-    Implement a Dueling Deep Q-Network [1] with noisy linear layers [2] from:
-
-    [1] Ziyu Wang, Tom Schaul, Matteo Hessel, Hado Hasselt, Marc Lanctot, and Nando Freitas.
-        Dueling network architectures for deep reinforcement learning.
-        In International conference on machine learning. PMLR, 2016.
-    [2] Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Ian Osband, Alex Graves, Vlad Mnih,
-        Rémi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, and Shane Legg.
-        Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
+    @brief Implement the value network of a dueling DQN with noisy linear layers.
     """
 
     def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:

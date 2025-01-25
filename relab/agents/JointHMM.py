@@ -7,7 +7,20 @@ from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 
 class JointHMM(HMM):
     """!
-    Implement an agent taking random actions, and learning a world model using a HMM with mixed latent space.
+    @brief Implements a Joint Hidden Markov Model (JointHMM) agent.
+
+    @details
+    This implementation extends upon the paper:
+
+    <b>Learning Disentangled Joint Continuous and Discrete Representations</b>,
+    published in NeurIPS, 2018.
+
+    Authors:
+    - Emilien Dupont
+
+    More precisely, the JointHMM extends the JointVAE framework to sequential data
+    by modeling temporal dependencies using a transition network.
+    Note, this agent takes random actions.
     """
 
     def __init__(

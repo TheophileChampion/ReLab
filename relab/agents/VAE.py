@@ -12,28 +12,30 @@ from torch import optim, Tensor
 
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import VariationalModel, LikelihoodType, LatentSpaceType
-from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
-from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.Typing import Checkpoint
 from relab.helpers.VariationalInference import VariationalInference
 
 
 class VAE(VariationalModel):
     """!
-    Implement an agent taking random actions, and learning a world model using a Variational Auto-Encoder (VAE) from:
-    Kingma Diederi, and Welling Max. Auto-Encoding Variational Bayes.
-    International Conference on Learning Representations, 2014.
+    @brief Implements a Variational Auto-Encoder (VAE) agent.
 
-    This implementation also support beta-VAE [1], Concrete VAE [2], Joint VAE [3], and prioritized replay buffer [4]:
-    [1] Irina Higgins, Loic Matthey, Arka Pal, Christopher Burgess, Xavier Glorot, Matthew Botvinick,
-        Shakir Mohamed, and Alexander Lerchner.
-        beta-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework. ICLR, 2017.
-    [2] Eric Jang, Shixiang Gu, and Ben Poole. Categorical Reparameterization with Gumbel-Softmax.
-        arXiv preprint arXiv:1611.01144, 2016.
-    [3] Emilien Dupont. Learning Disentangled Joint Continuous and Discrete Representations. NeurIPS, 2018.
-    [4] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
+    @details
+    This implementation is based on the paper:
+
+    <b>Auto-Encoding Variational Bayes</b>,
+    published in ICLR, 2014.
+
+    Authors:
+    - Kingma Diederi
+    - Welling Max
+
+    The paper introduced the VAE algorithm, variational inference with deep neural
+    networks to unsupervised embedding of images on the Frey Face and MNIST datasets.
+    Note, this agent takes random actions.
     """
 
     def __init__(
@@ -270,74 +272,57 @@ class VAE(VariationalModel):
         return fig
         # @endcond
 
-    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def load(
+        self,
+        checkpoint_name : Optional[str] = None,
+        buffer_checkpoint_name : Optional[str] = None
+    ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
+        @return a tuple containing the checkpoint path and the checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
+        try:
+            # Call the parent load function.
+            checkpoint_path, checkpoint = super().load(checkpoint_name, buffer_checkpoint_name)
 
-        # Retrieve the full checkpoint path.
-        if checkpoint_name is None:
-            checkpoint_path = self.get_latest_checkpoint()
-        else:
-            checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+            # Update the world model using the checkpoint.
+            self.encoder = self.get_encoder_network(self.latent_space_type)
+            self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
+            self.decoder = self.get_decoder_network(self.latent_space_type)
+            self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
 
-        # Check if the checkpoint can be loaded.
-        if checkpoint_path is None:
-            logging.info("Could not load the agent from the file system.")
-            return
-        
-        # Load the checkpoint from the file system.
-        logging.info("Loading agent from the following file: " + checkpoint_path)
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+            # Update the replay buffer.
+            # TODO move to VariationalModel.load?
+            replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
+            self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
+            self.buffer.load(checkpoint_path, buffer_checkpoint_name)
 
-        # Update the agent's parameters using the checkpoint.
-        self.buffer_size = self.safe_load(checkpoint, "buffer_size")
-        self.batch_size = self.safe_load(checkpoint, "batch_size")
-        self.learning_starts = self.safe_load(checkpoint, "learning_starts")
-        self.n_actions = self.safe_load(checkpoint, "n_actions")
-        self.n_steps = self.safe_load(checkpoint, "n_steps")
-        self.omega = self.safe_load(checkpoint, "omega")
-        self.omega_is = self.safe_load(checkpoint, "omega_is")
-        self.replay_type = self.safe_load(checkpoint, "replay_type")
-        self.training = self.safe_load(checkpoint, "training")
-        self.current_step = self.safe_load(checkpoint, "current_step")
-        self.learning_rate = self.safe_load(checkpoint, "learning_rate")
-        self.adam_eps = self.safe_load(checkpoint, "adam_eps")
-        self.likelihood_type = self.safe_load(checkpoint, "likelihood_type")
-        self.latent_space_type = self.safe_load(checkpoint, "latent_space_type")
-        self.n_continuous_vars = self.safe_load(checkpoint, "n_continuous_vars")
-        self.n_discrete_vars = self.safe_load(checkpoint, "n_discrete_vars")
-        self.n_discrete_vals = self.safe_load(checkpoint, "n_discrete_vals")
-        self.beta_schedule = self.safe_load(checkpoint, "beta_schedule")
-        self.beta = PiecewiseLinearSchedule(self.beta_schedule)
-        self.tau_schedule = self.safe_load(checkpoint, "tau_schedule")
-        self.tau = ExponentialSchedule(self.tau_schedule)
+            # Get the reparameterization function to use with the world model.
+            self.reparameterize = self.get_reparameterization(self.latent_space_type)
 
-        # Update the model loss using the checkpoint.
-        self.model_loss = self.get_model_loss(self.latent_space_type)
-        self.likelihood_loss = self.get_likelihood_loss(self.likelihood_type)
+            # Update the optimizer.
+            params = list(self.encoder.parameters()) + list(self.decoder.parameters())
+            self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
+            return checkpoint_path, checkpoint
 
-        # Update the world model using the checkpoint.
-        self.encoder = self.get_encoder_network(self.latent_space_type)
-        self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
-        self.decoder = self.get_decoder_network(self.latent_space_type)
-        self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
-
-        # Update the replay buffer.
-        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
-        self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
-        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
-
-        # Get the reparameterization function to use with the world model.
-        self.reparameterize = self.get_reparameterization(self.latent_space_type)
-
-        # Update the optimizer.
-        params = list(self.encoder.parameters()) + list(self.decoder.parameters())
-        self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
+        # Catch the exception raise if the checkpoint could not be located.
+        except FileNotFoundError:
+            return "", None
         # @endcond
+
+    def as_dict(self):
+        """"
+        Convert the agent into a dictionary that can be saved on the filesystem.
+        @return the dictionary
+        """
+        return {
+            "encoder": self.encoder.state_dict(),
+            "decoder": self.decoder.state_dict(),
+            "optimizer": self.optimizer.state_dict()
+        } | super().as_dict()
 
     def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
@@ -346,37 +331,13 @@ class VAE(VariationalModel):
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
         # @cond IGNORED_BY_DOXYGEN
-
         # Create the checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)
 
         # Save the model.
         logging.info("Saving agent to the following file: " + checkpoint_path)
-        torch.save({
-            "buffer_size": self.buffer_size,
-            "batch_size": self.batch_size,
-            "learning_starts": self.learning_starts,
-            "n_actions": self.n_actions,
-            "n_steps": self.n_steps,
-            "omega": self.omega,
-            "omega_is": self.omega_is,
-            "replay_type": self.replay_type,
-            "training": self.training,
-            "current_step": self.current_step,
-            "learning_rate": self.learning_rate,
-            "adam_eps": self.adam_eps,
-            "likelihood_type": self.likelihood_type,
-            "latent_space_type": self.latent_space_type,
-            "n_continuous_vars": self.n_continuous_vars,
-            "n_discrete_vars": self.n_discrete_vars,
-            "n_discrete_vals": self.n_discrete_vals,
-            "beta_schedule": self.beta_schedule,
-            "tau_schedule": self.tau_schedule,
-            "encoder": self.encoder.state_dict(),
-            "decoder": self.decoder.state_dict(),
-            "optimizer": self.optimizer.state_dict()
-        }, checkpoint_path)
+        torch.save(self.as_dict(), checkpoint_path)
 
         # Save the replay buffer.
         self.buffer.save(checkpoint_path, buffer_checkpoint_name)

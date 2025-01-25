@@ -6,29 +6,7 @@ class DuelingDDQN(DQN):
     @brief Implements a Dueling Double Deep Q-Network (DuelingDDQN) agent.
 
     @details
-    This implementation is based on the papers:
-    
-    <b>Dueling network architectures for deep reinforcement learning</b>,
-    published in PMLR, 2016.
-
-    Authors:
-    - Ziyu Wang
-    - Tom Schaul
-    - Matteo Hessel
-    - Hado Hasselt
-    - Marc Lanctot
-    - Nando Freitas
-
-    <b>Deep Reinforcement Learning with Double Q-learning</b>,
-    published in AAAI, 2016.
-
-    Authors:
-    - Hado van Hasselt
-    - Arthur Guez
-    - David Silver
-
-    More precisely, the DuelingDDQN architecture improves the standard Double DQN by separating the 
-    representation of state values and action advantages.
+    For more information about the original papers, please refer to the documentation of DDQN and DuelingDQN.
     """
 
     def __init__(

@@ -6,8 +6,7 @@ from torch import nn
 
 class DiagonalGaussian(nn.Module):
     """!
-    Class implementing a network that maps a vector of size n into two vectors representing the mean
-    and variance of a Gaussian with diagonal covariance matrix.
+    @brief Layer predicting the mean and variance of a Gaussian with diagonal covariance matrix.
     """
 
     def __init__(self, input_size : int, nb_components : int) -> None:

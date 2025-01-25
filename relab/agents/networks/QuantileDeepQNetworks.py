@@ -9,10 +9,7 @@ import relab
 
 class QuantileDeepQNetwork(nn.Module):
     """!
-    Implement the QR-DQN's value network from:
-    Will Dabney, Mark Rowland, Marc Bellemare, and Rémi Munos.
-    Distributional reinforcement learning with quantile regression.
-    In Proceedings of the AAAI, 2018.
+    @brief Implement the value network of QR-DQN.
     """
 
     def __init__(self, n_atoms : int = 21, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
@@ -84,10 +81,7 @@ class QuantileDeepQNetwork(nn.Module):
 
 class ImplicitQuantileNetwork(nn.Module):
     """!
-    Implement the IQN's value network from:
-    Will Dabney, Georg Ostrovski, David Silver, and Rémi Munos.
-    Implicit quantile networks for distributional reinforcement learning.
-    In International conference on machine learning, pages 1096–1105. PMLR, 2018.
+    @brief Implement the value network of the IQN.
     """
 
     def __init__(self, n_actions : int = 18, n_tau : int = 64, stack_size : Optional[int] = None) -> None:

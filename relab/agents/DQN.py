@@ -5,13 +5,12 @@ from datetime import datetime
 from enum import IntEnum
 from functools import partial
 from os.path import join
-from typing import Callable, Any, Dict, Optional
+from typing import Callable, Any, Dict, Optional, Tuple
 
 import torch
 from torch.nn import SmoothL1Loss, MSELoss, CrossEntropyLoss, HuberLoss
 from torch import nn, Tensor
 from gymnasium import Env
-from numpy import ndarray
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
@@ -26,7 +25,7 @@ from relab.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork, Im
 from relab.agents.networks.RainbowDeepQNetwork import RainbowDeepQNetwork, RainbowImplicitQuantileNetwork
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Typing import ActionType, Loss
+from relab.helpers.Typing import ActionType, Loss, Checkpoint, ObservationType
 
 
 class LossType(IntEnum):
@@ -139,9 +138,8 @@ class DQN(AgentInterface):
     - Andreas K. Fidjeland
     - Georg Ostrovski, et al.
 
-    The paper introduced the DQN algorithm, combining Q-learning
-    with deep neural networks to achieve human-level performance in
-    Atari 2600 games.
+    The paper introduced the DQN algorithm, combining Q-learning with deep neural
+    networks to achieve human-level performance in Atari 2600 games.
     """
 
     def __init__(
@@ -351,7 +349,7 @@ class DQN(AgentInterface):
         """
         self.target_net.load_state_dict(self.value_net.state_dict())
 
-    def step(self, obs : ndarray) -> ActionType:
+    def step(self, obs : ObservationType) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -719,88 +717,76 @@ class DQN(AgentInterface):
         return loss
         # @endcond
 
-    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def load(
+        self,
+        checkpoint_name : Optional[str] = None,
+        buffer_checkpoint_name : Optional[str] = None
+    ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
+        @return a tuple containing the checkpoint path and the checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
+        try:
+            # Call the parent load function.
+            checkpoint_path, checkpoint = super().load(checkpoint_name, buffer_checkpoint_name)
 
-        # Retrieve the full agent checkpoint path.
-        if checkpoint_name is None:
-            checkpoint_path = self.get_latest_checkpoint()
-        else:
-            checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+            # Update the agent's parameters using the checkpoint.
+            self.gamma = self.safe_load(checkpoint, "gamma")
+            self.learning_rate = self.safe_load(checkpoint, "learning_rate")
+            self.buffer_size = self.safe_load(checkpoint, "buffer_size")
+            self.batch_size = self.safe_load(checkpoint, "batch_size")
+            self.target_update_interval = self.safe_load(checkpoint, "target_update_interval")
+            self.learning_starts = self.safe_load(checkpoint, "learning_starts")
+            self.kappa = self.safe_load(checkpoint, "kappa")
+            self.adam_eps = self.safe_load(checkpoint, "adam_eps")
+            self.n_atoms = self.safe_load(checkpoint, "n_atoms")
+            self.v_min = self.safe_load(checkpoint, "v_min")
+            self.v_max = self.safe_load(checkpoint, "v_max")
+            self.n_actions = self.safe_load(checkpoint, "n_actions")
+            self.n_steps = self.safe_load(checkpoint, "n_steps")
+            self.omega = self.safe_load(checkpoint, "omega")
+            self.omega_is = self.safe_load(checkpoint, "omega_is")
+            self.replay_type = self.safe_load(checkpoint, "replay_type")
+            self.loss_type = self.safe_load(checkpoint, "loss_type")
+            self.network_type = self.safe_load(checkpoint, "network_type")
+            self.epsilon_schedule = self.safe_load(checkpoint, "epsilon_schedule")
+            self.epsilon = PiecewiseLinearSchedule(self.epsilon_schedule)
 
-        # Check if the checkpoint can be loaded.
-        if checkpoint_path is None:
-            logging.info("Could not load the agent from the file system.")
-            return
-        
-        # Load the checkpoint from the file system.
-        logging.info("Loading agent from the following file: " + checkpoint_path)
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+            # Update the loss function using the checkpoint.
+            self.loss = self.get_loss(self.loss_type)
 
-        # Update the agent's parameters using the checkpoint.
-        self.gamma = self.safe_load(checkpoint, "gamma")
-        self.learning_rate = self.safe_load(checkpoint, "learning_rate")
-        self.buffer_size = self.safe_load(checkpoint, "buffer_size")
-        self.batch_size = self.safe_load(checkpoint, "batch_size")
-        self.target_update_interval = self.safe_load(checkpoint, "target_update_interval")
-        self.learning_starts = self.safe_load(checkpoint, "learning_starts")
-        self.kappa = self.safe_load(checkpoint, "kappa")
-        self.adam_eps = self.safe_load(checkpoint, "adam_eps")
-        self.n_atoms = self.safe_load(checkpoint, "n_atoms")
-        self.v_min = self.safe_load(checkpoint, "v_min")
-        self.v_max = self.safe_load(checkpoint, "v_max")
-        self.n_actions = self.safe_load(checkpoint, "n_actions")
-        self.n_steps = self.safe_load(checkpoint, "n_steps")
-        self.omega = self.safe_load(checkpoint, "omega")
-        self.omega_is = self.safe_load(checkpoint, "omega_is")
-        self.replay_type = self.safe_load(checkpoint, "replay_type")
-        self.loss_type = self.safe_load(checkpoint, "loss_type")
-        self.network_type = self.safe_load(checkpoint, "network_type")
-        self.training = self.safe_load(checkpoint, "training")
-        self.epsilon_schedule = self.safe_load(checkpoint, "epsilon_schedule")
-        self.current_step = self.safe_load(checkpoint, "current_step")
-        self.epsilon = PiecewiseLinearSchedule(self.epsilon_schedule)
+            # Update the agent's networks using the checkpoint.
+            self.value_net = self.get_value_network(self.network_type)
+            self.value_net.load_state_dict(self.safe_load(checkpoint, "value_net"))
 
-        # Update the loss function using the checkpoint.
-        self.loss = self.get_loss(self.loss_type)
+            self.target_net = self.get_value_network(self.network_type)
+            self.target_net.load_state_dict(self.safe_load(checkpoint, "target_net"))
+            for param in self.target_net.parameters():
+                param.requires_grad = False
 
-        # Update the agent's networks using the checkpoint.
-        self.value_net = self.get_value_network(self.network_type)
-        self.value_net.load_state_dict(self.safe_load(checkpoint, "value_net"))
+            # Update the optimizer and replay buffer.
+            replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps,
+                                                   self.gamma)
+            self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
+            self.buffer.load(checkpoint_path, buffer_checkpoint_name)
+            params = self.value_net.parameters()
+            self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
+            return checkpoint_path, checkpoint
 
-        self.target_net = self.get_value_network(self.network_type)
-        self.target_net.load_state_dict(self.safe_load(checkpoint, "target_net"))
-        for param in self.target_net.parameters():
-            param.requires_grad = False
-
-        # Update the optimizer and replay buffer.
-        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
-        self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
-        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
-        params = self.value_net.parameters()
-        self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
+        # Catch the exception raise if the checkpoint could not be located.
+        except FileNotFoundError:
+            return "", None
         # @endcond
 
-    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
-        """!
-        Save the agent on the filesystem.
-        @param checkpoint_name: the name of the checkpoint in which to save the agent
-        @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+    def as_dict(self):
+        """"
+        Convert the agent into a dictionary that can be saved on the filesystem.
+        @return the dictionary
         """
-        # @cond IGNORED_BY_DOXYGEN
-
-        # Create the agent checkpoint directory and file, if they do not exist.
-        checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
-        FileSystem.create_directory_and_file(checkpoint_path)
-
-        # Save the model.
-        logging.info("Saving agent to the following file: " + checkpoint_path)
-        torch.save({
+        return {
             "gamma": self.gamma,
             "learning_rate": self.learning_rate,
             "buffer_size": self.buffer_size,
@@ -819,13 +805,26 @@ class DQN(AgentInterface):
             "replay_type": self.replay_type,
             "loss_type": self.loss_type,
             "network_type": self.network_type,
-            "training": self.training,
             "epsilon_schedule": self.epsilon_schedule,
-            "current_step": self.current_step,
             "value_net": self.value_net.state_dict(),
             "target_net": self.target_net.state_dict(),
             "optimizer": self.optimizer.state_dict()
-        }, checkpoint_path)
+        } | super().as_dict()
+
+    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
+        """!
+        Save the agent on the filesystem.
+        @param checkpoint_name: the name of the checkpoint in which to save the agent
+        @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        """
+        # @cond IGNORED_BY_DOXYGEN
+        # Create the agent checkpoint directory and file, if they do not exist.
+        checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+        FileSystem.create_directory_and_file(checkpoint_path)
+
+        # Save the model.
+        logging.info("Saving agent to the following file: " + checkpoint_path)
+        torch.save(self.as_dict(), checkpoint_path)
 
         # Save the replay buffer.
         self.buffer.save(checkpoint_path, buffer_checkpoint_name)

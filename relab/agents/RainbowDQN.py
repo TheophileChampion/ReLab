@@ -3,10 +3,33 @@ from relab.agents.DQN import ReplayType, LossType, NetworkType, DQN
 
 class RainbowDQN(DQN):
     """!
-    Implement the rainbow Deep Q-Network agent from:
-    Matteo Hessel, Joseph Modayil, Hado Van Hasselt, Tom Schaul, Georg Ostrovski, Will Dabney, Dan Horgan, Bilal Piot,
-    Mohammad Azar, and David Silver. Rainbow: Combining improvements in deep reinforcement learning.
-    In Proceedings of the AAAI, volume 32, 2018.
+    @brief Implement a rainbow Deep Q-Network.
+
+    @details
+    This implementation is based on the paper:
+
+    <b>Rainbow: Combining improvements in deep reinforcement learning</b>,
+    published in AAAI, 2018.
+
+    Authors:
+    - Matteo Hessel
+    - Joseph Modayil
+    - Hado Van Hasselt
+    - Tom Schaul
+    - Georg Ostrovski
+    - Will Dabney
+    - Dan Horgan
+    - Bilal Piot
+    - Mohammad Azar
+    - David Silver
+
+    The paper introduced RainbowDQN which combines the following improvements of DQN:
+    - double Q-learning
+    - multistep Q-learning
+    - distributional reinforcement learning
+    - noisy layers for exploration
+    - dueling DQN
+    - prioritized replay buffer
     """
 
     def __init__(

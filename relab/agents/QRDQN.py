@@ -3,10 +3,22 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class QRDQN(DQN):
     """!
-    Implement the quantile regression Deep Q-Network with the Huber quantile loss agent from:
-    Will Dabney, Mark Rowland, Marc Bellemare, and Rémi Munos.
-    Distributional reinforcement learning with quantile regression.
-    In Proceedings of the AAAI, 2018.
+    @brief Implement a quantile regression Deep Q-Network.
+
+    @details
+    This implementation is based on the paper:
+
+    <b>Distributional reinforcement learning with quantile regression</b>,
+    published in AAAI, 2018.
+
+    Authors:
+    - Will Dabney
+    - Mark Rowland
+    - Marc Bellemare
+    - Rémi Munos
+
+    The paper introduced the quantile regression DQN, which combines quantile regression with distributional
+    deep reinforcement learning. Importantly, the number of quantiles dependent on the network's output size.
     """
 
     def __init__(

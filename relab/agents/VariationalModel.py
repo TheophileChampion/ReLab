@@ -8,7 +8,6 @@ from functools import partial
 import re
 from typing import Any, Callable, Tuple, Dict, Optional
 from gymnasium import Env
-from numpy import ndarray
 from matplotlib.figure import Figure
 
 import torch
@@ -21,7 +20,7 @@ import numpy as np
 from relab.agents.networks.DecoderNetworks import ContinuousDecoderNetwork, DiscreteDecoderNetwork, MixedDecoderNetwork
 from relab.agents.networks.EncoderNetworks import ContinuousEncoderNetwork, DiscreteEncoderNetwork, MixedEncoderNetwork
 from relab.agents.networks.TransitionNetworks import ContinuousTransitionNetwork, DiscreteTransitionNetwork, MixedTransitionNetwork
-from relab.helpers.Typing import ActionType
+from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
 
 from relab.helpers.VariationalInference import VariationalInference
 from relab.helpers.MatPlotLib import MatPlotLib
@@ -63,7 +62,7 @@ class LikelihoodType(IntEnum):
 
 class VariationalModel(AgentInterface):
     """!
-    Implement an agent taking random actions, with support for learning world models.
+    @brief The interface that all agents behaving randomly to learn a world models must implement.
     """
 
     def __init__(
@@ -128,10 +127,6 @@ class VariationalModel(AgentInterface):
         ## @var n_actions
         # Number of possible actions in the environment.
         self.n_actions = n_actions
-
-        ## @var training
-        # Flag indicating whether the model is in training mode.
-        self.training = training
 
         ## @var replay_type
         # Type of experience replay buffer being used.
@@ -356,7 +351,7 @@ class VariationalModel(AgentInterface):
         return transition
         # @endcond
 
-    def step(self, obs : ndarray) -> ActionType:
+    def step(self, obs : ObservationType) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -451,3 +446,67 @@ class VariationalModel(AgentInterface):
             LikelihoodType.BERNOULLI: torch.sigmoid,
         }[self.likelihood_type]
         return function(decoder_output)
+
+    def load(
+        self,
+        checkpoint_name : Optional[str] = None,
+        buffer_checkpoint_name : Optional[str] = None
+    ) -> Tuple[str, Checkpoint]:
+        """!
+        Load an agent from the filesystem.
+        @param checkpoint_name: the name of the agent checkpoint to load
+        @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
+        @return a tuple containing the checkpoint path and the checkpoint object
+        """
+
+        # Call the parent load function.
+        checkpoint_path, checkpoint = super().load(checkpoint_name, buffer_checkpoint_name)
+
+        # Load the class attributes from the checkpoint.
+        self.buffer_size = self.safe_load(checkpoint, "buffer_size")
+        self.batch_size = self.safe_load(checkpoint, "batch_size")
+        self.learning_starts = self.safe_load(checkpoint, "learning_starts")
+        self.n_actions = self.safe_load(checkpoint, "n_actions")
+        self.n_steps = self.safe_load(checkpoint, "n_steps")
+        self.omega = self.safe_load(checkpoint, "omega")
+        self.omega_is = self.safe_load(checkpoint, "omega_is")
+        self.replay_type = self.safe_load(checkpoint, "replay_type")
+        self.learning_rate = self.safe_load(checkpoint, "learning_rate")
+        self.adam_eps = self.safe_load(checkpoint, "adam_eps")
+        self.likelihood_type = self.safe_load(checkpoint, "likelihood_type")
+        self.likelihood_loss = self.get_likelihood_loss(self.likelihood_type)
+        self.latent_space_type = self.safe_load(checkpoint, "latent_space_type")
+        self.model_loss = self.get_model_loss(self.latent_space_type)
+        self.beta_schedule = self.safe_load(checkpoint, "beta_schedule")
+        self.beta = PiecewiseLinearSchedule(self.beta_schedule)
+        self.tau_schedule = self.safe_load(checkpoint, "tau_schedule")
+        self.tau = ExponentialSchedule(self.tau_schedule)
+        self.n_continuous_vars = self.safe_load(checkpoint, "n_continuous_vars")
+        self.n_discrete_vars = self.safe_load(checkpoint, "n_discrete_vars")
+        self.n_discrete_vals = self.safe_load(checkpoint, "n_discrete_vals")
+        return checkpoint_path, checkpoint
+
+    def as_dict(self):
+        """"
+        Convert the agent into a dictionary that can be saved on the filesystem.
+        @return the dictionary
+        """
+        return {
+            "buffer_size": self.buffer_size,
+            "batch_size": self.batch_size,
+            "learning_starts": self.learning_starts,
+            "n_actions": self.n_actions,
+            "n_steps": self.n_steps,
+            "omega": self.omega,
+            "omega_is": self.omega_is,
+            "replay_type": self.replay_type,
+            "learning_rate": self.learning_rate,
+            "adam_eps": self.adam_eps,
+            "likelihood_type": self.likelihood_type,
+            "latent_space_type": self.latent_space_type,
+            "beta_schedule": self.beta_schedule,
+            "tau_schedule": self.tau_schedule,
+            "n_continuous_vars": self.n_continuous_vars,
+            "n_discrete_vars": self.n_discrete_vars,
+            "n_discrete_vals": self.n_discrete_vals
+        } | super().as_dict()

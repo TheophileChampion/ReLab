@@ -8,9 +8,7 @@ import relab
 
 class CategoricalDeepQNetwork(nn.Module):
     """!
-    Implement the categorical DQN's value network from:
-    Marc G Bellemare, Will Dabney, and Rémi Munos. A distributional perspective on reinforcement learning.
-    In International conference on machine learning. PMLR, 2017.
+    @brief Implements a value network for the categorical DQN.
     """
 
     def __init__(
@@ -117,13 +115,7 @@ class CategoricalDeepQNetwork(nn.Module):
 
 class NoisyCategoricalDeepQNetwork(nn.Module):
     """!
-    Implement the categorical DQN's value network [1] with noisy linear layers [2] from:
-
-    [1] Marc G Bellemare, Will Dabney, and Rémi Munos. A distributional perspective on reinforcement learning.
-        In International conference on machine learning. PMLR, 2017.
-    [2] Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Ian Osband, Alex Graves, Vlad Mnih,
-        Rémi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, and Shane Legg.
-        Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
+    @brief Implements a noisy value network for the categorical DQN.
     """
 
     def __init__(

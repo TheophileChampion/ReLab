@@ -3,12 +3,20 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class PrioritizedDQN(DQN):
     """!
-    Implement the Deep Q-Network agent [1] with prioritized replay buffer [2] from:
+    @brief Implement a DQN with prioritized replay buffer.
 
-    [1] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves,
-        Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
-        Human-level control through deep reinforcement learning. nature, 2015.
-    [2] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
+    @details
+    The implementation is based on the following papers:
+
+    <b>Prioritized experience replay</b>,
+    published on arXiv, 2015.
+
+    Authors:
+    - Tom Schaul
+
+    More precisely, prioritized DQN improves upon DQN by tracking the loss associated with
+    each experience in the replay buffer. During training, experiences are sampled in proportion
+    to their losses, ensuring that experiences with higher losses are replayed more frequently.
     """
 
     def __init__(

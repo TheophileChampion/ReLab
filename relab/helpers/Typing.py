@@ -15,8 +15,10 @@ Parameter = torch.nn.parameter.Parameter  # An alias representing a torch parame
 Loss = Any  # An alias representing a torch loss like MSELoss.
 Checkpoint = Any  # An alias representing a torch checkpoint returned by torch.load.
 DataType = Any  # An alias representing the type of tensor elements.
+Optimizer = Any  # An alias representing a torch optimizer.
 
 ActionType = Union[torch.Tensor, numpy.ndarray, int]  # An alias representing an action.
+ObservationType = Union[torch.Tensor, numpy.ndarray]  # An alias representing an observation.
 
 # An alias representing the return of (Gym) environment's step function, i.e. a tuple containing:
 # - an observation
@@ -24,7 +26,9 @@ ActionType = Union[torch.Tensor, numpy.ndarray, int]  # An alias representing an
 # - a boolean indicating whether the episode terminated
 # - a boolean indicating whether the episode was truncated
 # - a dictionary containing additional information
-GymStepData = Tuple[numpy.ndarray, SupportsFloat, bool, bool, Dict[str, Any]]
+GymStepData = Tuple[ObservationType, SupportsFloat, bool, bool, Dict[str, Any]]
+
+Batch = Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor] # An alias representing a batch of experiences.
 
 T = TypeVar("T")
-ScalarOrTuple = Union[T, tuple[T, T]]
+ScalarOrTuple = Union[T, tuple[T, T]]  # An alias representing either a scalar or a tuple.

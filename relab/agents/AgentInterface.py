@@ -1,4 +1,5 @@
 import abc
+import errno
 import logging
 import math
 import os
@@ -9,22 +10,22 @@ from collections import deque
 from enum import IntEnum
 from functools import partial
 from os.path import exists, isdir, isfile, join
-from typing import Dict, Any, Callable, SupportsFloat, Iterator, Optional
+from typing import Dict, Any, Callable, SupportsFloat, Iterator, Optional, List, Union, Tuple
 
 import psutil
 
 import numpy as np
-from numpy import ndarray
+import torch
 from torch.utils.tensorboard import SummaryWriter
 import imageio
 from PIL import Image
-from torch import optim, Optimizer
+from torch import optim
 from gymnasium import Env
 
 import relab
 from relab.agents.memory.ReplayBuffer import ReplayBuffer
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Typing import ActionType, Checkpoint, Parameter
+from relab.helpers.Typing import ActionType, Checkpoint, Parameter, Optimizer, ObservationType
 
 
 class ReplayType(IntEnum):
@@ -51,7 +52,7 @@ class ReplayType(IntEnum):
 
 class AgentInterface(ABC):
     """!
-    The interface that all agents must implement.
+    @brief The interface that all agents must implement.
     """
 
     def __init__(self, training : bool = True) -> None:
@@ -133,7 +134,7 @@ class AgentInterface(ABC):
         self.writer = SummaryWriter(os.environ["TENSORBOARD_DIRECTORY"]) if training is True else None
 
     @abc.abstractmethod
-    def step(self, obs : ndarray) -> ActionType:
+    def step(self, obs : ObservationType) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -149,13 +150,73 @@ class AgentInterface(ABC):
         """
         ...
 
-    @abc.abstractmethod
-    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def load(
+        self,
+        checkpoint_name : Optional[str] = None,
+        buffer_checkpoint_name : Optional[str] = None
+    ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
+        @return a tuple containing the checkpoint path and the checkpoint object
         """
+
+        # Retrieve the full agent checkpoint path.
+        if checkpoint_name is None:
+            checkpoint_path = self.get_latest_checkpoint()
+        else:
+            checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+
+        # Check if the checkpoint can be loaded.
+        if checkpoint_path is None:
+            logging.info("Could not load the agent from the file system.")
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "checkpoint.pt")
+
+        # Load the checkpoint from the file system.
+        logging.info("Loading agent from the following file: " + checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+
+        # Load the class attributes from the checkpoint.
+        self.training = self.safe_load(checkpoint, "training")
+        self.current_step = self.safe_load(checkpoint, "current_step")
+        self.max_queue_len = self.safe_load(checkpoint, "max_queue_len")
+        self.current_episodic_reward = self.safe_load(checkpoint, "current_episodic_reward")
+        self.last_time = self.safe_load(checkpoint, "last_time")
+        self.current_episode_length = self.safe_load(checkpoint, "current_episode_length")
+        self.vfe_losses = self.safe_load(checkpoint, "vfe_losses")
+        self.betas = self.safe_load(checkpoint, "betas")
+        self.log_likelihoods = self.safe_load(checkpoint, "log_likelihoods")
+        self.kl_divergences = self.safe_load(checkpoint, "kl_divergences")
+        self.virtual_memory = self.safe_load(checkpoint, "virtual_memory")
+        self.residential_memory = self.safe_load(checkpoint, "residential_memory")
+        self.episodic_rewards = self.safe_load(checkpoint, "episodic_rewards")
+        self.time_elapsed = self.safe_load(checkpoint, "time_elapsed")
+        self.episode_lengths = self.safe_load(checkpoint, "episode_lengths")
+        return checkpoint_path, checkpoint
+
+    def as_dict(self):
+        """"
+        Convert the agent into a dictionary that can be saved on the filesystem.
+        @return the dictionary
+        """
+        return {
+            "training": self.training,
+            "current_step": self.current_step,
+            "max_queue_len": self.max_queue_len,
+            "current_episodic_reward": self.current_episodic_reward,
+            "last_time": self.last_time,
+            "current_episode_length": self.current_episode_length,
+            "vfe_losses": self.vfe_losses,
+            "betas": self.betas,
+            "log_likelihoods": self.log_likelihoods,
+            "kl_divergences": self.kl_divergences,
+            "virtual_memory": self.virtual_memory,
+            "residential_memory": self.residential_memory,
+            "episodic_rewards": self.episodic_rewards,
+            "time_elapsed": self.time_elapsed,
+            "episode_lengths": self.episode_lengths
+        }
 
     @abc.abstractmethod
     def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
@@ -340,7 +401,7 @@ class AgentInterface(ABC):
     @staticmethod
     def safe_load_optimizer(
         checkpoint : Checkpoint,
-        params : Iterator[Parameter],
+        params : Union[Iterator[Parameter], List[Parameter]],
         learning_rate : float,
         adam_eps : float
     ) -> Optimizer:
@@ -354,7 +415,7 @@ class AgentInterface(ABC):
         """
         optimizer = optim.Adam(params, lr=learning_rate, eps=adam_eps)
         if "optimizer" not in checkpoint.keys():
-            logging.warning("Optimizer could not be loaded from the checkpoint: key 'optimizer' not found.")
+            logging.info("Optimizer internal states could not be loaded from the checkpoint: key 'optimizer' not found.")
             return optimizer
         optimizer.load_state_dict(checkpoint["optimizer"])
         return optimizer

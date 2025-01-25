@@ -8,7 +8,7 @@ from relab import relab
 
 class ContinuousDecoderNetwork(nn.Module):
     """!
-    Class implementing a convolutional decoder for 84 by 84 images with continuous latent variables.
+    @brief A convolutional decoder for 84x84 images with continuous latent variables.
     """
 
     def __init__(self, n_continuous_vars : int = 10, stack_size : Optional[int] = None) -> None:
@@ -62,7 +62,7 @@ class ContinuousDecoderNetwork(nn.Module):
 
 class DiscreteDecoderNetwork(nn.Module):
     """!
-    Class implementing a convolutional decoder for 84 by 84 images with discrete latent variables.
+    @brief A convolutional decoder for 84x84 images with discrete latent variables.
     """
 
     def __init__(
@@ -122,7 +122,7 @@ class DiscreteDecoderNetwork(nn.Module):
 
 class MixedDecoderNetwork(nn.Module):
     """!
-    Class implementing a convolutional decoder for 84 by 84 images with discrete and continuous latent variables.
+    @brief A convolutional decoder for 84x84 images with discrete and continuous latent variables.
     """
 
     def __init__(

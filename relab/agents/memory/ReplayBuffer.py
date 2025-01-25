@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Optional
+from typing import Optional
 
 from relab import relab
 from relab.agents.memory.cpp import FastReplayBuffer, CompressorType, Experience
@@ -8,15 +8,30 @@ import os
 from os.path import join, isfile
 from torch import Tensor
 
-from relab.helpers.Typing import Config
+from relab.helpers.Typing import Config, Batch
 
 
 class ReplayBuffer:
     """!
-    Class implementing a replay buffer with support for prioritization [1] and multistep Q-learning [2] from:
+    @brief Python wrapper around replay buffer implemented in C++.
 
-    [1] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
-    [2] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
+    @details
+    The implementation is based on the following papers:
+
+    <b>Prioritized experience replay</b>,
+    published on arXiv, 2015.
+
+    Authors:
+    - Tom Schaul
+
+    <b>Learning to predict by the methods of temporal differences</b>,
+    published in Machine learning, 3:9–44, 1988.
+
+    Authors:
+    - Richard S. Sutton
+
+    More precisely, the replay buffer supports multistep Q-learning and
+    prioritization of experiences according to their associated loss.
     """
 
     def __init__(
@@ -66,7 +81,7 @@ class ReplayBuffer:
         """
         self.buffer.append(experience)
 
-    def sample(self) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
+    def sample(self) -> Batch:
         """!
         Sample a batch from the replay buffer.
         @return observations, actions, rewards, done, next_observations

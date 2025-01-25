@@ -3,13 +3,10 @@ from relab.agents.DQN import ReplayType, NetworkType, LossType, DQN
 
 class PrioritizedMDQN(DQN):
     """!
-    Implement the multistep [1] Deep Q-Network agent [2] with prioritized replay buffer [3] from:
+    @brief Implement a multistep DQN with prioritized replay buffer.
 
-    [1] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
-    [2] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves,
-        Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
-        Human-level control through deep reinforcement learning. nature, 2015.
-    [3] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
+    @details
+    For more information about the original papers, please refer to the documentation of MDQN and PrioritizedDQN.
     """
 
     def __init__(

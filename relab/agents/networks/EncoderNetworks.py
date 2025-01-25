@@ -11,7 +11,7 @@ from relab.agents.networks.layers.DiagonalGaussian import DiagonalGaussian
 
 class ContinuousEncoderNetwork(nn.Module):
     """!
-    Class implementing a convolutional encoder for 84 by 84 images with continuous latent variables.
+    @brief A convolutional encoder for 84x84 images with continuous latent variables.
     """
 
     def __init__(self, n_continuous_vars : int = 10, stack_size : Optional[int] = None) -> None:
@@ -92,7 +92,7 @@ class ContinuousEncoderNetwork(nn.Module):
 
 class DiscreteEncoderNetwork(nn.Module):
     """!
-    Class implementing a convolutional encoder for 84 by 84 images with discrete latent variables.
+    @brief A convolutional encoder for 84x84 images with discrete latent variables.
     """
 
     def __init__(
@@ -179,7 +179,7 @@ class DiscreteEncoderNetwork(nn.Module):
 
 class MixedEncoderNetwork(nn.Module):
     """!
-    Class implementing a convolutional encoder for 84 by 84 images with discrete and continuous latent variables.
+    @brief A convolutional encoder for 84x84 images with discrete and continuous latent variables.
     """
 
     def __init__(

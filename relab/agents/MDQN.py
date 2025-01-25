@@ -3,12 +3,16 @@ from relab.agents.DQN import ReplayType, NetworkType, LossType, DQN
 
 class MDQN(DQN):
     """!
-    Implement the multistep [1] Deep Q-Network agent [2] from:
+    @brief Implements a Multistep Deep Q-Network (MDQN) agent.
 
-    [1] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
-    [2] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves,
-        Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al.
-        Human-level control through deep reinforcement learning. nature, 2015.
+    @details
+    This implementation is based on the paper:
+
+    <b>Learning to predict by the methods of temporal differences</b>,
+    published in Machine learning, 3:9–44, 1988.
+
+    Authors:
+    - Richard S. Sutton
     """
 
     def __init__(

@@ -12,11 +12,10 @@ from torch import optim, Tensor
 
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import VariationalModel, LikelihoodType, LatentSpaceType
-from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
-from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.Typing import Checkpoint
 from relab.helpers.VariationalInference import VariationalInference
 
 
@@ -290,8 +289,9 @@ class HMM(VariationalModel):
 
                 # Execute the agent's action in the environment to obtain the next ground truth observation.
                 action = self.step(obs)
-                obs, _, done, _ = env.step(action)
+                obs, _, terminated, truncated, _ = env.step(action)
                 obs = torch.unsqueeze(obs, dim=0)
+                done = terminated or truncated
                 action = torch.tensor([action])
 
                 # Simulate the agent's action to obtain the next reconstructed observation.
@@ -312,79 +312,66 @@ class HMM(VariationalModel):
         plt.tight_layout(pad=0.1)
         return fig
 
-    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def load(
+        self,
+        checkpoint_name : Optional[str] = None,
+        buffer_checkpoint_name : Optional[str] = None
+    ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
+        @return a tuple containing the checkpoint path and the checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
+        try:
+            # Call the parent load function.
+            checkpoint_path, checkpoint = super().load(checkpoint_name, buffer_checkpoint_name)
 
-        # Retrieve the full checkpoint path.
-        if checkpoint_name is None:
-            checkpoint_path = self.get_latest_checkpoint()
-        else:
-            checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+            # Update the world model using the checkpoint.
+            self.encoder = self.get_encoder_network(self.latent_space_type)
+            self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
+            self.encoder.train(self.training)
+            self.encoder.to(self.device)
+            self.decoder = self.get_decoder_network(self.latent_space_type)
+            self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
+            self.decoder.train(self.training)
+            self.decoder.to(self.device)
+            self.transition = self.get_transition_network(self.latent_space_type)
+            self.transition.load_state_dict(self.safe_load(checkpoint, "transition"))
+            self.transition.train(self.training)
+            self.transition.to(self.device)
 
-        # Check if the checkpoint can be loaded.
-        if checkpoint_path is None:
-            logging.info("Could not load the agent from the file system.")
-            return
-        
-        # Load the checkpoint from the file system.
-        logging.info("Loading agent from the following file: " + checkpoint_path)
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+            # Update the replay buffer.
+            # TODO move to VariationalModel.load?
+            replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
+            self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
+            self.buffer.load(checkpoint_path, buffer_checkpoint_name)
 
-        # Update the agent's parameters using the checkpoint.
-        self.buffer_size = self.safe_load(checkpoint, "buffer_size")
-        self.batch_size = self.safe_load(checkpoint, "batch_size")
-        self.learning_starts = self.safe_load(checkpoint, "learning_starts")
-        self.n_actions = self.safe_load(checkpoint, "n_actions")
-        self.n_steps = self.safe_load(checkpoint, "n_steps")
-        self.omega = self.safe_load(checkpoint, "omega")
-        self.omega_is = self.safe_load(checkpoint, "omega_is")
-        self.replay_type = self.safe_load(checkpoint, "replay_type")
-        self.training = self.safe_load(checkpoint, "training")
-        self.current_step = self.safe_load(checkpoint, "current_step")
-        self.learning_rate = self.safe_load(checkpoint, "learning_rate")
-        self.adam_eps = self.safe_load(checkpoint, "adam_eps")
-        self.likelihood_type = self.safe_load(checkpoint, "likelihood_type")
-        self.latent_space_type = self.safe_load(checkpoint, "latent_space_type")
-        self.beta_schedule = self.safe_load(checkpoint, "beta_schedule")
-        self.beta = PiecewiseLinearSchedule(self.beta_schedule)
-        self.tau_schedule = self.safe_load(checkpoint, "tau_schedule")
-        self.tau = ExponentialSchedule(self.tau_schedule)
+            # Update the reparameterization function to use with the world model.
+            self.reparameterize = self.get_reparameterization(self.latent_space_type)
 
-        # Update the model losses using the checkpoint.
-        self.model_loss = self.get_model_loss(self.latent_space_type)
-        self.likelihood_loss = self.get_likelihood_loss(self.likelihood_type)
+            # Update the optimizer.
+            params = list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters())
+            self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
+            return checkpoint_path, checkpoint
 
-        # Update the world model using the checkpoint.
-        self.encoder = self.get_encoder_network(self.latent_space_type)
-        self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
-        self.encoder.train(self.training)
-        self.encoder.to(self.device)
-        self.decoder = self.get_decoder_network(self.latent_space_type)
-        self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
-        self.decoder.train(self.training)
-        self.decoder.to(self.device)
-        self.transition = self.get_transition_network(self.latent_space_type)
-        self.transition.load_state_dict(self.safe_load(checkpoint, "transition"))
-        self.transition.train(self.training)
-        self.transition.to(self.device)
-
-        # Update the replay buffer.
-        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
-        self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
-        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
-
-        # Update the reparameterization function to use with the world model.
-        self.reparameterize = self.get_reparameterization(self.latent_space_type)
-
-        # Update the optimizer.
-        params = list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters())
-        self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
+        # Catch the exception raise if the checkpoint could not be located.
+        except FileNotFoundError:
+            return "", None
         # @endcond
+
+    def as_dict(self):
+        """"
+        Convert the agent into a dictionary that can be saved on the filesystem.
+        @return the dictionary
+        """
+        return {
+            "encoder": self.encoder.state_dict(),
+            "decoder": self.decoder.state_dict(),
+            "transition": self.transition.state_dict(),
+            "optimizer": self.optimizer.state_dict()
+        } | super().as_dict()
 
     def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
@@ -393,35 +380,13 @@ class HMM(VariationalModel):
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         """
         # @cond IGNORED_BY_DOXYGEN
-        
         # Create the checkpoint directory and file, if they do not exist.
         checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)
 
         # Save the model.
         logging.info("Saving agent to the following file: " + checkpoint_path)
-        torch.save({
-            "buffer_size": self.buffer_size,
-            "batch_size": self.batch_size,
-            "learning_starts": self.learning_starts,
-            "n_actions": self.n_actions,
-            "n_steps": self.n_steps,
-            "omega": self.omega,
-            "omega_is": self.omega_is,
-            "replay_type": self.replay_type,
-            "training": self.training,
-            "current_step": self.current_step,
-            "learning_rate": self.learning_rate,
-            "adam_eps": self.adam_eps,
-            "likelihood_type": self.likelihood_type,
-            "latent_space_type": self.latent_space_type,
-            "beta_schedule": self.beta_schedule,
-            "tau_schedule": self.tau_schedule,
-            "encoder": self.encoder.state_dict(),
-            "decoder": self.decoder.state_dict(),
-            "transition": self.transition.state_dict(),
-            "optimizer": self.optimizer.state_dict()
-        }, checkpoint_path)
+        torch.save(self.as_dict(), checkpoint_path)
 
         # Save the replay buffer.
         self.buffer.save(checkpoint_path, buffer_checkpoint_name)

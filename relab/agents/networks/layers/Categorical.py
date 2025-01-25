@@ -3,8 +3,7 @@ from torch import nn, Tensor
 
 class Categorical(nn.Module):
     """!
-    Class implementing a network that maps a vector of size n into a vector representing the log-probabilities
-    of categorical distributions.
+    @brief Layer predicting the log-probabilities of categorical distributions.
     """
 
     def __init__(self, input_size : int, n_discrete_vars : int, n_discrete_vals : int) -> None:
