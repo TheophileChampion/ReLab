@@ -3,16 +3,37 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class DDQN(DQN):
     """!
-    Implement the Double Deep Q-Network agent from:
-    Hado Van Hasselt, Arthur Guez, and David Silver. Deep reinforcement learning with double q-learning.
-    In Proceedings of the AAAI conference on artificial intelligence, 2016.
+    @brief Implements a Double Deep Q-Network (DDQN) agent.
+
+    @details
+    This implementation is based on the paper:
+    
+    <b>Deep Reinforcement Learning with Double Q-learning</b>,
+    published in AAAI, 2016.
+
+    Authors:
+    - Hado van Hasselt
+    - Arthur Guez
+    - David Silver
+
+    The paper introduced Double Q-learning to Deep Q-Networks to reduce
+    overestimation bias by decoupling action selection from action evaluation.
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000,
-        target_update_interval=40000, adam_eps=1.5e-4, replay_type=ReplayType.DEFAULT, loss_type=LossType.DDQN_SL1,
-        network_type=NetworkType.DEFAULT, training=True
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00001,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        loss_type : LossType = LossType.DDQN_SL1,
+        network_type : NetworkType = NetworkType.DEFAULT,
+        training : bool = True
+    ) -> None:
         """!
         Create a Double DQN agent.
         @param gamma: the discount factor

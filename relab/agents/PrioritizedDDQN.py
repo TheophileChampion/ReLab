@@ -6,15 +6,26 @@ class PrioritizedDDQN(DQN):
     Implement the Double Deep Q-Network agent [1] with prioritized replay buffer [2] from:
 
     [1] Hado Van Hasselt, Arthur Guez, and David Silver. Deep reinforcement learning with double q-learning.
-        In Proceedings of the AAAI conference on artificial intelligence, 2016.
+        In Proceedings of the AAAI, 2016.
     [2] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00025, buffer_size=1000000, batch_size=32, learning_starts=200000,
-        target_update_interval=40000, adam_eps=1.5e-4, replay_type=ReplayType.PRIORITIZED, loss_type=LossType.DDQN_SL1,
-        network_type=NetworkType.DEFAULT, omega=0.7, omega_is=0.5, training=True
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00025,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        replay_type : ReplayType = ReplayType.PRIORITIZED,
+        loss_type : LossType = LossType.DDQN_SL1,
+        network_type : NetworkType = NetworkType.DEFAULT,
+        omega : float = 0.7,
+        omega_is : float = 0.5,
+        training : bool = True
+    ) -> None:
         """!
         Create a Double DQN agent.
         @param gamma: the discount factor

@@ -1,7 +1,9 @@
 import math
+from typing import Tuple, List
 
 import torch
 from torch.nn.functional import gumbel_softmax, binary_cross_entropy_with_logits
+from torch import Tensor
 
 
 class VariationalInference:
@@ -10,7 +12,13 @@ class VariationalInference:
     """
 
     @staticmethod
-    def gaussian_kl_divergence(mean_hat, log_var_hat, mean=None, log_var=None, min_var=1e-3):
+    def gaussian_kl_divergence(
+        mean_hat : Tensor,
+        log_var_hat : Tensor,
+        mean : Tensor = None,
+        log_var : Tensor = None,
+        min_var : float = 1e-3
+    ) -> Tensor:
         """!
         Compute the KL-divergence between two Gaussian distributions.
         @param mean_hat: the mean of the first Gaussian
@@ -34,7 +42,7 @@ class VariationalInference:
         return 0.5 * kl_div.sum(dim=1)
 
     @staticmethod
-    def categorical_kl_divergence(log_alpha_hat, log_alpha=None):
+    def categorical_kl_divergence(log_alpha_hat : Tensor, log_alpha : Tensor = None) -> Tensor:
         """!
         Compute the KL-divergence between two categorical distributions.
         @param log_alpha_hat: log-probabilities of the first distribution
@@ -47,7 +55,7 @@ class VariationalInference:
         return torch.softmax(log_alpha_hat - log_alpha, dim=1).sum(dim=1)
 
     @staticmethod
-    def gaussian_log_likelihood(obs, mean):
+    def gaussian_log_likelihood(obs : Tensor, mean : Tensor) -> Tensor:
         """!
         Compute the logarithm of the likelihood assuming Gaussian distributions over pixels.
         @param obs: the image
@@ -61,7 +69,7 @@ class VariationalInference:
         return - 0.5 * (n * log2pi + sum_of_squared_error)
 
     @staticmethod
-    def bernoulli_log_likelihood(obs, alpha):
+    def bernoulli_log_likelihood(obs : Tensor, alpha : Tensor) -> Tensor:
         """!
         Compute the logarithm of the likelihood assuming Bernoulli distributions over pixels.
         @param obs: the image
@@ -75,7 +83,7 @@ class VariationalInference:
         # TODO return out.sum(dim=(1, 2, 3))
 
     @staticmethod
-    def gaussian_reparameterization(mean, log_var):
+    def gaussian_reparameterization(mean : Tensor, log_var : Tensor) -> Tensor:
         """!
         Implement the reparameterization trick for a Gaussian distribution.
         @param mean: the mean of the Gaussian distribution
@@ -86,7 +94,7 @@ class VariationalInference:
         return epsilon * torch.exp(0.5 * log_var) + mean
 
     @staticmethod
-    def concrete_reparameterization(log_alpha, tau):
+    def concrete_reparameterization(log_alpha : Tensor, tau : float) -> Tensor:
         """!
         Implement the reparameterization trick for a categorical distribution using the concrete distribution.
         @param log_alpha: the log-probabilities of the categorical
@@ -96,18 +104,18 @@ class VariationalInference:
         return gumbel_softmax(log_alpha, tau)
 
     @staticmethod
-    def continuous_reparameterization(gaussian_params, tau=0):
+    def continuous_reparameterization(gaussian_params : Tuple[Tensor, Tensor], tau : float = 0) -> Tensor:
         """!
         Implement the reparameterization trick for a continuous latent space.
         @param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution
-        @param tau: the temperature of the Gumbel-softmax (unused)
+        @param tau: the temperature of the Gumbel-softmax (unused)  # TODO remove?
         @return the sampled state
         """
         mean, log_var = gaussian_params
         return VariationalInference.gaussian_reparameterization(mean, log_var)
 
     @staticmethod
-    def discrete_reparameterization(log_alphas, tau):
+    def discrete_reparameterization(log_alphas : List[Tensor], tau : float) -> Tensor:
         """!
         Implement the reparameterization trick for a discrete latent space.
         @param log_alphas: the log-probabilities of the categorical distributions
@@ -121,7 +129,11 @@ class VariationalInference:
         return torch.cat(states)
 
     @staticmethod
-    def mixed_reparameterization(gaussian_params, log_alphas, tau):
+    def mixed_reparameterization(
+        gaussian_params : Tuple[Tensor, Tensor],
+        log_alphas : List[Tensor],
+        tau : float
+    ) -> Tensor:
         """!
         Implement the reparameterization trick for a categorical distribution using the concrete distribution.
         @param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution

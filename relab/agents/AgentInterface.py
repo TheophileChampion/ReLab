@@ -9,21 +9,27 @@ from collections import deque
 from enum import IntEnum
 from functools import partial
 from os.path import exists, isdir, isfile, join
+from typing import Dict, Any, Callable, SupportsFloat, Iterator, Optional
+
 import psutil
 
 import numpy as np
+from numpy import ndarray
 from torch.utils.tensorboard import SummaryWriter
 import imageio
 from PIL import Image
+from torch import optim, Optimizer
+from gymnasium import Env
 
 import relab
 from relab.agents.memory.ReplayBuffer import ReplayBuffer
 from relab.helpers.FileSystem import FileSystem
+from relab.helpers.Typing import ActionType, Checkpoint, Parameter
 
 
 class ReplayType(IntEnum):
     """!
-    The replay buffer supported by the DQN agent.
+    The type of replay buffer supported by the agents.
     """
 
     ## @var DEFAULT
@@ -48,11 +54,15 @@ class AgentInterface(ABC):
     The interface that all agents must implement.
     """
 
-    def __init__(self, training=True):
+    def __init__(self, training : bool = True) -> None:
         """!
         Create an agent.
         @param training: True if the agent is being training, False otherwise
         """
+
+        ## @var training
+        # Flag indicating whether the agent is in training mode.
+        self.training = training
 
         ## @var device
         # The device (CPU/GPU) used for training computations.
@@ -123,7 +133,7 @@ class AgentInterface(ABC):
         self.writer = SummaryWriter(os.environ["TENSORBOARD_DIRECTORY"]) if training is True else None
 
     @abc.abstractmethod
-    def step(self, obs):
+    def step(self, obs : ndarray) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -132,7 +142,7 @@ class AgentInterface(ABC):
         ...
 
     @abc.abstractmethod
-    def train(self, env):
+    def train(self, env : Env) -> None:
         """!
         Train the agent in the gym environment passed as parameters
         @param env: the gym environment
@@ -140,7 +150,7 @@ class AgentInterface(ABC):
         ...
 
     @abc.abstractmethod
-    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
+    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
@@ -148,7 +158,7 @@ class AgentInterface(ABC):
         """
 
     @abc.abstractmethod
-    def save(self, checkpoint_name, buffer_checkpoint_name=None):
+    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
@@ -156,7 +166,7 @@ class AgentInterface(ABC):
         """
         ...
 
-    def demo(self, env, gif_name, max_frames=10000):
+    def demo(self, env : Env, gif_name : str, max_frames : int = 10000) -> None:
         """!
         Demonstrate the agent policy in the gym environment passed as parameters
         @param env: the gym environment
@@ -191,7 +201,7 @@ class AgentInterface(ABC):
         FileSystem.create_directory_and_file(gif_path)
         imageio.mimwrite(gif_path, frames, duration=16.66)  # 60 frames per second
 
-    def report(self, reward, done, model_losses=None):
+    def report(self, reward : SupportsFloat, done : bool, model_losses : Dict[str, Any] = None) -> None:
         """!
         Keep track of the last episodic rewards, episode length, and time elapse since last training iteration.
         @param reward: the current reward
@@ -211,7 +221,7 @@ class AgentInterface(ABC):
         self.last_time = now
 
         # Keep track of the current episodic reward.
-        self.current_episodic_reward += reward
+        self.current_episodic_reward += float(reward)
         self.current_episode_length += 1
 
         # Keep track of the current variational free energy, log-likelihood and KL-divergence.
@@ -228,7 +238,7 @@ class AgentInterface(ABC):
             self.episode_lengths.append(self.current_episode_length)
             self.current_episode_length = 0
 
-    def log_performance_in_tensorboard(self):
+    def log_performance_in_tensorboard(self) -> None:
         """!
         Log the agent performance in tensorboard, if the internal queue
         """
@@ -258,7 +268,7 @@ class AgentInterface(ABC):
             self.writer.add_scalar("kl_divergence", np.mean(list(self.kl_divergences)), self.current_step)
 
     @staticmethod
-    def get_latest_checkpoint(regex=r"model_\d+.pt"):
+    def get_latest_checkpoint(regex : str = r"model_\d+.pt") -> Optional[str]:
         """!
         Get the latest checkpoint file matching the regex.
         @param regex: the regex checking whether a file name is a valid checkpoint file
@@ -296,7 +306,7 @@ class AgentInterface(ABC):
         return file
 
     @staticmethod
-    def get_replay_buffer(replay_type, omega, omega_is, n_steps, gamma=1.0):
+    def get_replay_buffer(replay_type : ReplayType, omega : float, omega_is : float, n_steps : int, gamma : float = 1.0) -> Callable:
         """!
         Retrieve the constructor of the replay buffer requested as parameters.
         @param replay_type: the type of replay buffer
@@ -316,7 +326,7 @@ class AgentInterface(ABC):
         }[replay_type]
 
     @staticmethod
-    def safe_load(checkpoint, key):
+    def safe_load(checkpoint : Checkpoint, key : str) -> Any:
         """!
         Load the value corresponding to the key in the checkpoint.
         @param checkpoint: the checkpoint
@@ -326,3 +336,25 @@ class AgentInterface(ABC):
         if key not in checkpoint.keys():
             return None
         return checkpoint[key]
+
+    @staticmethod
+    def safe_load_optimizer(
+        checkpoint : Checkpoint,
+        params : Iterator[Parameter],
+        learning_rate : float,
+        adam_eps : float
+    ) -> Optimizer:
+        """!
+        Load the Adam optimizer from the checkpoint safely.
+        @param checkpoint: the checkpoint
+        @param params: the parameters that the Adam optimizer must optimize
+        @param learning_rate: the learning rate
+        @param adam_eps: the epsilon parameter of the Adam optimizer
+        @return the loaded Adam optimizer
+        """
+        optimizer = optim.Adam(params, lr=learning_rate, eps=adam_eps)
+        if "optimizer" not in checkpoint.keys():
+            logging.warning("Optimizer could not be loaded from the checkpoint: key 'optimizer' not found.")
+            return optimizer
+        optimizer.load_state_dict(checkpoint["optimizer"])
+        return optimizer

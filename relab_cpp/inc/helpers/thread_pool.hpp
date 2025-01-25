@@ -1,3 +1,8 @@
+/**
+ * @file thread_pool.hpp
+ * @brief Declaration of a thread pool class for parallelizing computation.
+ */
+
 #ifndef THREAD_POOL_HPP
 #define THREAD_POOL_HPP
 
@@ -8,29 +13,27 @@
 #include <queue>
 #include <thread>
 
-using namespace std;
-
 namespace relab::helpers {
 
     /**
-     * Class implementing a thread pool.
+     * @brief Class implementing a thread pool.
      */
     class ThreadPool {
 
     private:
 
         // Vector to store worker threads.
-        vector<thread> threads;
+        std::vector<std::thread> threads;
 
         // Queue of tasks.
-        queue<function<void()>> tasks;
+        std::queue<std::function<void()>> tasks;
 
         // Mutexes to synchronize access to shared data.
-        mutex queue_mutex;
-        mutex counter_mutex;
+        std::mutex queue_mutex;
+        std::mutex counter_mutex;
 
         // Condition variable to signal changes in the state of the tasks queue.
-        condition_variable cv;
+        std::condition_variable cv;
 
         // Flag to indicate whether the thread pool should stop or not.
         bool stop = false;
@@ -56,7 +59,7 @@ namespace relab::helpers {
          * Push a task for execution by the thread pool.
          * @param task the task to execute
          */
-        void push(const function<void()> &task);
+        void push(const std::function<void()> &task);
 
         /**
          * Wait for all tasks to complete.

@@ -1,3 +1,8 @@
+/**
+ * @file deque.hpp
+ * @brief Declaration of double-ended queue with a maximum length.
+ */
+
 #ifndef DEQUE_HPP
 #define DEQUE_HPP
 
@@ -8,7 +13,7 @@
 namespace relab::helpers {
 
     /**
-     * A double-ended queue with a maximum length.
+     * @brief A double-ended queue with a maximum length.
      */
     template<class T>
     class Deque : public std::deque<T> {

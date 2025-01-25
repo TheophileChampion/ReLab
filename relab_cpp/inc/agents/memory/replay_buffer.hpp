@@ -1,3 +1,8 @@
+/**
+ * @file replay_buffer.hpp
+ * @brief Declaration of the replay buffer class.
+ */
+
 #ifndef REPLAY_BUFFER_HPP
 #define REPLAY_BUFFER_HPP
 
@@ -10,8 +15,10 @@
 namespace relab::agents::memory {
 
     /**
-     * Class implementing a replay buffer with support for prioritization [1] and multistep Q-learning [2] from:
+     * @brief Class implementing a replay buffer.
      *
+     * @details
+     * It supports prioritization [1] and multistep Q-learning [2] from:
      * [1] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
      * [2] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
      */

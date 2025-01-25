@@ -1,10 +1,14 @@
 import logging
 import os
 from os.path import join
+from typing import Any, Dict, Tuple, Optional
+from gymnasium import Env
+from matplotlib.figure import Figure
+
 import matplotlib.pyplot as plt
 
 import torch
-from torch import optim
+from torch import optim, Tensor
 
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import VariationalModel, LikelihoodType, LatentSpaceType
@@ -18,16 +22,44 @@ from relab.helpers.VariationalInference import VariationalInference
 
 class HMM(VariationalModel):
     """!
-    Implement an agent taking random actions, and learning a world model using a Hidden Markov Model (HMM).
+    @brief Implements a Hidden Markov Model (HMM) agent.
+
+    @details
+    This implementation extends upon the paper:
+
+    <b>Auto-Encoding Variational Bayes</b>,
+    published in ICLR, 2014.
+
+    Authors:
+    - Kingma D.
+    - Welling M.
+
+    More precisely, the HMM extends the VAE framework to sequential data
+    by modeling temporal dependencies using a transition network.
+    Note, this agent takes random actions.
     """
 
     def __init__(
-        self, learning_starts=200000, n_actions=18, training=True,
-        likelihood_type=LikelihoodType.BERNOULLI, latent_space_type=LatentSpaceType.CONTINUOUS,
-        n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10,
-        learning_rate=0.00001, adam_eps=1.5e-4, beta_schedule=None, tau_schedule=None,
-        replay_type=ReplayType.DEFAULT, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0
-    ):
+        self,
+        learning_starts : int = 200000,
+        n_actions : int = 18,
+        training : bool = True,
+        likelihood_type : LikelihoodType = LikelihoodType.BERNOULLI,
+        latent_space_type : LatentSpaceType = LatentSpaceType.CONTINUOUS,
+        n_continuous_vars : int = 10,
+        n_discrete_vars : int = 20,
+        n_discrete_vals : int = 10,
+        learning_rate : float = 0.00001,
+        adam_eps : float = 1.5e-4,
+        beta_schedule : Any = None,
+        tau_schedule : Any = None,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        n_steps : int = 1,
+        omega : float = 1.0,
+        omega_is : float = 1.0
+    ) -> None:
         """!
         Create a Hidden Markov Model agent taking random actions.
         @param learning_starts: the step at which learning starts
@@ -79,7 +111,7 @@ class HMM(VariationalModel):
             lr=self.learning_rate, eps=self.adam_eps
         )
 
-    def learn(self):
+    def learn(self) -> Optional[Dict[str, Any]]:
         """!
         Perform one step of gradient descent on the world model.
         @return the loss of the sampled batch
@@ -112,7 +144,7 @@ class HMM(VariationalModel):
         }
         # @endcond
 
-    def continuous_vfe(self, obs, actions, next_obs):
+    def continuous_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a continuous latent space.
         @param obs: the observations at time t
@@ -138,7 +170,7 @@ class HMM(VariationalModel):
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
 
-    def discrete_vfe(self, obs, actions, next_obs):
+    def discrete_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a discrete latent space.
         @param obs: the observations at time t
@@ -172,7 +204,7 @@ class HMM(VariationalModel):
         return vfe_loss, log_likelihood, kl_div_hs
         # @endcond
 
-    def mixed_vfe(self, obs, actions, next_obs):
+    def mixed_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a mixed latent space.
         @param obs: the observations at time t
@@ -206,7 +238,7 @@ class HMM(VariationalModel):
         return vfe_loss, log_likelihood, kl_div_hs
         # @endcond
 
-    def draw_reconstructed_images(self, env, model_index, grid_size):
+    def draw_reconstructed_images(self, env : Env, model_index : int , grid_size : Tuple[int, int]) -> Figure:
         """!
         Draw the ground truth and reconstructed images.
         @param env: the gym environment
@@ -280,7 +312,7 @@ class HMM(VariationalModel):
         plt.tight_layout(pad=0.1)
         return fig
 
-    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
+    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
@@ -350,14 +382,11 @@ class HMM(VariationalModel):
         self.reparameterize = self.get_reparameterization(self.latent_space_type)
 
         # Update the optimizer.
-        self.optimizer = optim.Adam(
-            list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters()),
-            lr=self.learning_rate, eps=self.adam_eps
-        )
-        self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
+        params = list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters())
+        self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
         # @endcond
 
-    def save(self, checkpoint_name, buffer_checkpoint_name=None):
+    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

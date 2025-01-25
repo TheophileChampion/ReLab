@@ -1,11 +1,16 @@
+from __future__ import annotations
+from typing import Any, Dict, Tuple, List, SupportsFloat, Optional
+
 import numpy as np
+from numpy import ndarray
 from gymnasium import spaces, Env
 
 from relab.helpers.SpritesDataset import DataSet
 import torch.nn.functional as func
 import torch
+from torch import Tensor
 
-import relab
+from relab.helpers.Typing import ActionType, Config, GymStepData
 
 
 class SpritesALE:
@@ -13,7 +18,7 @@ class SpritesALE:
     A class imitating the ALE to make the d-sprites environment compatible with the Atari wrappers.
     """
 
-    def __init__(self, env):
+    def __init__(self, env : SpritesEnv) -> None:
         """!
         Constructor.
         @param env: the d-sprites environment for which the ALE is created
@@ -23,7 +28,7 @@ class SpritesALE:
         # Reference to the d-sprites environment being wrapped.
         self.env = env
 
-    def getScreenGrayscale(self, obs):
+    def getScreenGrayscale(self, obs : ndarray) -> None:
         """!
         Copy the gray scale screen corresponding to the current environment state into the observation buffer.
         @param obs: the observation buffer
@@ -33,7 +38,7 @@ class SpritesALE:
             for y in range(obs.shape[1]):
                 obs[x][y] = frame[x][y][0]
 
-    def getScreenRGB(self, obs):
+    def getScreenRGB(self, obs : ndarray) -> None:
         """!
         Copy the RGB screen corresponding to the current environment state into the observation buffer.
         @param obs: the observation buffer
@@ -44,7 +49,7 @@ class SpritesALE:
                 for z in range(obs.shape[2]):
                     obs[x][y][z] = frame[x][y][z]
 
-    def lives(self):
+    def lives(self) -> int:
         """!
         Retrieve the number of lives the agent currently have.
         @return the number of lives
@@ -54,7 +59,9 @@ class SpritesALE:
 
 class SpritesEnv(Env):
     """!
-    A class containing the code of the dSprites environment adapted from:
+    @brief A class implementing the dSprites environment.
+
+    @details Adapted from:
     https://github.com/zfountas/deep-active-inference-mc/blob/master/src/game_environment.py
     """
 
@@ -64,7 +71,7 @@ class SpritesEnv(Env):
     # - render_fps: Frame rate for rendering (30 FPS)
     metadata = {"render_modes": ["rgb_array"], "render_fps": 30}
 
-    def __init__(self, max_episode_length=1000, difficulty="hard", **kwargs):
+    def __init__(self, max_episode_length : int = 1000, difficulty : str = "hard", **kwargs: Any) -> None:
         """!
         Constructor (compatible with OpenAI gym environment)
         @param max_episode_length: the maximum length of an episode
@@ -118,7 +125,7 @@ class SpritesEnv(Env):
         self.actions_fn = [self.idle, self.idle, self.down, self.up, self.left, self.right] + [self.idle] * 12
 
         ## @var ale
-        # A mock of the Arcade Learning Environment interface for compatibility with Atari wrappers.
+        # Mock of the Arcade Learning Environment interface for compatibility with Atari wrappers.
         self.ale = SpritesALE(self)
 
         ## @var difficulty
@@ -131,7 +138,7 @@ class SpritesEnv(Env):
         self.reset()
 
     @staticmethod
-    def state_to_one_hot(state):
+    def state_to_one_hot(state : Tensor) -> Tensor:
         """!
         Transform a state into its one hot representation.
         @param state: the state to transform
@@ -144,7 +151,7 @@ class SpritesEnv(Env):
         pos_y = func.one_hot(state[5], 32)
         return torch.cat([shape, scale, orientation, pos_x, pos_y], dim=0).to(torch.float32)
 
-    def get_state(self, one_hot=True):
+    def get_state(self, one_hot : bool = True) -> Tensor:
         """!
         Getter on the current state of the system.
         @param one_hot: True if the outputs must be a concatenation of one hot encoding,
@@ -154,7 +161,7 @@ class SpritesEnv(Env):
         state = torch.from_numpy(self.state).to(torch.int64)
         return self.state_to_one_hot(state) if one_hot else self.state
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed : Optional[int] = None, options : Config = None) -> Tuple[ndarray, Dict]:
         """!
         Reset the state of the environment to an initial state.
         @param seed: the seed used to initialize the pseudo random number generator of the environment's (unused)
@@ -167,7 +174,7 @@ class SpritesEnv(Env):
         self.reset_hidden_state()
         return self.current_frame(), {}
 
-    def step(self, action):
+    def step(self, action : ActionType) -> GymStepData:
         """!
         Execute one time step within the environment.
         @param action: the action to perform
@@ -196,7 +203,7 @@ class SpritesEnv(Env):
         else:
             return self.current_frame(), self.last_r, False, False, {}
 
-    def s_to_index(self, s):
+    def s_to_index(self, s : ndarray) -> ndarray:
         """!
         Compute the index of the image corresponding to the state sent as parameter.
         @param s: the state whose index must be computed
@@ -204,7 +211,7 @@ class SpritesEnv(Env):
         """
         return np.dot(s, self.s_bases).astype(int)
 
-    def current_frame(self):
+    def current_frame(self) -> ndarray:
         """!
         Return the current frame (i.e. the current observation).
         @return the current observation
@@ -213,16 +220,16 @@ class SpritesEnv(Env):
         image = np.repeat(image, 3, 2)
         return (image * 255).astype(np.uint8)
 
-    def render(self):
+    def render(self) -> ndarray:
         """!
         Render the current frame representing the current state of the environment.
         @return the current frame
         """
         return self.current_frame()
 
-    def reset_hidden_state(self):
+    def reset_hidden_state(self) -> None:
         """!
-        Reset the latent state, i.e, sample the a latent state randomly.
+        Reset the latent state, i.e, sample a latent state randomly.
         The latent state contains:
          - a color, i.e. white
          - a shape, i.e. square, ellipse, or heart
@@ -237,7 +244,7 @@ class SpritesEnv(Env):
             self.state[s_i] = np.random.randint(s_size)
 
     @staticmethod
-    def get_action_meanings():
+    def get_action_meanings() -> List[str]:
         """!
         Retrieve the meaning of the environment's actions.
         @return the meaning of the environment's actions
@@ -249,14 +256,14 @@ class SpritesEnv(Env):
     #
 
     @staticmethod
-    def idle():
+    def idle() -> bool:
         """!
         Execute the action "idle" in the environment.
         @return false (the object never cross the bottom line when it does not move)
         """
         return False
 
-    def down(self):
+    def down(self) -> bool:
         """!
         Execute the action "down" in the environment.
         @return true if the object crossed the bottom line
@@ -277,7 +284,7 @@ class SpritesEnv(Env):
         return True
         # @endcond
 
-    def up(self):
+    def up(self) -> bool:
         """!
         Execute the action "up" in the environment.
         @return false (the object never cross the bottom line when moving up)
@@ -288,7 +295,7 @@ class SpritesEnv(Env):
         return False
         # @endcond
 
-    def right(self):
+    def right(self) -> bool:
         """!
         Execute the action "right" in the environment.
         @return false (the object never cross the bottom line when moving left)
@@ -299,7 +306,7 @@ class SpritesEnv(Env):
         return False
         # @endcond
 
-    def left(self):
+    def left(self) -> bool:
         """!
         Execute the action "left" in the environment.
         @return false (the object never cross the bottom line when moving right)
@@ -314,7 +321,7 @@ class SpritesEnv(Env):
     # Reward computation
     #
 
-    def compute_square_reward(self):
+    def compute_square_reward(self) -> float:
         """!
         Compute the obtained by the agent when a square crosses the bottom wall
         @return the reward.
@@ -326,7 +333,7 @@ class SpritesEnv(Env):
             return float(16.0 - self.x_pos) / 16.0
         # @endcond
 
-    def compute_non_square_reward(self):
+    def compute_non_square_reward(self) -> float:
         """!
         Compute the obtained by the agent when an ellipse or heart crosses the bottom wall.
         @return the reward
@@ -338,7 +345,7 @@ class SpritesEnv(Env):
             return float(self.x_pos - 16.0) / 16.0
         # @endcond
 
-    def compute_easy_reward(self):
+    def compute_easy_reward(self) -> float:
         """!
         Compute the reward obtained by the agent if the environment difficulty is easy.
         @return the reward
@@ -348,7 +355,7 @@ class SpritesEnv(Env):
         return -1.0 + (62 - abs(tx - self.x_pos) - abs(ty - self.y_pos)) / 31.0
         # @endcond
 
-    def compute_hard_reward(self):
+    def compute_hard_reward(self) -> float:
         """!
         Compute the reward obtained by the agent if the environment difficulty is hard.
         @return the reward
@@ -365,33 +372,33 @@ class SpritesEnv(Env):
     #
 
     @property
-    def y_pos(self):
+    def y_pos(self) -> int:
         """!
-        Getter.
+        Retrieves the current position of the object on the y-axis.
         @return the current position of the object on the y-axis
         """
-        return self.state[5]
+        return int(self.state[5].item())
 
     @y_pos.setter
-    def y_pos(self, new_value):
+    def y_pos(self, new_value : int) -> None:
         """!
-        Setter.
+        Set the current position of the object on the y-axis.
         @param new_value: the new position of the object on the y-axis
         """
         self.state[5] = new_value
 
     @property
-    def x_pos(self):
+    def x_pos(self) -> int:
         """!
-        Getter.
+        Retrieves the current position of the object on the x-axis.
         @return the current position of the object on the x-axis
         """
-        return self.state[4]
+        return int(self.state[4].item())
 
     @x_pos.setter
-    def x_pos(self, new_value):
+    def x_pos(self, new_value : int) -> None:
         """!
-        Setter.
+        Set the current position of the object on the x-axis.
         @param new_value: the new position of the object on the x-axis
         """
         self.state[4] = new_value

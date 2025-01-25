@@ -1,3 +1,8 @@
+/**
+ * @file experience.hpp
+ * @brief Declaration of the experience class.
+ */
+
 #ifndef EXPERIENCE_HPP
 #define EXPERIENCE_HPP
 
@@ -9,7 +14,7 @@ namespace relab::agents::memory {
     using Batch = std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor>;
 
     /**
-     * Class storing an experience.
+     * @brief Class storing an experience.
      */
     class Experience {
 

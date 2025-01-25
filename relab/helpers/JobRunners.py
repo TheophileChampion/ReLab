@@ -3,11 +3,13 @@ import os
 import subprocess
 import re
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, Future
 from concurrent.futures import wait
 from functools import partial
 import logging
+from typing import List
 
+from relab.helpers.Typing import Config
 from scripts.draw_graph import draw_graph
 from scripts.run_demo import run_demo
 from scripts.run_training import run_training
@@ -19,7 +21,7 @@ class JobRunnerInterface(abc.ABC):
     """
 
     @abc.abstractmethod
-    def launch_job(self, task, kwargs, dependencies=None):
+    def launch_job(self, task : str, kwargs : Config, dependencies : List[int] = None) -> int:
         """!
         Launch a job.
         @param task: the task to run, e.g., "run_training" or "run_demo"
@@ -29,7 +31,7 @@ class JobRunnerInterface(abc.ABC):
         """
         ...
 
-    def wait(self):
+    def wait(self) -> None:
         """!
         Wait for all running and scheduled jobs to terminate, if applicable.
         """
@@ -41,7 +43,7 @@ class SlurmJobRunner(JobRunnerInterface):
     Class launching slurm jobs.
     """
 
-    def launch_job(self, task, kwargs, dependencies=None):
+    def launch_job(self, task : str, kwargs : Config, dependencies : List[int] = None) -> int:
         """!
         Launch a slurm job.
         @param task: the task to run, e.g., "run_training" or "run_demo"
@@ -57,6 +59,7 @@ class SlurmJobRunner(JobRunnerInterface):
                 value = " ".join([str(v) for v in value])
             args.append(f"--{key} {value}")
         args = " ".join(args)
+        dependencies = [str(dependency) for dependency in dependencies]
         dependencies = "" if dependencies is None else f"-d afterok:{':'.join(dependencies)}"
         command = f"sbatch {dependencies} {task} {args}"
 
@@ -72,7 +75,7 @@ class LocalJobRunner(JobRunnerInterface):
     Class launching local jobs.
     """
 
-    def __init__(self, max_worker=1):
+    def __init__(self, max_worker : int = 1) -> None:
         """!
         Create a local job runner.
         @param max_worker: the maximum number of worker
@@ -106,7 +109,7 @@ class LocalJobRunner(JobRunnerInterface):
         # Dictionary of jobs waiting for their dependencies to complete before submission.
         self.jobs_to_submit = {}
 
-    def set_lock_index(self, job_index=None):
+    def set_lock_index(self, job_index : int = None) -> bool:
         """!
         Set the lock index, if the object is not currently locked.
         @param job_index: the new value of the lock index
@@ -117,7 +120,7 @@ class LocalJobRunner(JobRunnerInterface):
             return True
         return False
 
-    def lock(self, job_index=None):
+    def lock(self, job_index : int = None) -> None:
         """!
         Lock the object for a specific job index.
         @param job_index: the job index requesting the lock
@@ -127,13 +130,13 @@ class LocalJobRunner(JobRunnerInterface):
         while self.set_lock_index(job_index) is False:
             time.sleep(0.1)
 
-    def unlock(self):
+    def unlock(self) -> None:
         """!
         Unlock the object.
         """
         self.lock_index = -1
 
-    def satisfied(self, dependencies):
+    def satisfied(self, dependencies : List[int]) -> bool:
         """!
         Check whether all the dependencies have finished their execution.
         @param dependencies: the job indices whose execution needs to be checked
@@ -150,25 +153,25 @@ class LocalJobRunner(JobRunnerInterface):
                 return False
         return True
 
-    def submit(self, task, kwargs, job_index):
+    def submit(self, task : str, kwargs : Config, job_index : int) -> None:
         """!
         Submit a job to the pool (for internal use only).
         @param task: the task to run
         @param kwargs: the keyword arguments of the task
         @param job_index: the index of the job to run
         """
-        logging.info(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
-        future = self.pool.submit(task, **kwargs)
         # @cond IGNORED_BY_DOXYGEN
+        logging.info(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
+        future = self.pool.submit(task, **kwargs)  # TODO type error?
         future.add_done_callback(partial(self.check_jobs_to_submit, job_index=job_index))
-        # @endcond
         self.futures.append(future)
+        # @endcond
 
-    def check_jobs_to_submit(self, future, job_index):
+    def check_jobs_to_submit(self, future : Future, job_index : int) -> None:
         """!
         Check if new jobs can be submitted.
         @param future: the future corresponding to the job that just finished (unused)
-        @param job_index: the index of the job that just finished (unused)
+        @param job_index: the index of the job that just finished
         """
 
         # Lock the object to avoid simultaneously access to the class attributes.
@@ -190,7 +193,7 @@ class LocalJobRunner(JobRunnerInterface):
         # Unlock the object to avoid deadlock.
         self.unlock()
 
-    def launch_job(self, task, kwargs, dependencies=None):
+    def launch_job(self, task : str, kwargs : Config, dependencies : List[int] = None) -> int:
         """!
         Launch a local job.
         @param task: the task to run, e.g., "run_training" or "run_demo"
@@ -228,7 +231,7 @@ class LocalJobRunner(JobRunnerInterface):
         self.unlock()
         return self.job_index
 
-    def wait(self):
+    def wait(self) -> None:
         """!
         Wait for all running and scheduled jobs to terminate.
         """

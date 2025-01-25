@@ -5,7 +5,7 @@ import relab
 from relab import environments
 
 
-def run_training(agent, env, seed):
+def run_training(agent : str, env : str, seed : int) -> None:
     """
     Train a reinforcement learning agent on a gym environment.
     :param agent: the agent name

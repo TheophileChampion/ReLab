@@ -1,3 +1,5 @@
+from typing import Any
+
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 from relab.agents.VAE import VAE
@@ -5,17 +7,45 @@ from relab.agents.VAE import VAE
 
 class DiscreteVAE(VAE):
     """!
-    Implement an agent taking random actions, and learning a world model using a Variational Auto-Encoder from:
-    Eric Jang, Shixiang Gu, and Ben Poole. Categorical Reparameterization with Gumbel-Softmax.
-    arXiv preprint arXiv:1611.01144, 2016.
+    @brief Implements a Discrete Variational Autoencoder (DiscreteVAE) agent.
+
+    @details
+    This implementation extends upon the paper:
+    
+    <b>Categorical Reparameterization with Gumbel-Softmax</b>,
+    published on arXiv, 2016.
+
+    @details
+    Authors:
+    - Eric Jang
+    - Shixiang Gu
+    - Ben Poole
+
+    More precisely, the DiscreteVAE framework replaces the continuous latent space by a discrete one.
+    Note, this agent takes random actions.
     """
 
     def __init__(
-        self, learning_starts=200000, n_actions=18, training=True, learning_rate=0.00001, adam_eps=1.5e-4,
-        likelihood_type=LikelihoodType.BERNOULLI, latent_space_type=LatentSpaceType.DISCRETE,
-        n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10, beta_schedule=None, tau_schedule=None,
-        replay_type=ReplayType.DEFAULT, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0
-    ):
+        self,
+        learning_starts : int = 200000,
+        n_actions : int = 18,
+        training : bool = True,
+        learning_rate : float = 0.00001,
+        adam_eps : float = 1.5e-4,
+        likelihood_type : LikelihoodType = LikelihoodType.BERNOULLI,
+        latent_space_type : LatentSpaceType = LatentSpaceType.DISCRETE,
+        n_continuous_vars : int = 10,
+        n_discrete_vars : int = 20,
+        n_discrete_vals : int = 10,
+        beta_schedule : Any = None,
+        tau_schedule : Any = None,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        n_steps : int = 1,
+        omega : float = 1.0,
+        omega_is : float = 1.0
+    ) -> None:
         """!
         Create a Variational Auto-Encoder agent taking random actions.
         @param learning_starts: the step at which learning starts

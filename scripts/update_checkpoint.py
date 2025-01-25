@@ -5,9 +5,10 @@ from os.path import join
 import torch
 
 import relab
+from relab.helpers.Typing import Config
 
 
-def update_checkpoint(agent, env, seed, index, updates):
+def update_checkpoint(agent : str, env : str, seed : int, index : int, updates : Config) -> None:
     """
     Update the key-value pairs provided by the user in a checkpoint.
     :param agent: the agent name

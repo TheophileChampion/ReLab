@@ -1,4 +1,4 @@
-from torch import nn
+from torch import nn, Tensor
 
 
 class Categorical(nn.Module):
@@ -7,7 +7,7 @@ class Categorical(nn.Module):
     of categorical distributions.
     """
 
-    def __init__(self, input_size, n_discrete_vars, n_discrete_vals):
+    def __init__(self, input_size : int, n_discrete_vars : int, n_discrete_vals : int) -> None:
         """!
         Constructor.
         @param input_size: size of the vector send as input of the layer
@@ -19,17 +19,21 @@ class Categorical(nn.Module):
         # Call parent constructor.
         super().__init__()
 
-        # Create a list containing the number of values taken by the random variables.
+        # Ensure that the number of discrete values is a list.
         if not isinstance(n_discrete_vals, list):
             n_discrete_vals = [n_discrete_vals] * n_discrete_vars
+
+        ## @var n_discrete_vals
+        # List containing the number of values that each discrete variable can take.
         self.n_discrete_vals = n_discrete_vals
 
-        # Create the layer predicting the log-probabilities of the categorical distributions.
+        ## @var log_alpha
+        # Layer that outputs the log-probabilities for each categorical distribution.
         self.log_alpha = nn.Sequential(
             nn.Linear(input_size, sum(self.n_discrete_vals))
         )
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Compute the log-probabilities of the categorical distributions.
         @param x: the input vector

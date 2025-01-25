@@ -10,10 +10,22 @@ class IQN(DQN):
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=1.0,
-        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=8, v_min=None, v_max=None, training=True,
-        replay_type=ReplayType.DEFAULT, loss_type=LossType.IMPLICIT_QUANTILE, network_type=NetworkType.IMPLICIT_QUANTILE
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00001,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        kappa : float = 1.0,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        n_actions : int = 18,
+        n_atoms : int = 8,
+        training : bool = True,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        loss_type : LossType = LossType.IMPLICIT_QUANTILE,
+        network_type : NetworkType = NetworkType.IMPLICIT_QUANTILE
+    ) -> None:
         """!
         Create an IQN agent.
         @param gamma: the discount factor
@@ -26,8 +38,6 @@ class IQN(DQN):
         @param adam_eps: the epsilon parameter of the Adam optimizer
         @param n_actions: the number of actions available to the agent
         @param n_atoms: the number of atoms used to approximate the distribution over returns
-        @param v_min: the minimum amount of returns (only used for categorical DQN)
-        @param v_max: the maximum amount of returns (only used for categorical DQN)
         @param training: True if the agent is being trained, False otherwise
         @param replay_type: the type of replay buffer
         @param loss_type: the loss to use during gradient descent
@@ -38,6 +48,6 @@ class IQN(DQN):
         super().__init__(
             gamma=gamma, learning_rate=learning_rate, buffer_size=buffer_size, batch_size=batch_size, kappa=kappa,
             learning_starts=learning_starts, target_update_interval=target_update_interval, adam_eps=adam_eps,
-            n_actions=n_actions, n_atoms=n_atoms, v_min=v_min, v_max=v_max, training=training,
-            replay_type=replay_type, loss_type=loss_type, network_type=network_type
+            n_actions=n_actions, n_atoms=n_atoms, training=training, replay_type=replay_type, loss_type=loss_type,
+            network_type=network_type
         )

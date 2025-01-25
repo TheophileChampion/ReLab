@@ -1,4 +1,6 @@
-from torch import nn
+from typing import Tuple, Optional
+
+from torch import nn, Tensor
 import torch
 import torch.nn.functional as F
 
@@ -10,10 +12,10 @@ class QuantileDeepQNetwork(nn.Module):
     Implement the QR-DQN's value network from:
     Will Dabney, Mark Rowland, Marc Bellemare, and Rémi Munos.
     Distributional reinforcement learning with quantile regression.
-    In Proceedings of the AAAI conference on artificial intelligence, 2018.
+    In Proceedings of the AAAI, 2018.
     """
 
-    def __init__(self, n_atoms=21, n_actions=18, stack_size=None):
+    def __init__(self, n_atoms : int = 21, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_atoms: the number of atoms used to approximate the distribution over returns
@@ -24,26 +26,39 @@ class QuantileDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Store the number of atoms and actions.
+        ## @var n_atoms
+        # Number of atoms used to approximate the distribution over returns.
         self.n_atoms = n_atoms
+
+        ## @var n_actions
+        # Number of possible actions.
         self.n_actions = n_actions
 
-        # Create the layers.
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
-        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-        self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
-        self.fc1 = nn.Linear(3136, 1024)
-        self.fc2 = nn.Linear(1024, n_atoms * n_actions)
+
+        ## @var net
+        # Complete network that processes images and outputs quantile values.
+        self.net = nn.Sequential(
+            nn.Conv2d(self.stack_size, 32, 8, stride=4),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(64, 64, 3, stride=1),
+            nn.LeakyReLU(0.01),
+            nn.Flatten(start_dim=1),
+            nn.Linear(3136, 1024),
+            nn.LeakyReLU(0.01),
+            nn.Linear(1024, n_atoms * n_actions)
+        )
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
+        for name, param in self.named_parameters():
+            if "weight" in name:
+                torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -56,13 +71,9 @@ class QuantileDeepQNetwork(nn.Module):
         batch_size = x.shape[0]
 
         # Compute forward pass.
-        x = F.leaky_relu(self.conv1(x), 0.01)
-        x = F.leaky_relu(self.conv2(x), 0.01)
-        x = F.leaky_relu(self.conv3(x), 0.01)
-        x = F.leaky_relu(self.fc1(x.view(batch_size, -1)), 0.01)
-        return self.fc2(x).view(batch_size, self.n_atoms, self.n_actions)
+        return self.net(x).view(batch_size, self.n_atoms, self.n_actions)
 
-    def q_values(self, x):
+    def q_values(self, x : Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation
@@ -79,7 +90,7 @@ class ImplicitQuantileNetwork(nn.Module):
     In International conference on machine learning, pages 1096–1105. PMLR, 2018.
     """
 
-    def __init__(self, n_actions=18, n_tau=64, stack_size=None):
+    def __init__(self, n_actions : int = 18, n_tau : int = 64, stack_size : Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -90,34 +101,56 @@ class ImplicitQuantileNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Store the device.
+        ## @var device
+        # Device on which the network is running.
         self.device = relab.device()
 
-        # Store the number of actions and the size of the tau embedding.
+        ## @var n_actions
+        # Number of possible actions.
         self.n_actions = n_actions
+
+        ## @var n_tau
+        # Size of the tau embedding.
         self.n_tau = n_tau
 
-        # Store the output of the convolutional layers.
+        ## @var conv_output
+        # Cached output of the convolutional layers.
         self.conv_output = None
 
-        # Create the layers.
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
-        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-        self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
-        self.fc1 = nn.Linear(3136, 1024)
-        self.fc2 = nn.Linear(1024, n_actions)
+
+        ## @var conv_net
+        # Convolutional network that processes the input images.
+        self.conv_net = nn.Sequential(
+            nn.Conv2d(self.stack_size, 32, 8, stride=4),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(64, 64, 3, stride=1),
+            nn.LeakyReLU(0.01),
+            nn.Flatten(start_dim=1)
+        )
+
+        ## @var fc_net
+        # Fully connected network that processes the combined features and tau embeddings.
+        self.fc_net = nn.Sequential(
+            nn.Linear(3136, 1024),
+            nn.LeakyReLU(0.01),
+            nn.Linear(1024, n_actions)
+        )
+
+        ## @var tau_fc1
+        # Linear layer that embeds the sampled tau values.
         self.tau_fc1 = nn.Linear(self.n_tau, 3136)
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.tau_fc1.weight, nonlinearity="leaky_relu")
+        for name, param in self.named_parameters():
+            if "weight" in name:
+                torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def compute_conv_output(self, x, invalidate_cache=False):
+    def compute_conv_output(self, x : Tensor, invalidate_cache : bool = False) -> Tensor:
         """!
         Compute the output of the convolutional layers.
         @param x: the observation
@@ -130,12 +163,10 @@ class ImplicitQuantileNetwork(nn.Module):
             return self.conv_output
 
         # Compute forward pass through the convolutional layers.
-        x = F.leaky_relu(self.conv1(x), 0.01)
-        x = F.leaky_relu(self.conv2(x), 0.01)
-        self.conv_output = F.leaky_relu(self.conv3(x), 0.01).view(x.shape[0], -1)
+        self.conv_output = self.conv_net(x).view(x.shape[0], -1)
         return self.conv_output
 
-    def forward(self, x, n_samples=8, invalidate_cache=True):
+    def forward(self, x : Tensor, n_samples : int = 8, invalidate_cache : bool = True) -> Tuple[Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -155,7 +186,7 @@ class ImplicitQuantileNetwork(nn.Module):
         # Compute all the atoms.
         atoms = []
         taus = []
-        for j in range(n_samples):
+        for _ in range(n_samples):
 
             # Compute tau embeddings.
             tau = torch.rand([batch_size]).unsqueeze(dim=1).to(self.device)
@@ -164,14 +195,13 @@ class ImplicitQuantileNetwork(nn.Module):
             tau = F.leaky_relu(self.tau_fc1(tau), 0.01)
 
             # Compute the output
-            x_tau = F.leaky_relu(self.fc1(x * tau), 0.01)
-            atoms_tau = self.fc2(x_tau).view(batch_size, 1, self.n_actions)
+            atoms_tau = self.fc_net(x * tau).view(batch_size, 1, self.n_actions)
             atoms.append(atoms_tau)
 
         # Concatenate all atoms and taus along the atoms dimension.
         return torch.concat(atoms, dim=1), torch.concat(taus, dim=1)
 
-    def q_values(self, x, n_samples=32, invalidate_cache=True):
+    def q_values(self, x : Tensor, n_samples : int = 32, invalidate_cache : bool = True) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation

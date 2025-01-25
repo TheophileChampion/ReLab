@@ -18,7 +18,7 @@ class DataSet:
     instance = None
 
     @staticmethod
-    def get():
+    def get() -> SpritesDataset:
         """!
         Getter.
         @return an object containing the dSprite dataset

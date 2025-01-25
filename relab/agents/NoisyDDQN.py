@@ -6,17 +6,26 @@ class NoisyDDQN(DQN):
     Implement the Double Deep Q-Network agent [1] with noisy linear layers [2] from:
 
     [1] Hado Van Hasselt, Arthur Guez, and David Silver. Deep reinforcement learning with double q-learning.
-        In Proceedings of the AAAI conference on artificial intelligence, 2016.
+        In Proceedings of the AAAI, 2016.
     [2] Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Ian Osband, Alex Graves, Vlad Mnih,
         Rémi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, and Shane Legg.
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000,
-        target_update_interval=40000, adam_eps=1.5e-4, replay_type=ReplayType.DEFAULT, loss_type=LossType.DDQN_SL1,
-        network_type=NetworkType.NOISY, training=True
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00001,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        loss_type : LossType = LossType.DDQN_SL1,
+        network_type : NetworkType = NetworkType.NOISY,
+        training : bool = True
+    ) -> None:
         """!
         Create a Double DQN agent.
         @param gamma: the discount factor

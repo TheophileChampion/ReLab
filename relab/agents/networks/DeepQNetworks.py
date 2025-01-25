@@ -1,7 +1,7 @@
-from torch import nn
+from typing import Optional
+
+from torch import nn, Tensor
 import torch
-import torch.nn.functional as F
-from torchrl.modules import NoisyLinear
 
 from relab import relab
 
@@ -14,7 +14,7 @@ class DeepQNetwork(nn.Module):
     Human-level control through deep reinforcement learning. nature, 2015.
     """
 
-    def __init__(self, n_actions=18, stack_size=None):
+    def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -24,22 +24,31 @@ class DeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the layers.
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
-        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-        self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
-        self.fc1 = nn.Linear(3136, 1024)
-        self.fc2 = nn.Linear(1024, n_actions)
+
+        ## @var net
+        # Complete network that processes images and outputs Q-values.
+        self.net = nn.Sequential(
+            nn.Conv2d(self.stack_size, 32, 8, stride=4),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(64, 64, 3, stride=1),
+            nn.LeakyReLU(0.01),
+            nn.Flatten(start_dim=1),
+            nn.Linear(3136, 1024),
+            nn.LeakyReLU(0.01),
+            nn.Linear(1024, n_actions)
+        )
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
+        for name, param in self.named_parameters():
+            if "weight" in name:
+                torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -47,13 +56,9 @@ class DeepQNetwork(nn.Module):
         """
         if len(x.shape) == 3:
             x = x.unsqueeze(dim=0)
-        x = F.leaky_relu(self.conv1(x), 0.01)
-        x = F.leaky_relu(self.conv2(x), 0.01)
-        x = F.leaky_relu(self.conv3(x), 0.01)
-        x = F.leaky_relu(self.fc1(x.view(x.shape[0], -1)), 0.01)
-        return self.fc2(x)
+        return self.net(x)
 
-    def q_values(self, x):
+    def q_values(self, x : Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation
@@ -74,7 +79,7 @@ class NoisyDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_actions=18, stack_size=None):
+    def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -84,22 +89,31 @@ class NoisyDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the layers.
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
-        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-        self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
-        self.fc1 = NoisyLinear(3136, 1024)
-        self.fc2 = NoisyLinear(1024, n_actions)
+
+        ## @var net
+        # Complete network that processes images and outputs Q-values.
+        self.net = nn.Sequential(
+            nn.Conv2d(self.stack_size, 32, 8, stride=4),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(64, 64, 3, stride=1),
+            nn.LeakyReLU(0.01),
+            nn.Flatten(start_dim=1),
+            nn.Linear(3136, 1024),
+            nn.LeakyReLU(0.01),
+            nn.Linear(1024, n_actions)
+        )
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
+        for name, param in self.named_parameters():
+            if "weight" in name:
+                torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -107,13 +121,9 @@ class NoisyDeepQNetwork(nn.Module):
         """
         if len(x.shape) == 3:
             x = x.unsqueeze(dim=0)
-        x = F.leaky_relu(self.conv1(x), 0.01)
-        x = F.leaky_relu(self.conv2(x), 0.01)
-        x = F.leaky_relu(self.conv3(x), 0.01)
-        x = F.leaky_relu(self.fc1(x.view(x.shape[0], -1)), 0.01)
-        return self.fc2(x)
+        return self.net(x)
 
-    def q_values(self, x):
+    def q_values(self, x : Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation

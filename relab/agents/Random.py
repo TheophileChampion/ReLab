@@ -2,14 +2,18 @@ import logging
 import os
 from datetime import datetime
 from os.path import join
+from typing import Optional
 
 import torch
+from gymnasium import Env
+from numpy import ndarray
 
 import relab
-from relab.agents.AgentInterface import AgentInterface, ReplayType
+from relab.agents.AgentInterface import AgentInterface
 import numpy as np
 
 from relab.helpers.FileSystem import FileSystem
+from relab.helpers.Typing import ActionType
 
 
 class Random(AgentInterface):
@@ -17,10 +21,11 @@ class Random(AgentInterface):
     Implement an agent taking random actions.
     """
 
-    def __init__(self, n_actions=18):
+    def __init__(self, n_actions : int = 18, training : bool = True) -> None:
         """!
         Create an agent taking random actions.
         @param n_actions: the number of actions available to the agent
+        @param training: True if the agent is being training, False otherwise
         """
 
         # Call the parent constructor.
@@ -30,7 +35,7 @@ class Random(AgentInterface):
         # Number of possible actions available to the agent.
         self.n_actions = n_actions
 
-    def step(self, obs):
+    def step(self, obs : ndarray) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -38,7 +43,7 @@ class Random(AgentInterface):
         """
         return np.random.choice(self.n_actions)
 
-    def train(self, env):
+    def train(self, env : Env) -> None:
         """!
         Train the agent in the gym environment passed as parameters
         @param env: the gym environment
@@ -83,7 +88,7 @@ class Random(AgentInterface):
         env.close()
         # @endcond
 
-    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
+    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
@@ -108,10 +113,11 @@ class Random(AgentInterface):
 
         # Update the agent's parameters using the checkpoint.
         self.n_actions = self.safe_load(checkpoint, "n_actions")
+        self.training = self.safe_load(checkpoint, "training")
         self.current_step = self.safe_load(checkpoint, "current_step")
         # @endcond
 
-    def save(self, checkpoint_name, buffer_checkpoint_name=None):
+    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
@@ -127,6 +133,7 @@ class Random(AgentInterface):
         logging.info("Saving agent to the following file: " + checkpoint_path)
         torch.save({
             "n_actions": self.n_actions,
+            "training": self.training,
             "current_step": self.current_step,
         }, checkpoint_path)
         # @endcond

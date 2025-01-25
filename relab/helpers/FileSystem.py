@@ -2,6 +2,7 @@ import re
 from os.path import isfile, join, exists, dirname
 import os
 from pathlib import Path
+from typing import List, Optional
 
 
 class FileSystem:
@@ -10,7 +11,7 @@ class FileSystem:
     """
 
     @staticmethod
-    def files_in(directory, regex=None):
+    def files_in(directory : str, regex : Optional[str] = None) -> List[str]:
         """!
         Retrieve the name of the files present within the directory passed as parameters.
         @param directory: the directory whose files must be returned
@@ -37,14 +38,13 @@ class FileSystem:
         return files
 
     @staticmethod
-    def create_directory_and_file(checkpoint_path):
+    def create_directory_and_file(path : str) -> None:
         """!
-        Create the directory and file of the checkpoint if they do not already exist.
-        @param checkpoint_path: the checkpoint path
+        Create the directory and file corresponding to the path passed as parameter.
+        @param path: the file's path
         """
-        checkpoint_dir = dirname(checkpoint_path)
+        checkpoint_dir = dirname(path)
         if not exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
-        if not exists(checkpoint_path):
-            file = Path(checkpoint_path)
-            file.touch(exist_ok=True)
+        if not exists(path):
+            Path(path).touch(exist_ok=True)

@@ -1,3 +1,8 @@
+/**
+ * @file frame_storage.hpp
+ * @brief Declaration of the frame storage class.
+ */
+
 #ifndef FRAME_STORAGE_HPP
 #define FRAME_STORAGE_HPP
 
@@ -6,7 +11,7 @@
 namespace relab::agents::memory {
 
     /**
-     * Class storing a list of frames inside a tensor.
+     * @brief Class storing a list of frames inside a vector of tensors.
      */
     class FrameStorage {
 

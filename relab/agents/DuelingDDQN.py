@@ -3,17 +3,48 @@ from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
 
 class DuelingDDQN(DQN):
     """!
-    Implement the Dueling Double Deep Q-Network agent from:
-    Ziyu Wang, Tom Schaul, Matteo Hessel, Hado Hasselt, Marc Lanctot, and Nando Freitas.
-    Dueling network architectures for deep reinforcement learning.
-    In International conference on machine learning. PMLR, 2016.
+    @brief Implements a Dueling Double Deep Q-Network (DuelingDDQN) agent.
+
+    @details
+    This implementation is based on the papers:
+    
+    <b>Dueling network architectures for deep reinforcement learning</b>,
+    published in PMLR, 2016.
+
+    Authors:
+    - Ziyu Wang
+    - Tom Schaul
+    - Matteo Hessel
+    - Hado Hasselt
+    - Marc Lanctot
+    - Nando Freitas
+
+    <b>Deep Reinforcement Learning with Double Q-learning</b>,
+    published in AAAI, 2016.
+
+    Authors:
+    - Hado van Hasselt
+    - Arthur Guez
+    - David Silver
+
+    More precisely, the DuelingDDQN architecture improves the standard Double DQN by separating the 
+    representation of state values and action advantages.
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000,
-        target_update_interval=40000, adam_eps=1.5e-4, replay_type=ReplayType.DEFAULT, loss_type=LossType.DDQN_SL1,
-        network_type=NetworkType.DUELING, training=True
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00001,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        loss_type : LossType = LossType.DDQN_SL1,
+        network_type : NetworkType = NetworkType.DUELING,
+        training : bool = True
+    ) -> None:
         """!
         Create a Dueling Double DQN agent.
         @param gamma: the discount factor

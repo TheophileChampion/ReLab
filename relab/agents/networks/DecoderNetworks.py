@@ -1,4 +1,6 @@
-from torch import nn
+from typing import Optional
+
+from torch import nn, Tensor
 import torch
 
 from relab import relab
@@ -9,7 +11,7 @@ class ContinuousDecoderNetwork(nn.Module):
     Class implementing a convolutional decoder for 84 by 84 images with continuous latent variables.
     """
 
-    def __init__(self, n_continuous_vars=10, stack_size=None):
+    def __init__(self, n_continuous_vars : int = 10, stack_size : Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_continuous_vars: the number of continuous latent variables
@@ -19,7 +21,8 @@ class ContinuousDecoderNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the up-convolutional network.
+        ## @var lin_net
+        # Linear layers that process the continuous latent variables.
         self.lin_net = nn.Sequential(
             nn.Linear(n_continuous_vars, 256),
             nn.ReLU(),
@@ -28,8 +31,14 @@ class ContinuousDecoderNetwork(nn.Module):
             nn.Linear(256, 11 * 11 * 64),
             nn.ReLU()
         )
-        # TODO self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+
+        ## @var stack_size
+        # Number of stacked frames in each observation
         self.stack_size = 1
+        # TODO self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+
+        ## @var up_conv_net
+        # Transposed convolution layers that upscale the feature maps to the final image.
         self.up_conv_net = nn.Sequential(
             nn.ConvTranspose2d(64, 64, (3, 3), stride=(2, 2), output_padding=(0, 0)),
             nn.ReLU(),
@@ -40,7 +49,7 @@ class ContinuousDecoderNetwork(nn.Module):
             nn.ConvTranspose2d(32, self.stack_size, (3, 3), stride=(1, 1), padding=(3, 3), output_padding=(0, 0))
         )
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -56,7 +65,12 @@ class DiscreteDecoderNetwork(nn.Module):
     Class implementing a convolutional decoder for 84 by 84 images with discrete latent variables.
     """
 
-    def __init__(self, n_discrete_vars=20, n_discrete_vals=10, stack_size=None):
+    def __init__(
+        self,
+        n_discrete_vars : int = 20,
+        n_discrete_vals : int = 10,
+        stack_size : Optional[int] = None
+    ) -> None:
         """!
         Constructor.
         @param n_discrete_vars: the number of discrete latent variables
@@ -68,7 +82,8 @@ class DiscreteDecoderNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the up-convolutional network.
+        ## @var lin_net
+        # Linear layers that process the discrete latent variables.
         self.lin_net = nn.Sequential(
             nn.Linear(n_discrete_vars * n_discrete_vals, 256),
             nn.ReLU(),
@@ -77,7 +92,13 @@ class DiscreteDecoderNetwork(nn.Module):
             nn.Linear(256, 11 * 11 * 64),
             nn.ReLU()
         )
+
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+
+        ## @var up_conv_net
+        # Transposed convolution layers that upscale the feature maps to the final image.
         self.up_conv_net = nn.Sequential(
             nn.ConvTranspose2d(64, 64, (3, 3), stride=(2, 2), output_padding=(0, 0)),
             nn.ReLU(),
@@ -88,7 +109,7 @@ class DiscreteDecoderNetwork(nn.Module):
             nn.ConvTranspose2d(32, self.stack_size, (3, 3), stride=(1, 1), padding=(3, 3), output_padding=(0, 0))
         )
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -104,7 +125,13 @@ class MixedDecoderNetwork(nn.Module):
     Class implementing a convolutional decoder for 84 by 84 images with discrete and continuous latent variables.
     """
 
-    def __init__(self, n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10, stack_size=None):
+    def __init__(
+        self,
+        n_continuous_vars : int = 10,
+        n_discrete_vars : int = 20,
+        n_discrete_vals : int = 10,
+        stack_size : Optional[int] = None
+    ):
         """!
         Constructor.
         @param n_continuous_vars: the number of continuous latent variables
@@ -117,7 +144,8 @@ class MixedDecoderNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the up-convolutional network.
+        ## @var lin_net
+        # Linear layers that process the continuous and discrete latent variables.
         self.lin_net = nn.Sequential(
             nn.Linear(n_continuous_vars + n_discrete_vars * n_discrete_vals, 256),
             nn.ReLU(),
@@ -126,7 +154,13 @@ class MixedDecoderNetwork(nn.Module):
             nn.Linear(256, 11 * 11 * 64),
             nn.ReLU()
         )
+
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+
+        ## @var up_conv_net
+        # Transposed convolution layers that upscale the feature maps to the final image.
         self.up_conv_net = nn.Sequential(
             nn.ConvTranspose2d(64, 64, (3, 3), stride=(2, 2), output_padding=(0, 0)),
             nn.ReLU(),
@@ -137,7 +171,7 @@ class MixedDecoderNetwork(nn.Module):
             nn.ConvTranspose2d(32, self.stack_size, (3, 3), stride=(1, 1), padding=(3, 3), output_padding=(0, 0))
         )
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation

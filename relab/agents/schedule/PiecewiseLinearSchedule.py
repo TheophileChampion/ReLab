@@ -1,9 +1,12 @@
+from typing import Union, List, Tuple
+
+
 class PiecewiseLinearSchedule:
     """!
     A class implementing a piecewise linear schedule.
     """
 
-    def __init__(self, schedule):
+    def __init__(self, schedule : Union[List[Tuple[int, float]], Tuple[int, float]]) -> None:
         """!
         Create the piecewise linear schedule.
         @param schedule: a list of tuples of the form (value, time_step)
@@ -14,7 +17,7 @@ class PiecewiseLinearSchedule:
         # The schedule linearly interpolates between these points.
         self.schedule = schedule if isinstance(schedule, list) else [schedule]
 
-    def __call__(self, current_step):
+    def __call__(self, current_step : int) -> float:
         """!
         Compute the current scheduled value at a given step.
         @param current_step: the step for which the scheduled value must be computed

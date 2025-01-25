@@ -1,3 +1,8 @@
+/**
+ * @file debug.hpp
+ * @brief Helper functions to display variables in human-readable format.
+ */
+
 #ifndef DEBUG_HPP
 #define DEBUG_HPP
 

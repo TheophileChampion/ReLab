@@ -1,3 +1,8 @@
+/**
+ * @file compressors.hpp
+ * @brief Declaration of all compression algorithms.
+ */
+
 #ifndef COMPRESSORS_HPP
 #define COMPRESSORS_HPP
 
@@ -15,7 +20,7 @@ namespace relab::agents::memory {
     };
 
     /**
-     * A class that all compressor must implement.
+     * @brief A class that all compressors must implement.
      */
     class Compressor {
 
@@ -67,7 +72,7 @@ namespace relab::agents::memory {
     };
 
     /**
-     * A class that does not compress the tensors.
+     * @brief A class that does not compress the tensors.
      */
     class NoCompression : public Compressor {
 
@@ -112,7 +117,7 @@ namespace relab::agents::memory {
     };
 
     /**
-     * A class using zlib to compress and decompress torch tensors of type float.
+     * @brief A class using zlib to compress and decompress torch tensors of type float.
      */
     class ZCompressor : public Compressor {
 

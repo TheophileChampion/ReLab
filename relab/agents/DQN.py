@@ -5,9 +5,13 @@ from datetime import datetime
 from enum import IntEnum
 from functools import partial
 from os.path import join
+from typing import Callable, Any, Dict, Optional
 
 import torch
 from torch.nn import SmoothL1Loss, MSELoss, CrossEntropyLoss, HuberLoss
+from torch import nn, Tensor
+from gymnasium import Env
+from numpy import ndarray
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
@@ -22,11 +26,12 @@ from relab.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork, Im
 from relab.agents.networks.RainbowDeepQNetwork import RainbowDeepQNetwork, RainbowImplicitQuantileNetwork
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.helpers.FileSystem import FileSystem
+from relab.helpers.Typing import ActionType, Loss
 
 
 class LossType(IntEnum):
     """!
-    The loss functions supported by the DQN agent.
+    The type of loss functions supported by the DQN agents.
     """
 
     ## @var DQN_MSE
@@ -68,7 +73,7 @@ class LossType(IntEnum):
 
 class NetworkType(IntEnum):
     """!
-    The networks supported by the DQN agent.
+    The type of networks supported by the DQN agents.
     """
 
     ## @var DEFAULT
@@ -116,11 +121,12 @@ class DQN(AgentInterface):
     """!
     @brief Implements a Deep Q-Network (DQN) agent.
 
+    @details
     This implementation is based on the paper:
+    
     <b>Human-level control through deep reinforcement learning</b>,
     published in Nature, 2015.
 
-    @details
     Authors:
     - Volodymyr Mnih
     - Koray Kavukcuoglu
@@ -139,11 +145,28 @@ class DQN(AgentInterface):
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=None,
-        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=None, v_min=None, v_max=None, n_steps=1,
-        training=True, replay_type=ReplayType.DEFAULT, loss_type=LossType.DQN_SL1, network_type=NetworkType.DEFAULT,
-        omega=1.0, omega_is=1.0, epsilon_schedule=None
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00001,
+        buffer_size : int  = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        kappa : Optional[float] = None,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        n_actions : int = 18,
+        n_atoms : Optional[int] = None,
+        v_min : Optional[float] = None,
+        v_max : Optional[float] = None,
+        n_steps : int = 1,
+        training : bool = True,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        loss_type : LossType = LossType.DQN_SL1,
+        network_type : NetworkType = NetworkType.DEFAULT,
+        omega : float = 1.0,
+        omega_is : float = 1.0,
+        epsilon_schedule : Any = None
+    ) -> None:
         """!
         Create a DQN agent.
         @param gamma: the discount factor
@@ -244,10 +267,6 @@ class DQN(AgentInterface):
         # Type of neural network architecture used.
         self.network_type = network_type
 
-        ## @var training
-        # Flag indicating whether the agent is in training mode.
-        self.training = training
-
         ## @var epsilon_schedule
         # Schedule for the exploration parameter epsilon.
         self.epsilon_schedule = [
@@ -282,7 +301,7 @@ class DQN(AgentInterface):
         buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
         self.buffer = buffer(capacity=self.buffer_size, batch_size=self.batch_size)
 
-    def get_loss(self, loss_type):
+    def get_loss(self, loss_type : LossType) -> Callable:
         """!
         Retrieve the loss requested as parameters.
         @param loss_type: the loss to use during gradient descent
@@ -302,7 +321,7 @@ class DQN(AgentInterface):
         }[loss_type]
         # @endcond
 
-    def get_value_network(self, network_type):
+    def get_value_network(self, network_type : NetworkType) -> nn.Module:
         """!
         Retrieve the constructor of the value network requested as parameters.
         @param network_type: the network architecture to use for the value and target networks
@@ -326,13 +345,13 @@ class DQN(AgentInterface):
         return network
         # @endcond
 
-    def update_target_network(self):
+    def update_target_network(self) -> None:
         """!
         Synchronize the target with the value network.
         """
         self.target_net.load_state_dict(self.value_net.state_dict())
 
-    def step(self, obs):
+    def step(self, obs : ndarray) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -344,7 +363,7 @@ class DQN(AgentInterface):
         return np.random.choice(self.n_actions)
         # @endcond
 
-    def train(self, env):
+    def train(self, env : Env) -> None:
         """!
         Train the agent in the gym environment passed as parameters
         @param env: the gym environment
@@ -397,7 +416,7 @@ class DQN(AgentInterface):
         env.close()
         # @endcond
 
-    def learn(self):
+    def learn(self) -> Optional[Dict[str, Any]]:
         """!
         Perform one step of gradient descent on the value network.
         """
@@ -421,8 +440,18 @@ class DQN(AgentInterface):
         for param in self.value_net.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
+        return None
 
-    def q_learning_loss(self, obs, actions, rewards, done, next_obs, loss_fc, double_ql=False):
+    def q_learning_loss(
+        self,
+        obs : Tensor,
+        actions : Tensor,
+        rewards : Tensor,
+        done : Tensor,
+        next_obs : Tensor,
+        loss_fc : Loss,
+        double_ql : bool = False
+    ) -> Tensor:
         """!
         Compute the loss of the standard or double Q-learning algorithm.
         @param obs: the observations at time t
@@ -450,7 +479,14 @@ class DQN(AgentInterface):
         loss = loss_fc(x, y)
         return loss
 
-    def categorical_kl_divergence(self, obs, actions, rewards, done, next_obs):
+    def categorical_kl_divergence(
+        self,
+        obs : Tensor,
+        actions : Tensor,
+        rewards : Tensor,
+        done : Tensor,
+        next_obs : Tensor
+    ) -> Tensor:
         """!
         Compute the loss of the categorical algorithm.
         @param obs: the observations at time t
@@ -493,7 +529,14 @@ class DQN(AgentInterface):
         loss = loss_fc(log_probs, target_probs.detach())
         return loss
 
-    def rainbow_loss(self, obs, actions, rewards, done, next_obs):
+    def rainbow_loss(
+        self,
+        obs: Tensor,
+        actions: Tensor,
+        rewards: Tensor,
+        done: Tensor,
+        next_obs: Tensor
+    ) -> Tensor:
         """!
         Compute the loss of the rainbow DQN.
         @param obs: the observations at time t
@@ -535,7 +578,15 @@ class DQN(AgentInterface):
         loss = loss_fc(log_probs, target_probs.detach())
         return loss
 
-    def quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
+    def quantile_loss(
+        self,
+        obs: Tensor,
+        actions: Tensor,
+        rewards: Tensor,
+        done: Tensor,
+        next_obs: Tensor,
+        kappa : float = 1.0
+    ) -> Tensor:
         """!
         Compute the loss of the quantile regression algorithm.
         @param obs: the observations at time t
@@ -575,7 +626,15 @@ class DQN(AgentInterface):
         return loss
         # @endcond
 
-    def implicit_quantile_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
+    def implicit_quantile_loss(
+        self,
+        obs: Tensor,
+        actions: Tensor,
+        rewards: Tensor,
+        done: Tensor,
+        next_obs: Tensor,
+        kappa: float = 1.0
+    ) -> Tensor:
         """!
         Compute the loss of the quantile regression algorithm.
         @param obs: the observations at time t
@@ -614,7 +673,15 @@ class DQN(AgentInterface):
         return loss
         # @endcond
 
-    def rainbow_iqn_loss(self, obs, actions, rewards, done, next_obs, kappa=1.0):
+    def rainbow_iqn_loss(
+        self,
+        obs: Tensor,
+        actions: Tensor,
+        rewards: Tensor,
+        done: Tensor,
+        next_obs: Tensor,
+        kappa: float = 1.0
+    ) -> Tensor:
         """!
         Compute the loss of the rainbow IQN.
         @param obs: the observations at time t
@@ -652,7 +719,7 @@ class DQN(AgentInterface):
         return loss
         # @endcond
 
-    def load(self, checkpoint_name=None, buffer_checkpoint_name=None):
+    def load(self, checkpoint_name : Optional[str] = None, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
@@ -715,11 +782,11 @@ class DQN(AgentInterface):
         replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
         self.buffer.load(checkpoint_path, buffer_checkpoint_name)
-        self.optimizer = optim.Adam(self.value_net.parameters(), lr=self.learning_rate, eps=self.adam_eps)
-        self.optimizer.load_state_dict(self.safe_load(checkpoint, "optimizer"))
+        params = self.value_net.parameters()
+        self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
         # @endcond
 
-    def save(self, checkpoint_name, buffer_checkpoint_name=None):
+    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

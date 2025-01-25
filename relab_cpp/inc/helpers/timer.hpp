@@ -1,3 +1,8 @@
+/**
+ * @file timer.hpp
+ * @brief Declaration of a timer class for timing code execution.
+ */
+
 #ifndef TIMER_HPP
 #define TIMER_HPP
 
@@ -7,7 +12,7 @@
 namespace relab::helpers {
 
     /**
-     * A timer class allowing to time the execution of a piece of code.
+     * @brief A timer class allowing to time the execution of a piece of code.
      */
     class Timer {
 

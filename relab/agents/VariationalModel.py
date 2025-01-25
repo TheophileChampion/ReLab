@@ -6,16 +6,22 @@ from os.path import join
 from enum import IntEnum
 from functools import partial
 import re
+from typing import Any, Callable, Tuple, Dict, Optional
+from gymnasium import Env
+from numpy import ndarray
+from matplotlib.figure import Figure
 
 import torch
+from torch import Tensor, nn
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.agents.memory.cpp import Experience  # TODO what about relab_cpp.Experience (same for all other classes from this package)?
+from relab.agents.memory.cpp import Experience  # TODO change package path "relab_cpp.Experience" (same for all other classes from this package)
 import numpy as np
 from relab.agents.networks.DecoderNetworks import ContinuousDecoderNetwork, DiscreteDecoderNetwork, MixedDecoderNetwork
 from relab.agents.networks.EncoderNetworks import ContinuousEncoderNetwork, DiscreteEncoderNetwork, MixedEncoderNetwork
 from relab.agents.networks.TransitionNetworks import ContinuousTransitionNetwork, DiscreteTransitionNetwork, MixedTransitionNetwork
+from relab.helpers.Typing import ActionType
 
 from relab.helpers.VariationalInference import VariationalInference
 from relab.helpers.MatPlotLib import MatPlotLib
@@ -61,12 +67,26 @@ class VariationalModel(AgentInterface):
     """
 
     def __init__(
-        self, learning_starts=200000, n_actions=18, training=False,
-        likelihood_type=LikelihoodType.BERNOULLI, latent_space_type=LatentSpaceType.CONTINUOUS,
-        replay_type=ReplayType.DEFAULT, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0,
-        n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10,
-        learning_rate=0.00001, adam_eps=1.5e-4, beta_schedule=None, tau_schedule=None,
-    ):
+        self,
+        learning_starts : int = 200000,
+        n_actions : int = 18,
+        training : bool = False,
+        likelihood_type : LikelihoodType = LikelihoodType.BERNOULLI,
+        latent_space_type : LatentSpaceType = LatentSpaceType.CONTINUOUS,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        n_steps : int = 1,
+        omega : float = 1.0,
+        omega_is : float = 1.0,
+        n_continuous_vars : int = 10,
+        n_discrete_vars : int = 20,
+        n_discrete_vals : int = 10,
+        learning_rate : float = 0.00001,
+        adam_eps : float = 1.5e-4,
+        beta_schedule : Any = None,
+        tau_schedule : Any = None,
+    ) -> None:
         """!
         Create an agent taking random actions.
         @param learning_starts: the step at which learning starts
@@ -187,10 +207,11 @@ class VariationalModel(AgentInterface):
 
         ## @var buffer
         # Experience replay buffer for storing transitions.
+        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
         self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
 
     @abc.abstractmethod
-    def learn(self):
+    def learn(self) -> Optional[Dict[str, Any]]:
         """!
         Perform one step of gradient descent on the world model.
         @return the loss of the sampled batch, None if no loss should be logged in Tensorboard
@@ -198,40 +219,40 @@ class VariationalModel(AgentInterface):
         ...
 
     @abc.abstractmethod
-    def continuous_vfe(self, obs, actions, next_obs):
+    def continuous_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a continuous latent space.
         @param obs: the observations at time t
         @param actions: the actions at time t
         @param next_obs: the observations at time t + 1
-        @return the variational free energy
+        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
         """
         ...
 
     @abc.abstractmethod
-    def discrete_vfe(self, obs, actions, next_obs):
+    def discrete_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a discrete latent space.
         @param obs: the observations at time t
         @param actions: the actions at time t
         @param next_obs: the observations at time t + 1
-        @return the variational free energy
+        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
         """
         ...
 
     @abc.abstractmethod
-    def mixed_vfe(self, obs, actions, next_obs):
+    def mixed_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a mixed latent space.
         @param obs: the observations at time t
         @param actions: the actions at time t
         @param next_obs: the observations at time t + 1
-        @return the variational free energy
+        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
         """
         ...
 
     @abc.abstractmethod
-    def draw_reconstructed_images(self, env, model_index, grid_size):
+    def draw_reconstructed_images(self, env : Env, model_index : int, grid_size : Tuple[int, int]) -> Figure:
         """!
         Draw the ground truth and reconstructed images.
         @param env: the gym environment
@@ -241,7 +262,7 @@ class VariationalModel(AgentInterface):
         """
         ...
 
-    def get_model_loss(self, latent_space_type):
+    def get_model_loss(self, latent_space_type : LatentSpaceType) -> Callable:
         """!
         Retrieve the model loss requested as parameters.
         @param latent_space_type: the type of latent spaces used by the world model
@@ -256,7 +277,7 @@ class VariationalModel(AgentInterface):
         # @endcond
 
     @staticmethod
-    def get_reparameterization(latent_space_type):
+    def get_reparameterization(latent_space_type : LatentSpaceType) -> Callable:
         """!
         Retrieve the reparameterization function requested as parameters.
         @param latent_space_type: the type of latent spaces used by the world model
@@ -271,7 +292,7 @@ class VariationalModel(AgentInterface):
         # @endcond
 
     @staticmethod
-    def get_likelihood_loss(likelihood_type):
+    def get_likelihood_loss(likelihood_type : LikelihoodType) -> Callable:
         """!
         Retrieve the likelihood loss requested as parameters.
         @param likelihood_type: the type of likelihood used by the world model
@@ -284,7 +305,7 @@ class VariationalModel(AgentInterface):
         }[likelihood_type]
         # @endcond
 
-    def get_encoder_network(self, latent_space_type):
+    def get_encoder_network(self, latent_space_type : LatentSpaceType) -> nn.Module:
         """!
         Retrieve the encoder network requested as parameters.
         @param latent_space_type: the type of latent spaces to use for the encoder network
@@ -301,7 +322,7 @@ class VariationalModel(AgentInterface):
         return encoder
         # @endcond
 
-    def get_decoder_network(self, latent_space_type):
+    def get_decoder_network(self, latent_space_type : LatentSpaceType) -> nn.Module:
         """!
         Retrieve the decoder network requested as parameters.
         @param latent_space_type: the type of latent spaces to use for the decoder network
@@ -318,7 +339,7 @@ class VariationalModel(AgentInterface):
         return decoder
         # @endcond
 
-    def get_transition_network(self, latent_space_type):
+    def get_transition_network(self, latent_space_type : LatentSpaceType) -> nn.Module:
         """!
         Retrieve the transition network requested as parameters.
         @param latent_space_type: the type of latent spaces to use for the transition network
@@ -335,7 +356,7 @@ class VariationalModel(AgentInterface):
         return transition
         # @endcond
 
-    def step(self, obs):
+    def step(self, obs : ndarray) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -343,7 +364,7 @@ class VariationalModel(AgentInterface):
         """
         return np.random.choice(self.n_actions)
 
-    def train(self, env):
+    def train(self, env : Env) -> None:
         """!
         Train the agent in the gym environment passed as parameters
         @param env: the gym environment
@@ -398,7 +419,7 @@ class VariationalModel(AgentInterface):
         env.close()
         # @endcond
 
-    def demo(self, env, gif_name, max_frames=10000):
+    def demo(self, env : Env, gif_name : str, max_frames : int = 10000) -> None:
         """!
         Demonstrate the agent policy in the gym environment passed as parameters
         @param env: the gym environment
@@ -419,7 +440,7 @@ class VariationalModel(AgentInterface):
         fig.savefig(figure_path)
         MatPlotLib.close()
 
-    def reconstructed_image_from(self, decoder_output):
+    def reconstructed_image_from(self, decoder_output : Tensor) -> Tensor:
         """!
         Compute the reconstructed image from the decoder output.
         @param decoder_output: the tensor predicted by the decoder

@@ -1,4 +1,8 @@
+from typing import Any, Dict, Tuple
+
 import gymnasium as gym
+from gymnasium import Env
+from numpy import ndarray
 
 
 class FireReset(gym.Wrapper):
@@ -7,7 +11,7 @@ class FireReset(gym.Wrapper):
     @param env: environment to wrap
     """
 
-    def __init__(self, env: gym.Env) -> None:
+    def __init__(self, env: Env) -> None:
         """!
         Initialize the wrapper.
         @param env: environment to wrap
@@ -16,7 +20,7 @@ class FireReset(gym.Wrapper):
         assert env.unwrapped.get_action_meanings()[1] == "FIRE"  # type: ignore[attr-defined]
         assert len(env.unwrapped.get_action_meanings()) >= 3  # type: ignore[attr-defined]
 
-    def reset(self, **kwargs):
+    def reset(self, **kwargs : Any) -> Tuple[ndarray, Dict]:
         """!
         Reset the environment and take the firing action if it is available in the environment.
         @param kwargs: the keyword arguments to pass to the environment's reset function

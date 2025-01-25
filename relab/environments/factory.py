@@ -1,11 +1,14 @@
+from typing import Any, List
+
 import gymnasium as gym
+from gymnasium import Env
 from gymnasium.wrappers import FrameStackObservation, NumpyToTorch, AtariPreprocessing
 
 import relab
 from relab.environments.wrapper.FireReset import FireReset
 
 
-def make(env_name, **kwargs):
+def make(env_name : str, **kwargs : Any) -> Env:
     """!
     Create the environment whose name is passed as parameters.
     @param env_name: the name of the environment to instantiate
@@ -24,7 +27,7 @@ def make(env_name, **kwargs):
     return env
 
 
-def small_benchmark_atari_games():
+def small_benchmark_atari_games() -> List[str]:
     """!
     Retrieve a list of five Atari game names part of a small Atari benchmark.
     @return the list of Atari game names
@@ -38,7 +41,7 @@ def small_benchmark_atari_games():
     ]
 
 
-def benchmark_atari_games():
+def benchmark_atari_games() -> List[str]:
     """!
     Retrieve the list of the names of the 57 Atari games part of the Atari benchmark.
     @return the list of Atari game names
@@ -99,7 +102,7 @@ def benchmark_atari_games():
     ]
 
 
-def all_atari_games():
+def all_atari_games() -> List[str]:
     """!
     Retrieve the list of all Atari game names.
     @return the list of all Atari game names

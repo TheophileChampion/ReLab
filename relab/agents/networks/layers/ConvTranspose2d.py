@@ -1,5 +1,7 @@
-import torch.nn as nn
+from torch import Tensor, nn
 import math
+
+from relab.helpers.Typing import ScalarOrTuple, Device, DataType
 
 
 class ConvTranspose2d(nn.Module):
@@ -8,15 +10,25 @@ class ConvTranspose2d(nn.Module):
     """
 
     def __init__(
-        self, in_channels, out_channels, kernel_size, stride=1,
-        padding=0, output_padding=0, groups=1, bias=True, dilation=1,
-        padding_mode='zeros', device=None, dtype=None
-    ):
+        self,
+        in_channels : int,
+        out_channels : int,
+        kernel_size : ScalarOrTuple[int],
+        stride : ScalarOrTuple[int] = 1,
+        padding : ScalarOrTuple[int] = 0,
+        output_padding : ScalarOrTuple[int] = 0,
+        groups : int = 1,
+        bias : bool = True,
+        dilation : ScalarOrTuple[int] = 1,
+        padding_mode : str = "zeros",
+        device : Device = None,
+        dtype : DataType = None
+    ) -> None:
         """!
         Create a convolutional transpose layer.
         @param in_channels: number of channels in the input image
         @param out_channels: number of channels produced by the convolution
-        @param kernel_size: size of the convolving kernel
+        @param kernel_size: size of the convolution kernel
         @param stride: stride of the convolution
         @param padding: `dilation * (kernel_size - 1) - padding` zero-padding added to both sides of the input.
         Can also be `valid` (no padding) or `same` (padding to ensure `output shape = input shape * stride`)
@@ -33,16 +45,17 @@ class ConvTranspose2d(nn.Module):
         super().__init__()
 
         # Check that the padding parameter is set to a proper value.
-        if isinstance(padding, str) and padding not in ['valid', 'same']:
-            raise Exception("In constructor of custom layer: 'ConvTranspose2d', par")
+        if isinstance(padding, str) and padding not in ["valid", "same"]:
+            raise Exception("In constructor of custom layer: 'ConvTranspose2d', padding type not supported.")
 
-        # If padding is a string, apply zero padding, otherwise apply whatever
-        # was requested by the user.
+        ## @var padding
+        # Zero-padding added to both sides of the input.
         self.padding = (0, 0) if isinstance(padding, str) else padding
 
-        # Remember if the user asked for a padding same.
+        ## @var padding_same
+        # Boolean indicating if padding should ensure output shape equals input shape times stride.
         self.padding_same = False
-        if isinstance(padding, str) and padding == 'same':
+        if isinstance(padding, str) and padding == "same":
             self.padding_same = True
 
         # Ensure that stride and kernel_size are tuples.
@@ -51,28 +64,39 @@ class ConvTranspose2d(nn.Module):
         if isinstance(kernel_size, int):
             kernel_size = (kernel_size, kernel_size)
 
-        # Compute the padding to apply if padding same is requested.
+        ## @var p_left
+        # Amount of padding to remove from the left side of the output.
         self.p_left = math.floor((kernel_size[0] - stride[0]) / 2)
-        self.p_right = kernel_size[0] - stride[0] - self.p_left
-        self.p_top = math.floor((kernel_size[1] - stride[1]) / 2)
-        self.p_bottom = kernel_size[1] - stride[1] - self.p_left
 
-        # Create the pytorch ConvTranspose2d used to perform the deconvolution.
-        self.deconv_layer = nn.ConvTranspose2d(
+        ## @var p_right
+        # Amount of padding to remove from the right side of the output.
+        self.p_right = kernel_size[0] - stride[0] - self.p_left
+
+        ## @var p_top
+        # Amount of padding to remove from the top of the output.
+        self.p_top = math.floor((kernel_size[1] - stride[1]) / 2)
+
+        ## @var p_bottom
+        # Amount of padding to remove from the bottom of the output.
+        self.p_bottom = kernel_size[1] - stride[1] - self.p_top
+
+        ## @var up_conv_layer
+        # PyTorch transposed convolution layer that performs the deconvolution operation.
+        self.up_conv_layer = nn.ConvTranspose2d(
             in_channels, out_channels, kernel_size, stride, self.padding, output_padding,
             groups, bias, dilation, padding_mode, device, dtype
         )
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tensor:
         """!
         Compute the forward pass of the custom ConvTranspose2d.
         @param x: the input of the layer.
         @return the output of the layer.
         """
-        out = self.deconv_layer(x)
+        out = self.up_conv_layer(x)
         return self.apply_padding_same(out) if self.padding_same else out
 
-    def apply_padding_same(self, tensor):
+    def apply_padding_same(self, tensor : Tensor) -> Tensor:
         """!
         Apply the padding same to the input tensor.
         @param tensor: the input tensor.

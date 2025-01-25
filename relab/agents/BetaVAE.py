@@ -1,3 +1,5 @@
+from typing import Any
+
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VAE import VAE
 from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
@@ -5,19 +7,51 @@ from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 
 class BetaVAE(VAE):
     """!
-    Implement an agent taking random actions, and learning a world model using a beta-VAE from:
-    Irina Higgins, Loic Matthey, Arka Pal, Christopher Burgess, Xavier Glorot, Matthew Botvinick,
-    Shakir Mohamed, and Alexander Lerchner.
-    beta-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework. ICLR, 2017.
+    @brief Implements a Beta Variational Autoencoder (β-VAE) agent.
+
+    @details
+    This implementation is based on the paper:
+    
+    <b>β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework</b>,
+    published in ICLR, 2017.
+
+    @details
+    Authors:
+    - Irina Higgins
+    - Loic Matthey
+    - Arka Pal
+    - Christopher Burgess
+    - Xavier Glorot
+    - Matthew Botvinick
+    - Shakir Mohamed
+    - Alexander Lerchner
+
+    The paper introduced β-VAE, a modification of the VAE framework that introduces
+    an adjustable hyperparameter β to balance complexity and reconstruction accuracy.
+    Note, this agent takes random actions.
     """
 
     def __init__(
-        self, learning_starts=200000, n_actions=18, training=True,
-        likelihood_type=LikelihoodType.BERNOULLI, latent_space_type=LatentSpaceType.CONTINUOUS,
-        n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10,
-        learning_rate=0.00001, adam_eps=1.5e-4, beta_schedule=None, tau_schedule=None,
-        replay_type=ReplayType.PRIORITIZED, buffer_size=1000000, batch_size=32, n_steps=1, omega=1.0, omega_is=1.0
-    ):
+        self,
+        learning_starts : int = 200000,
+        n_actions : int = 18,
+        training : bool = True,
+        likelihood_type : LikelihoodType = LikelihoodType.BERNOULLI,
+        latent_space_type : LatentSpaceType = LatentSpaceType.CONTINUOUS,
+        n_continuous_vars : int = 10,
+        n_discrete_vars : int = 20,
+        n_discrete_vals : int = 10,
+        learning_rate : float = 0.00001,
+        adam_eps : float = 1.5e-4,
+        beta_schedule : Any = None,
+        tau_schedule : Any = None,
+        replay_type : ReplayType = ReplayType.PRIORITIZED,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        n_steps : int = 1,
+        omega : float = 1.0,
+        omega_is : float = 1.0
+    ) -> None:
         """!
         Create a Variational Auto-Encoder agent taking random actions.
         @param learning_starts: the step at which learning starts

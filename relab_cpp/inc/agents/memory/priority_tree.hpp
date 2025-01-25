@@ -1,3 +1,8 @@
+/**
+ * @file priority_tree.hpp
+ * @brief Declaration of the priority tree class.
+ */
+
 #ifndef PRIORITY_TREE_HPP
 #define PRIORITY_TREE_HPP
 
@@ -13,7 +18,7 @@ namespace relab::agents::memory::impl {
     using MaxTree = std::vector<torch::Tensor>;
 
     /**
-     * A class storing the experience priorities.
+     * @brief A class storing the experience priorities.
      */
     class PriorityTree {
 

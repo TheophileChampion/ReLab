@@ -9,7 +9,7 @@ import torch
 import relab
 
 
-def display_checkpoint(agent, env, seed, index, verbose=False):
+def display_checkpoint(agent : str, env : str, seed : int, index : int, verbose : bool = False) -> None:
     """
     Display the key-value pairs in a checkpoint.
     :param agent: the agent name

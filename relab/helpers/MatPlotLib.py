@@ -1,6 +1,11 @@
 import gc
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import torch
+from torch import Tensor
+from numpy import ndarray
+from matplotlib.figure import Figure
 
 
 class MatPlotLib:
@@ -9,7 +14,7 @@ class MatPlotLib:
     """
 
     @staticmethod
-    def format_image(img, n_channels=3):
+    def format_image(img : Tensor, n_channels : int = 3) -> ndarray:
         """!
         Turn a 4d pytorch tensor into a 3d numpy array
         @param img: the 4d tensor
@@ -22,7 +27,12 @@ class MatPlotLib:
         return img.detach().cpu().numpy()
 
     @staticmethod
-    def save_figure(figure_path, dpi=300, tight=True, close=True):
+    def save_figure(
+        figure_path : str,
+        dpi : int = 300,
+        tight : bool = True,
+        close : bool = True
+    ) -> None:
         """!
         Save a matplotlib figure.
         @param figure_path: the name of the file used to save the figure
@@ -37,7 +47,7 @@ class MatPlotLib:
             MatPlotLib.close()
 
     @staticmethod
-    def close(fig=None):
+    def close(fig : Optional[Figure] = None) -> None:
         """!
         Close the figure passed as parameter or the current figure.
         @param fig: the figure to close

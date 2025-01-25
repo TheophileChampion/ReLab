@@ -1,6 +1,8 @@
 import os
 import random
 from os.path import join, isfile, abspath, dirname
+from typing import Optional
+
 import invoke
 import logging
 
@@ -11,9 +13,12 @@ import torch
 
 from relab.helpers.FileSystem import FileSystem
 from relab.environments.SpritesEnv import SpritesEnv
+from relab.helpers.Typing import Device, ConfigInfo
 
 
-def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=False):
+def initialize(
+    agent_name: str, env_name: str, seed: int = None, data_directory : str = None, paths_only: bool = False
+) -> None:
     """!
     Initialize the 'relab' package.
     @param agent_name: the agent name
@@ -61,7 +66,7 @@ def initialize(agent_name, env_name, seed=None, data_directory=None, paths_only=
     torch.manual_seed(seed)
 
 
-def build_cpp_library_and_wrapper(cpp_library_name="relab", python_module_name="cpp"):
+def build_cpp_library_and_wrapper(cpp_library_name : str = "relab", python_module_name : str = "cpp") -> None:
     """!
     Build the C++ shared library and the python module wrapping the library.
     @param cpp_library_name: the name of the shared library to create
@@ -83,7 +88,7 @@ def build_cpp_library_and_wrapper(cpp_library_name="relab", python_module_name="
     )
 
 
-def device():
+def device() -> Device:
     """!
     Retrieves the device on which the computation should be performed.
     @return the device
@@ -91,7 +96,7 @@ def device():
     return torch.device("cuda" if torch.cuda.is_available() and torch.cuda.device_count() >= 1 else "cpu")
 
 
-def config(key=None):
+def config(key : Optional[str] = None) -> ConfigInfo:
     """!
     Retrieves the benchmark configuration.
     @param key: the key whose value in the configuration must be returned, None if the entire configure is requested

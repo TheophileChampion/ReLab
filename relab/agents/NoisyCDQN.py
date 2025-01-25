@@ -13,10 +13,23 @@ class NoisyCDQN(DQN):
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000,
-        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=21, v_min=-10, v_max=10, training=True,
-        replay_type=ReplayType.DEFAULT, loss_type=LossType.KL_DIVERGENCE, network_type=NetworkType.NOISY_CATEGORICAL
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00001,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        n_actions : int = 18,
+        n_atoms : int = 21,
+        v_min : float = -10,
+        v_max : float = 10,
+        training : bool = True,
+        replay_type : ReplayType = ReplayType.DEFAULT,
+        loss_type : LossType = LossType.KL_DIVERGENCE,
+        network_type : NetworkType = NetworkType.NOISY_CATEGORICAL
+    ) -> None:
         """!
         Create a categorical DQN agent.
         @param gamma: the discount factor

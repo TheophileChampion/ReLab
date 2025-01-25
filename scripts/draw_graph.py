@@ -2,6 +2,8 @@ import logging
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import join, exists
+from typing import List
+
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -10,9 +12,10 @@ import relab
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.TensorBoard import TensorBoard
+from relab.helpers.Typing import DataFrame
 
 
-def display_name(metric):
+def display_name(metric : str) -> str:
     """
     Retrieves the display name corresponding to the metric.
     :param metric: the metric name
@@ -26,7 +29,13 @@ def display_name(metric):
     }[metric]
 
 
-def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_statistics_path):
+def compute_summary_statistics(
+    agent_name : str,
+    env_name : str,
+    seeds : List[int],
+    metric : str,
+    summary_statistics_path : str
+) -> DataFrame:
     """
     Compute the mean and standard deviations of the metric over all seeds.
     :param agent_name: the agent for which the mean and standard deviation of the metric is computed
@@ -68,7 +77,7 @@ def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_stat
     return summary_statistics
 
 
-def draw_graph(agents, env, seeds, metric, overwrite=False):
+def draw_graph(agents : List[str], env : str, seeds : List[int], metric : str, overwrite : bool = False) -> None:
     """
     Generate a graph representing the agents performance in an environment according to the specified metric.
     :param agents: the agent names

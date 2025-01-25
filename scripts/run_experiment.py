@@ -1,13 +1,14 @@
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from functools import partial
+from typing import List
 
 import relab
 from relab.environments import small_benchmark_atari_games as atari_games
 from relab.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
 
 
-def run_experiment(agent_names, env_names, seeds, local=True):
+def run_experiment(agent_names : List[str], env_names : List[str], seeds : List[int], local : bool = True) -> None:
     """
     Run an experiments by:
     - training all reinforcement learning agents on all gym environments using all seeds

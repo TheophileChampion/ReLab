@@ -1,3 +1,6 @@
+from typing import Any
+
+from relab.agents.AgentInterface import AgentInterface
 from relab.agents.BetaHMM import BetaHMM
 from relab.agents.BetaVAE import BetaVAE
 from relab.agents.CDQN import CDQN
@@ -25,7 +28,7 @@ from relab.agents.Random import Random
 from relab.agents.VAE import VAE
 
 
-def make(agent_name, **kwargs):
+def make(agent_name : str, **kwargs : Any) -> AgentInterface:
     """!
     Create the agent whose name is passed as parameters.
     @param agent_name: the name of the agent to instantiate

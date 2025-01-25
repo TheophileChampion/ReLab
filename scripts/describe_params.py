@@ -1,13 +1,19 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from typing import Iterator
 
 import torch
 import logging
 
 import relab
 from relab import agents
+from relab.helpers.Typing import Parameter
 
 
-def describe(parameters, n_copies=1, memory_unit="GB"):
+def describe(
+    parameters : Iterator[Parameter],
+    n_copies : int = 1,
+    memory_unit : str = "GB"
+) -> None:
     """
     Describe the parameters passed as arguments.
     :param parameters: the parameters to describe
@@ -48,7 +54,7 @@ def describe(parameters, n_copies=1, memory_unit="GB"):
     logging.info(f"Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
 
 
-def describe_params(agent, env, seed):
+def describe_params(agent : str, env : str, seed : int) -> None:
     """
     Describe the agent's parameters.
     :param agent: the agent name
@@ -63,7 +69,7 @@ def describe_params(agent, env, seed):
     agent = agents.make(agent, training=True)
 
     # Describe the agent parameters.
-    describe(agent.value_net.parameters(), n_copies=2)
+    describe(agent.value_net.parameters(), n_copies=2)  # TODO make is compatible with variational models
 
 
 if __name__ == "__main__":

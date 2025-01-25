@@ -10,11 +10,23 @@ class RainbowIQN(DQN):
     """
 
     def __init__(
-        self, gamma=0.99, learning_rate=0.00001, buffer_size=1000000, batch_size=32, learning_starts=200000, kappa=1.0,
-        target_update_interval=40000, adam_eps=1.5e-4, n_actions=18, n_atoms=8, v_min=None, v_max=None, training=True,
-        n_steps=3, omega=0.5, replay_type=ReplayType.MULTISTEP_PRIORITIZED, loss_type=LossType.RAINBOW_IQN,
-        network_type=NetworkType.RAINBOW_IQN
-    ):
+        self,
+        gamma : float = 0.99,
+        learning_rate : float = 0.00001,
+        buffer_size : int = 1000000,
+        batch_size : int = 32,
+        learning_starts : int = 200000,
+        kappa : float = 1.0,
+        target_update_interval : int = 40000,
+        adam_eps : float = 1.5e-4,
+        n_actions : int = 18,
+        n_atoms : int = 8,
+        training : bool = True,
+        n_steps : int = 3, omega : float = 0.5,
+        replay_type : ReplayType = ReplayType.MULTISTEP_PRIORITIZED,
+        loss_type : LossType = LossType.RAINBOW_IQN,
+        network_type : NetworkType = NetworkType.RAINBOW_IQN
+    ) -> None:
         """!
         Create a rainbow IQN agent.
         @param gamma: the discount factor
@@ -27,8 +39,6 @@ class RainbowIQN(DQN):
         @param adam_eps: the epsilon parameter of the Adam optimizer
         @param n_actions: the number of actions available to the agent
         @param n_atoms: the number of atoms used to approximate the distribution over returns
-        @param v_min: the minimum amount of returns (only used for categorical DQN)
-        @param v_max: the maximum amount of returns (only used for categorical DQN)
         @param training: True if the agent is being trained, False otherwise
         @param n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
         @param omega: the prioritization exponent
@@ -41,7 +51,6 @@ class RainbowIQN(DQN):
         super().__init__(
             gamma=gamma, learning_rate=learning_rate, buffer_size=buffer_size, batch_size=batch_size, kappa=kappa,
             learning_starts=learning_starts, target_update_interval=target_update_interval, adam_eps=adam_eps,
-            n_actions=n_actions, n_atoms=n_atoms, v_min=v_min, v_max=v_max, training=training, n_steps=n_steps,
-            omega=omega, replay_type=replay_type, loss_type=loss_type, network_type=network_type,
-            epsilon_schedule=[(0, 0)]
+            n_actions=n_actions, n_atoms=n_atoms, training=training, n_steps=n_steps, omega=omega,
+            replay_type=replay_type, loss_type=loss_type, network_type=network_type, epsilon_schedule=[(0, 0)]
         )

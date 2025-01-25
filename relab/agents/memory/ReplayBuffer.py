@@ -1,10 +1,14 @@
 import logging
+from typing import Tuple, Optional
 
 from relab import relab
-from relab.agents.memory.cpp import FastReplayBuffer, CompressorType
+from relab.agents.memory.cpp import FastReplayBuffer, CompressorType, Experience
 from relab.helpers.FileSystem import FileSystem
 import os
 from os.path import join, isfile
+from torch import Tensor
+
+from relab.helpers.Typing import Config
 
 
 class ReplayBuffer:
@@ -15,7 +19,15 @@ class ReplayBuffer:
     [2] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
     """
 
-    def __init__(self, capacity=10000, batch_size=32, frame_skip=None, stack_size=None, screen_size=None, p_args=None, m_args=None):
+    def __init__(
+        self,
+        capacity : int = 10000,
+        batch_size : int = 32,
+        frame_skip : Optional[int] = None,
+        stack_size : Optional[int] = None,
+        screen_size : Optional[int] = None,
+        p_args : Config = None, m_args : Config = None
+    ) -> None:
         """!
         Create a replay buffer.
         @param capacity: the number of experience the buffer can store
@@ -47,14 +59,14 @@ class ReplayBuffer:
             screen_size=screen_size, type=compressor_type, p_args=p_args, m_args=m_args
         )
 
-    def append(self, experience):
+    def append(self, experience : Experience) -> None:
         """!
         Add a new experience to the buffer.
         @param experience: the experience to add
         """
         self.buffer.append(experience)
 
-    def sample(self):
+    def sample(self) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
         """!
         Sample a batch from the replay buffer.
         @return observations, actions, rewards, done, next_observations
@@ -67,7 +79,7 @@ class ReplayBuffer:
         """
         return self.buffer.sample()
 
-    def load(self, checkpoint_path=None, checkpoint_name=None):
+    def load(self, checkpoint_path : Optional[str] = None, checkpoint_name : Optional[str] = None) -> None:
         """!
         Load a replay buffer from the filesystem.
         @param checkpoint_path: the full checkpoint path from which the agent has been loaded
@@ -91,7 +103,7 @@ class ReplayBuffer:
         # Load the replay buffer from the filesystem.
         self.buffer.load(buffer_checkpoint_path)
 
-    def save(self, checkpoint_path=None, checkpoint_name=None):
+    def save(self, checkpoint_path : Optional[str] = None, checkpoint_name : Optional[str] = None) -> None:
         """!
         Save the replay buffer on the filesystem.
         @param checkpoint_path: the full checkpoint path in which the agent has been saved
@@ -111,7 +123,7 @@ class ReplayBuffer:
         # Save the replay buffer on the filesystem.
         self.buffer.save(buffer_checkpoint_path)
 
-    def report(self, loss):
+    def report(self, loss : Tensor) -> Tensor:
         """!
         Report the loss associated with all the transitions of the previous batch.
         @param loss: the loss of all previous transitions
@@ -119,13 +131,13 @@ class ReplayBuffer:
         """
         return self.buffer.report(loss)
 
-    def clear(self):
+    def clear(self) -> None:
         """!
         Empty the replay buffer.
         """
         self.buffer.clear()
 
-    def __len__(self):
+    def __len__(self) -> int:
         """!
         Retrieve the number of elements in the buffer.
         @return the number of elements contained in the replay buffer

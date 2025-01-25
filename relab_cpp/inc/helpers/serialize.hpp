@@ -1,3 +1,8 @@
+/**
+ * @file serialize.hpp
+ * @brief Helper functions to save/load variables into/from a checkpoint.
+ */
+
 #ifndef SERIALIZE_HPP
 #define SERIALIZE_HPP
 

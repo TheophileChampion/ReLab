@@ -1,3 +1,8 @@
+/**
+ * @file data_buffer.hpp
+ * @brief Declaration of the data buffer class.
+ */
+
 #ifndef DATA_BUFFER_HPP
 #define DATA_BUFFER_HPP
 
@@ -10,7 +15,7 @@ namespace relab::agents::memory::impl {
     using namespace relab::helpers;
 
     /**
-     * A buffer allowing for storage and retrieval of experience datum (i.e., action, reward, done, and priority).
+     * @brief A buffer allowing for storage and retrieval of experience datum, i.e., action, reward, done, and priority.
      */
     class DataBuffer {
 

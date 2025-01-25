@@ -1,4 +1,6 @@
-from torch import nn
+from typing import Tuple
+
+from torch import nn, Tensor
 import torch
 
 from relab.agents.networks.layers.Categorical import Categorical
@@ -10,7 +12,7 @@ class ContinuousTransitionNetwork(nn.Module):
     Class implementing a transition network with continuous latent variables.
     """
 
-    def __init__(self, n_actions=18, n_continuous_vars=10):
+    def __init__(self, n_actions : int = 18, n_continuous_vars : int = 10) -> None:
         """!
         Constructor.
         @param n_actions: the number of allowable actions
@@ -20,8 +22,9 @@ class ContinuousTransitionNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the transition network.
-        self.__net = nn.Sequential(
+        ## @var net
+        # Transition network that predicts the next state distribution.
+        self.net = nn.Sequential(
             nn.Linear(n_continuous_vars + n_actions, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
@@ -31,10 +34,11 @@ class ContinuousTransitionNetwork(nn.Module):
             DiagonalGaussian(512, n_continuous_vars)
         )
 
-        # Remember the number of actions.
+        ## @var n_actions
+        # Number of allowable actions in the environment.
         self.n_actions = n_actions
 
-    def forward(self, states, actions):
+    def forward(self, states : Tensor, actions : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param states: the input states
@@ -51,7 +55,7 @@ class DiscreteTransitionNetwork(nn.Module):
     Class implementing a transition network with discrete latent variables.
     """
 
-    def __init__(self, n_actions=18, n_discrete_vars=20, n_discrete_vals=10):
+    def __init__(self, n_actions : int = 18, n_discrete_vars : int = 20, n_discrete_vals : int = 10) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -63,10 +67,10 @@ class DiscreteTransitionNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the transition network.
-        n_states = n_discrete_vars * n_discrete_vals
-        self.__net = nn.Sequential(
-            nn.Linear(n_states + n_actions, 512),
+        ## @var net
+        # Transition network that predicts the next state distribution.
+        self.net = nn.Sequential(
+            nn.Linear(n_discrete_vars * n_discrete_vals + n_actions, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
@@ -75,10 +79,11 @@ class DiscreteTransitionNetwork(nn.Module):
             Categorical(512, n_discrete_vars, n_discrete_vals)
         )
 
-        # Remember the number of actions.
+        ## @var n_actions
+        # Number of allowable actions in the environment.
         self.n_actions = n_actions
 
-    def forward(self, states, actions):
+    def forward(self, states : Tensor, actions : Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param states: the input states
@@ -95,7 +100,13 @@ class MixedTransitionNetwork(nn.Module):
     Class implementing a transition network with discrete and continuous latent variables.
     """
 
-    def __init__(self, n_actions=18, n_continuous_vars=10, n_discrete_vars=20, n_discrete_vals=10):
+    def __init__(
+        self,
+        n_actions : int = 18,
+        n_continuous_vars : int = 10,
+        n_discrete_vars : int = 20,
+        n_discrete_vals : int = 10
+    ) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -108,23 +119,30 @@ class MixedTransitionNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Create the transition network.
-        n_states = n_continuous_vars + n_discrete_vars * n_discrete_vals
+        ## @var net
+        # Transition network that predicts the next state distribution.
         self.net = nn.Sequential(
-            nn.Linear(n_states + n_actions, 512),
+            nn.Linear(n_continuous_vars + n_discrete_vars * n_discrete_vals + n_actions, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU()
         )
+
+        ## @var gaussian_head
+        # Network head that outputs the mean and log variance of the continuous latent variables.
         self.gaussian_head = DiagonalGaussian(512, n_continuous_vars)
+
+        ## @var categorical_head
+        # Network head that outputs the log-probabilities of the discrete latent variables.
         self.categorical_head = Categorical(512, n_discrete_vars, n_discrete_vals)
 
-        # Remember the number of actions.
+        ## @var n_actions
+        # Number of allowable actions in the environment.
         self.n_actions = n_actions
 
-    def forward(self, states, actions):
+    def forward(self, states : Tensor, actions : Tensor) -> Tuple[Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param states: the input states

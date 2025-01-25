@@ -1,7 +1,7 @@
-from torch import nn
+from typing import Tuple, Optional
+
+from torch import nn, Tensor
 import torch
-import torch.nn.functional as F
-from torchrl.modules import NoisyLinear
 
 import relab
 
@@ -13,7 +13,14 @@ class CategoricalDeepQNetwork(nn.Module):
     In International conference on machine learning. PMLR, 2017.
     """
 
-    def __init__(self, n_atoms=21, n_actions=18, v_min=-10, v_max=10, stack_size=None):
+    def __init__(
+        self,
+        n_atoms : int = 21,
+        n_actions : int = 18,
+        v_min : float = -10,
+        v_max : float = 10,
+        stack_size : Optional[int] = None
+    ) -> None:
         """!
         Constructor.
         @param n_atoms: the number of atoms used to approximate the distribution over returns
@@ -26,36 +33,57 @@ class CategoricalDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Store the number of atoms and actions.
+        ## @var n_atoms
+        # Number of atoms used to approximate the distribution over returns.
         self.n_atoms = n_atoms
+
+        ## @var n_actions
+        # Number of possible actions.
         self.n_actions = n_actions
 
-        # Store the minimum and maximum amount of returns.
+        ## @var v_min
+        # Minimum value of the support of the distribution over returns.
         self.v_min = v_min
+
+        ## @var v_max
+        # Maximum value of the support of the distribution over returns.
         self.v_max = v_max
 
-        # Compute the atoms (canonical returns).
+        ## @var delta_z
+        # Step size between atoms in the support.
         self.delta_z = (v_max - v_min) / (n_atoms - 1)
+
+        ## @var atoms
+        # Support of the returns distribution.
         self.atoms = torch.arange(v_min, v_max + 1, self.delta_z)
         self.atoms = self.atoms.unsqueeze(1).repeat(1, n_actions)
         self.atoms = self.atoms.to(relab.device())
 
-        # Create the layers.
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
-        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-        self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
-        self.fc1 = nn.Linear(3136, 1024)
-        self.fc2 = nn.Linear(1024, n_atoms * n_actions)
+
+        ## @var net
+        # Complete network that processes images and outputs atom logits.
+        self.net = nn.Sequential(
+            nn.Conv2d(self.stack_size, 32, 8, stride=4),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(64, 64, 3, stride=1),
+            nn.LeakyReLU(0.01),
+            nn.Flatten(start_dim=1),
+            nn.Linear(3136, 1024),
+            nn.LeakyReLU(0.01),
+            nn.Linear(1024, n_atoms * n_actions)
+        )
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
+        for name, param in self.named_parameters():
+            if "weight" in name:
+                torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -68,11 +96,7 @@ class CategoricalDeepQNetwork(nn.Module):
         batch_size = x.shape[0]
 
         # Compute forward pass.
-        x = F.leaky_relu(self.conv1(x), 0.01)
-        x = F.leaky_relu(self.conv2(x), 0.01)
-        x = F.leaky_relu(self.conv3(x), 0.01)
-        x = F.leaky_relu(self.fc1(x.view(batch_size, -1)), 0.01)
-        log_probs = self.fc2(x).view(batch_size, self.n_atoms, self.n_actions)
+        log_probs = self.net(x).view(batch_size, self.n_atoms, self.n_actions)
         probs = log_probs.softmax(dim=1)
 
         # Compute all atoms.
@@ -81,7 +105,7 @@ class CategoricalDeepQNetwork(nn.Module):
         # Return all atoms, their probabilities and log-probabilities.
         return atoms, probs, log_probs
 
-    def q_values(self, x):
+    def q_values(self, x : Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation
@@ -102,7 +126,14 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         Noisy networks for exploration. CoRR, 2017. (http://arxiv.org/abs/1706.10295)
     """
 
-    def __init__(self, n_atoms=21, n_actions=18, v_min=-10, v_max=10, stack_size=None):
+    def __init__(
+        self,
+        n_atoms : int = 21,
+        n_actions : int = 18,
+        v_min : float = -10,
+        v_max : float = 10,
+        stack_size : Optional[int] = None
+    ) -> None:
         """!
         Constructor.
         @param n_atoms: the number of atoms used to approximate the distribution over returns
@@ -115,36 +146,57 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        # Store the number of atoms and actions.
+        ## @var n_atoms
+        # Number of atoms used to approximate the distribution over returns.
         self.n_atoms = n_atoms
+
+        ## @var n_actions
+        # Number of possible actions.
         self.n_actions = n_actions
 
-        # Store the minimum and maximum amount of returns.
+        ## @var v_min
+        # Minimum value of the support of the returns distribution.
         self.v_min = v_min
+
+        ## @var v_max
+        # Maximum value of the support of the returns distribution.
         self.v_max = v_max
 
-        # Compute the atoms (canonical returns).
+        ## @var delta_z
+        # Step size between atoms in the support.
         self.delta_z = (v_max - v_min) / (n_atoms - 1)
+
+        ## @var atoms
+        # Support of the returns distribution.
         self.atoms = torch.arange(v_min, v_max + 1, self.delta_z)
         self.atoms = self.atoms.unsqueeze(1).repeat(1, n_actions)
         self.atoms = self.atoms.to(relab.device())
 
-        # Create the layers.
+        ## @var stack_size
+        # Number of stacked frames in each observation.
         self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
-        self.conv1 = nn.Conv2d(self.stack_size, 32, 8, stride=4)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-        self.conv3 = nn.Conv2d(64, 64, 3, stride=1)
-        self.fc1 = NoisyLinear(3136, 1024)
-        self.fc2 = NoisyLinear(1024, n_atoms * n_actions)
+
+        ## @var net
+        # Complete network that processes images and outputs atom logits.
+        self.net = nn.Sequential(
+            nn.Conv2d(self.stack_size, 32, 8, stride=4),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(32, 64, 4, stride=2),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(64, 64, 3, stride=1),
+            nn.LeakyReLU(0.01),
+            nn.Flatten(start_dim=1),
+            nn.Linear(3136, 1024),
+            nn.LeakyReLU(0.01),
+            nn.Linear(1024, n_atoms * n_actions)
+        )
 
         # Initialize the weights.
-        torch.nn.init.kaiming_normal_(self.conv1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv2.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.conv3.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc1.weight, nonlinearity="leaky_relu")
-        torch.nn.init.kaiming_normal_(self.fc2.weight, nonlinearity="leaky_relu")
+        for name, param in self.named_parameters():
+            if "weight" in name:
+                torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x):
+    def forward(self, x : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -157,11 +209,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         batch_size = x.shape[0]
 
         # Compute forward pass.
-        x = F.leaky_relu(self.conv1(x), 0.01)
-        x = F.leaky_relu(self.conv2(x), 0.01)
-        x = F.leaky_relu(self.conv3(x), 0.01)
-        x = F.leaky_relu(self.fc1(x.view(batch_size, -1)), 0.01)
-        log_probs = self.fc2(x).view(batch_size, self.n_atoms, self.n_actions)
+        log_probs = self.net(x).view(batch_size, self.n_atoms, self.n_actions)
         probs = log_probs.softmax(dim=1)
 
         # Compute all atoms.
@@ -170,7 +218,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         # Return all atoms, their probabilities and log-probabilities.
         return atoms, probs, log_probs
 
-    def q_values(self, x):
+    def q_values(self, x : Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation

@@ -1,4 +1,7 @@
 from os.path import join
+from typing import Optional
+
+from pandas import DataFrame
 
 import pandas as pd
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
@@ -13,7 +16,7 @@ class TensorBoard:
     """
 
     @staticmethod
-    def load_log_file(file, metric_name):
+    def load_log_file(file : str, metric_name : str):  # TODO -> Tuple[]
         """!
         Load all the data present in the log file.
         @param file: path to tensorflow log file
@@ -42,7 +45,7 @@ class TensorBoard:
             return [], []
 
     @staticmethod
-    def load_log_directory(directory, metric):
+    def load_log_directory(directory : str, metric : str) -> Optional[DataFrame]:
         """!
         Load all the event files present in the directory.
         @param directory: the target directory

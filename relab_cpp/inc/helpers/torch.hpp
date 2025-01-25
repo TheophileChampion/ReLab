@@ -1,3 +1,8 @@
+/**
+ * @file torch.hpp
+ * @brief Helper functions for interacting with libtorch.
+ */
+
 #ifndef TORCH_HPP
 #define TORCH_HPP
 

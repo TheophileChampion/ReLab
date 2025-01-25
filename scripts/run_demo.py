@@ -5,7 +5,7 @@ import relab
 from relab import environments
 
 
-def run_demo(agent, env, seed, index):
+def run_demo(agent : str, env : str, seed : int, index : int):
     """
     Demonstrate the policy learned by a reinforcement learning agent on a gym environment.
     :param agent: the agent name
