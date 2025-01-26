@@ -15,7 +15,7 @@ jobs:
       - uses: Jimver/cuda-toolkit@v0.2.20
         id: cuda-toolkit
         with:
-          cuda: '12.5.0'
+          cuda: '12.6.0'
       - name: Check out the repository to the runner
         uses: actions/checkout@v4
       - name: Create ReLab virtual environment
