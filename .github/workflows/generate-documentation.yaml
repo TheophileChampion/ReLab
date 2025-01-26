@@ -8,16 +8,13 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
+      id-token: write
     steps:
       - name: Check out the repository to the runner
         uses: actions/checkout@v4
