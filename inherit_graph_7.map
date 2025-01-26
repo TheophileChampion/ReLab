@@ -1,3 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classC3.html" title="class C3 in group 2" alt="" coords="5,5,44,31"/>
+<area shape="rect" id="node1" href="$classrelab_1_1agents_1_1memory_1_1Compressor.html" title="A class that all compressors must implement." alt="" coords="5,37,168,77"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1memory_1_1NoCompression.html" title="A class that does not compress the tensors." alt="" coords="216,5,379,45"/>
+<area shape="rect" id="node3" href="$classrelab_1_1agents_1_1memory_1_1ZCompressor.html" title="A class using zlib to compress and decompress torch tensors of type float." alt="" coords="216,69,379,109"/>
 </map>
