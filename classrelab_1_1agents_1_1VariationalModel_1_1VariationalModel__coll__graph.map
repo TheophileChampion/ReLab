@@ -1,0 +1,5 @@
+<map id="relab.agents.VariationalModel.VariationalModel" name="relab.agents.VariationalModel.VariationalModel">
+<area shape="rect" id="node1" title="The interface that all agents behaving randomly to learn a world models must implement." alt="" coords="20,167,197,207"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1AgentInterface_1_1AgentInterface.html" title="The interface that all agents must implement." alt="" coords="5,79,212,119"/>
+<area shape="rect" id="node3" title=" " alt="" coords="84,5,133,31"/>
+</map>

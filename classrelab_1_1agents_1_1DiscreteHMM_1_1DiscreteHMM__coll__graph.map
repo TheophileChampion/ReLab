@@ -1,0 +1,7 @@
+<map id="relab.agents.DiscreteHMM.DiscreteHMM" name="relab.agents.DiscreteHMM.DiscreteHMM">
+<area shape="rect" id="node1" title="Implements a Discrete Hidden Markov Model." alt="" coords="9,328,208,368"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1HMM_1_1HMM.html" title="Implements a Hidden Markov Model." alt="" coords="19,255,198,280"/>
+<area shape="rect" id="node3" href="$classrelab_1_1agents_1_1VariationalModel_1_1VariationalModel.html" title="The interface that all agents behaving randomly to learn a world models must implement." alt="" coords="20,167,197,207"/>
+<area shape="rect" id="node4" href="$classrelab_1_1agents_1_1AgentInterface_1_1AgentInterface.html" title="The interface that all agents must implement." alt="" coords="5,79,212,119"/>
+<area shape="rect" id="node5" title=" " alt="" coords="84,5,133,31"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="relab.agents.DQN.LossType" name="relab.agents.DQN.LossType">
+<area shape="rect" id="node1" title="The type of loss functions supported by the DQN agents." alt="" coords="5,79,205,104"/>
+<area shape="rect" id="node2" title=" " alt="" coords="67,5,143,31"/>
+</map>

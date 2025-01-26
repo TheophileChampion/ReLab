@@ -1,0 +1,4 @@
+<map id="relab.agents.networks.DuelingDeepQNetworks.NoisyDuelingDeepQNetwork" name="relab.agents.networks.DuelingDeepQNetworks.NoisyDuelingDeepQNetwork">
+<area shape="rect" id="node1" title="Implement the value network of a dueling DQN with noisy linear layers." alt="" coords="5,79,324,119"/>
+<area shape="rect" id="node2" title=" " alt="" coords="119,5,210,31"/>
+</map>

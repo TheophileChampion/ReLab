@@ -1,0 +1,7 @@
+<map id="relab.agents.BetaHMM.BetaHMM" name="relab.agents.BetaHMM.BetaHMM">
+<area shape="rect" id="node1" title="Implements a Beta Hidden Markov Model." alt="" coords="5,328,244,353"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1HMM_1_1HMM.html" title="Implements a Hidden Markov Model." alt="" coords="35,255,214,280"/>
+<area shape="rect" id="node3" href="$classrelab_1_1agents_1_1VariationalModel_1_1VariationalModel.html" title="The interface that all agents behaving randomly to learn a world models must implement." alt="" coords="36,167,213,207"/>
+<area shape="rect" id="node4" href="$classrelab_1_1agents_1_1AgentInterface_1_1AgentInterface.html" title="The interface that all agents must implement." alt="" coords="21,79,228,119"/>
+<area shape="rect" id="node5" title=" " alt="" coords="100,5,149,31"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="relab.agents.networks.RainbowDeepQNetwork.RainbowDeepQNetwork" name="relab.agents.networks.RainbowDeepQNetwork.RainbowDeepQNetwork">
+<area shape="rect" id="node1" title="Implement the value network of rainbow DQN." alt="" coords="5,79,285,119"/>
+<area shape="rect" id="node2" title=" " alt="" coords="100,5,191,31"/>
+</map>

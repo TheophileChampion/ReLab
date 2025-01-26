@@ -1,0 +1,30 @@
+<map id="relab.agents.AgentInterface.AgentInterface" name="relab.agents.AgentInterface.AgentInterface">
+<area shape="rect" id="node1" title="The interface that all agents must implement." alt="" coords="103,630,309,670"/>
+<area shape="rect" id="node3" href="$classrelab_1_1agents_1_1DQN_1_1DQN.html" title="Implements a Deep Q&#45;Network." alt="" coords="381,407,552,432"/>
+<area shape="rect" id="node19" href="$classrelab_1_1agents_1_1Random_1_1Random.html" title="Implements an agent taking random actions." alt="" coords="357,637,576,663"/>
+<area shape="rect" id="node20" href="$classrelab_1_1agents_1_1VariationalModel_1_1VariationalModel.html" title="The interface that all agents behaving randomly to learn a world models must implement." alt="" coords="378,845,555,885"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,637,55,663"/>
+<area shape="rect" id="node4" href="$classrelab_1_1agents_1_1CDQN_1_1CDQN.html" title="Implements a Categorical Deep Q&#45;Network." alt="" coords="662,5,851,31"/>
+<area shape="rect" id="node5" href="$classrelab_1_1agents_1_1DDQN_1_1DDQN.html" title="Implements a Double Deep Q&#45;Network." alt="" coords="661,55,852,80"/>
+<area shape="rect" id="node6" href="$classrelab_1_1agents_1_1DuelingDDQN_1_1DuelingDDQN.html" title="Implements a Dueling Double Deep Q&#45;Network." alt="" coords="656,105,857,145"/>
+<area shape="rect" id="node7" href="$classrelab_1_1agents_1_1DuelingDQN_1_1DuelingDQN.html" title="Implements a Dueling Deep Q&#45;Network." alt="" coords="661,169,852,209"/>
+<area shape="rect" id="node8" href="$classrelab_1_1agents_1_1IQN_1_1IQN.html" title="Implement an Implicit Quantile Network." alt="" coords="677,233,836,259"/>
+<area shape="rect" id="node9" href="$classrelab_1_1agents_1_1MDQN_1_1MDQN.html" title="Implements a multistep Deep Q&#45;Network." alt="" coords="659,283,854,308"/>
+<area shape="rect" id="node10" href="$classrelab_1_1agents_1_1NoisyCDQN_1_1NoisyCDQN.html" title="Implement a Categorical Deep Q&#45;Network with noisy linear layers (NoisyCDQN)." alt="" coords="625,332,888,357"/>
+<area shape="rect" id="node11" href="$classrelab_1_1agents_1_1NoisyDDQN_1_1NoisyDDQN.html" title="Implement a Double DQN with noisy linear layers." alt="" coords="624,381,889,407"/>
+<area shape="rect" id="node12" href="$classrelab_1_1agents_1_1NoisyDQN_1_1NoisyDQN.html" title="Implement a DQN with noisy linear layers." alt="" coords="634,431,879,456"/>
+<area shape="rect" id="node13" href="$classrelab_1_1agents_1_1PrioritizedDDQN_1_1PrioritizedDDQN.html" title="Implement a Double DQN with prioritized replay buffer." alt="" coords="670,481,843,521"/>
+<area shape="rect" id="node14" href="$classrelab_1_1agents_1_1PrioritizedDQN_1_1PrioritizedDQN.html" title="Implement a DQN with prioritized replay buffer." alt="" coords="670,545,843,585"/>
+<area shape="rect" id="node15" href="$classrelab_1_1agents_1_1PrioritizedMDQN_1_1PrioritizedMDQN.html" title="Implement a multistep DQN with prioritized replay buffer." alt="" coords="669,609,845,649"/>
+<area shape="rect" id="node16" href="$classrelab_1_1agents_1_1QRDQN_1_1QRDQN.html" title="Implement a quantile regression Deep Q&#45;Network." alt="" coords="652,673,861,699"/>
+<area shape="rect" id="node17" href="$classrelab_1_1agents_1_1RainbowDQN_1_1RainbowDQN.html" title="Implement a rainbow Deep Q&#45;Network." alt="" coords="658,723,855,763"/>
+<area shape="rect" id="node18" href="$classrelab_1_1agents_1_1RainbowIQN_1_1RainbowIQN.html" title="Implement a rainbow implicit quantile network." alt="" coords="661,787,852,827"/>
+<area shape="rect" id="node21" href="$classrelab_1_1agents_1_1HMM_1_1HMM.html" title="Implements a Hidden Markov Model." alt="" coords="667,852,846,877"/>
+<area shape="rect" id="node25" href="$classrelab_1_1agents_1_1VAE_1_1VAE.html" title="Implements a Variational Auto&#45;Encoder (VAE) agent." alt="" coords="676,957,837,983"/>
+<area shape="rect" id="node22" href="$classrelab_1_1agents_1_1BetaHMM_1_1BetaHMM.html" title="Implements a Beta Hidden Markov Model." alt="" coords="937,765,1176,791"/>
+<area shape="rect" id="node23" href="$classrelab_1_1agents_1_1DiscreteHMM_1_1DiscreteHMM.html" title="Implements a Discrete Hidden Markov Model." alt="" coords="957,815,1156,855"/>
+<area shape="rect" id="node24" href="$classrelab_1_1agents_1_1JointHMM_1_1JointHMM.html" title="Implements a Joint Hidden Markov Model." alt="" coords="938,880,1175,905"/>
+<area shape="rect" id="node26" href="$classrelab_1_1agents_1_1BetaVAE_1_1BetaVAE.html" title="Implements a Beta Variational Auto&#45;Encoder." alt="" coords="946,929,1167,955"/>
+<area shape="rect" id="node27" href="$classrelab_1_1agents_1_1DiscreteVAE_1_1DiscreteVAE.html" title="Implements a Discrete Variational Auto&#45;Encoder." alt="" coords="961,979,1152,1019"/>
+<area shape="rect" id="node28" href="$classrelab_1_1agents_1_1JointVAE_1_1JointVAE.html" title="Implements a Joint Variational Auto&#45;Encoder." alt="" coords="947,1044,1166,1069"/>
+</map>

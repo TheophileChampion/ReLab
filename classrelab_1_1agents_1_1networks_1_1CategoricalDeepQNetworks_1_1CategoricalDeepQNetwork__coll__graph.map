@@ -1,0 +1,4 @@
+<map id="relab.agents.networks.CategoricalDeepQNetworks.CategoricalDeepQNetwork" name="relab.agents.networks.CategoricalDeepQNetworks.CategoricalDeepQNetwork">
+<area shape="rect" id="node1" title="Implements a value network for the categorical DQN." alt="" coords="5,79,311,119"/>
+<area shape="rect" id="node2" title=" " alt="" coords="111,5,205,31"/>
+</map>

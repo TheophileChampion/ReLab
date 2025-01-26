@@ -1,0 +1,4 @@
+<map id="relab.agents.networks.DecoderNetworks.ContinuousDecoderNetwork" name="relab.agents.networks.DecoderNetworks.ContinuousDecoderNetwork">
+<area shape="rect" id="node1" title="A convolutional decoder for 84x84 images with continuous latent variables." alt="" coords="5,79,276,119"/>
+<area shape="rect" id="node2" title=" " alt="" coords="95,5,186,31"/>
+</map>

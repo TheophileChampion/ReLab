@@ -1,0 +1,4 @@
+<map id="relab.agents.AgentInterface.ReplayType" name="relab.agents.AgentInterface.ReplayType">
+<area shape="rect" id="node1" title="The type of replay buffer supported by the agents." alt="" coords="5,79,212,119"/>
+<area shape="rect" id="node2" title=" " alt="" coords="71,5,147,31"/>
+</map>

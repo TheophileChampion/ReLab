@@ -1,0 +1,4 @@
+<map id="relab.agents.networks.EncoderNetworks.DiscreteEncoderNetwork" name="relab.agents.networks.EncoderNetworks.DiscreteEncoderNetwork">
+<area shape="rect" id="node1" title="A convolutional encoder for 84x84 images with discrete latent variables." alt="" coords="5,79,255,119"/>
+<area shape="rect" id="node2" title=" " alt="" coords="85,5,175,31"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="relab.agents.memory::Compressor" name="relab.agents.memory::Compressor">
+<area shape="rect" id="node1" title="A class that all compressors must implement." alt="" coords="99,5,261,45"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1memory_1_1NoCompression.html" title="A class that does not compress the tensors." alt="" coords="5,93,168,133"/>
+<area shape="rect" id="node3" href="$classrelab_1_1agents_1_1memory_1_1ZCompressor.html" title="A class using zlib to compress and decompress torch tensors of type float." alt="" coords="192,93,355,133"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="relab.agents.memory::NoCompression" name="relab.agents.memory::NoCompression">
+<area shape="rect" id="node1" title="A class that does not compress the tensors." alt="" coords="5,93,168,133"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1memory_1_1Compressor.html" title="A class that all compressors must implement." alt="" coords="5,5,168,45"/>
+</map>

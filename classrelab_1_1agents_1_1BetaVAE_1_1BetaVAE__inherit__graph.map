@@ -1,0 +1,7 @@
+<map id="relab.agents.BetaVAE.BetaVAE" name="relab.agents.BetaVAE.BetaVAE">
+<area shape="rect" id="node1" title="Implements a Beta Variational Auto&#45;Encoder." alt="" coords="5,328,227,353"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1VAE_1_1VAE.html" title="Implements a Variational Auto&#45;Encoder (VAE) agent." alt="" coords="35,255,197,280"/>
+<area shape="rect" id="node3" href="$classrelab_1_1agents_1_1VariationalModel_1_1VariationalModel.html" title="The interface that all agents behaving randomly to learn a world models must implement." alt="" coords="27,167,205,207"/>
+<area shape="rect" id="node4" href="$classrelab_1_1agents_1_1AgentInterface_1_1AgentInterface.html" title="The interface that all agents must implement." alt="" coords="13,79,219,119"/>
+<area shape="rect" id="node5" title=" " alt="" coords="91,5,141,31"/>
+</map>

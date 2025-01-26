@@ -1,0 +1,13 @@
+<map id="relab.agents.VariationalModel.VariationalModel" name="relab.agents.VariationalModel.VariationalModel">
+<area shape="rect" id="node1" title="The interface that all agents behaving randomly to learn a world models must implement." alt="" coords="357,166,535,206"/>
+<area shape="rect" id="node4" href="$classrelab_1_1agents_1_1HMM_1_1HMM.html" title="Implements a Hidden Markov Model." alt="" coords="583,92,761,117"/>
+<area shape="rect" id="node8" href="$classrelab_1_1agents_1_1VAE_1_1VAE.html" title="Implements a Variational Auto&#45;Encoder (VAE) agent." alt="" coords="591,197,753,223"/>
+<area shape="rect" id="node2" href="$classrelab_1_1agents_1_1AgentInterface_1_1AgentInterface.html" title="The interface that all agents must implement." alt="" coords="103,166,309,206"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,173,55,199"/>
+<area shape="rect" id="node5" href="$classrelab_1_1agents_1_1BetaHMM_1_1BetaHMM.html" title="Implements a Beta Hidden Markov Model." alt="" coords="809,5,1048,31"/>
+<area shape="rect" id="node6" href="$classrelab_1_1agents_1_1DiscreteHMM_1_1DiscreteHMM.html" title="Implements a Discrete Hidden Markov Model." alt="" coords="829,55,1028,95"/>
+<area shape="rect" id="node7" href="$classrelab_1_1agents_1_1JointHMM_1_1JointHMM.html" title="Implements a Joint Hidden Markov Model." alt="" coords="810,120,1047,145"/>
+<area shape="rect" id="node9" href="$classrelab_1_1agents_1_1BetaVAE_1_1BetaVAE.html" title="Implements a Beta Variational Auto&#45;Encoder." alt="" coords="818,169,1039,195"/>
+<area shape="rect" id="node10" href="$classrelab_1_1agents_1_1DiscreteVAE_1_1DiscreteVAE.html" title="Implements a Discrete Variational Auto&#45;Encoder." alt="" coords="833,219,1024,259"/>
+<area shape="rect" id="node11" href="$classrelab_1_1agents_1_1JointVAE_1_1JointVAE.html" title="Implements a Joint Variational Auto&#45;Encoder." alt="" coords="819,284,1038,309"/>
+</map>

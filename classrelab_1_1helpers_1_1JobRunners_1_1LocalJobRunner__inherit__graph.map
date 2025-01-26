@@ -1,0 +1,5 @@
+<map id="relab.helpers.JobRunners.LocalJobRunner" name="relab.helpers.JobRunners.LocalJobRunner">
+<area shape="rect" id="node1" title="Class launching local jobs." alt="" coords="5,167,193,207"/>
+<area shape="rect" id="node2" href="$classrelab_1_1helpers_1_1JobRunners_1_1JobRunnerInterface.html" title="Class that all job runners must implement." alt="" coords="5,79,193,119"/>
+<area shape="rect" id="node3" title=" " alt="" coords="59,5,139,31"/>
+</map>
