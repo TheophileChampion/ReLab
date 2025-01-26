@@ -18,10 +18,7 @@ namespace relab::agents::memory {
      * @brief Class implementing a replay buffer.
      *
      * @details
-     * TODO normal format for papers
-     * It supports prioritization [1] and multistep Q-learning [2] from:
-     * [1] Tom Schaul. Prioritized experience replay. arXiv preprint arXiv:1511.05952, 2015.
-     * [2] Richard S Sutton. Learning to predict by the methods of temporal differences. Machine learning, 3:9–44, 1988.
+     * For more information about the original papers, please refer to the documentation of MDQN and PrioritizedDQN.
      */
     class ReplayBuffer {
 
@@ -64,19 +61,18 @@ namespace relab::agents::memory {
          * @param stack_size the number of stacked frame in each observation, if None use the configuration
          * @param screen_size: the size of the images used by the agent to learn
          * @param type the type of compression to use
-         * @param p_args the prioritization arguments (None for no prioritization) composed of:
+         * @param args the prioritization and multistep arguments composed of:
          *     - initial_priority: the maximum experience priority given to new transitions
          *     - omega: the prioritization exponent
          *     - omega_is: the important sampling exponent
          *     - n_children: the maximum number of children each node of the priority-tree can have
-         * @param m_args the multistep arguments (None for no multistep) composed of:
          *     - n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
          *     - gamma: the discount factor
          */
         ReplayBuffer(
             int capacity=10000, int batch_size=32, int frame_skip=1, int stack_size=4,
             int screen_size=84, CompressorType type=CompressorType::ZLIB,
-            std::map<std::string, float> p_args={}, std::map<std::string, float> m_args={}  // TODO join p_args and m_args?
+            std::map<std::string, float> args={}
         );
 
         /**

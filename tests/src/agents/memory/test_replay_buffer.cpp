@@ -18,16 +18,16 @@ namespace relab::test::agents::memory {
         : prioritized(false), capacity(capacity), batch_size(32), frame_skip(1), stack_size(4), screen_size(84),
           n_steps(n_steps), gamma(gamma), comp_type(CompressorType::ZLIB)
     {
-        this->m_args["n_steps"] = n_steps;
-        this->m_args["gamma"] = gamma;
+        this->args["n_steps"] = n_steps;
+        this->args["gamma"] = gamma;
     }
 
     ReplayBufferParameters::ReplayBufferParameters(bool prioritized, int batch_size) : ReplayBufferParameters(4, 1, 1) {
         this->batch_size = batch_size;
         this->prioritized = prioritized;
         if (prioritized == true) {
-            this->p_args["initial_priority"] = 1;
-            this->p_args["omega_is"] = 0.5;
+            this->args["initial_priority"] = 1;
+            this->args["omega_is"] = 0.5;
         }
     }
 
@@ -39,7 +39,7 @@ namespace relab::test::agents::memory {
         this->params = GetParam();
         this->buffer = std::make_unique<ReplayBuffer>(
             this->params.capacity, this->params.batch_size, this->params.frame_skip, this->params.stack_size,
-            this->params.screen_size, this->params.comp_type, this->params.p_args, this->params.m_args
+            this->params.screen_size, this->params.comp_type, this->params.args
         );
 
         // Create the observations at time t.
@@ -85,7 +85,7 @@ namespace relab::test::agents::memory {
         auto results = getResultExperiences(observations, params.gamma, params.n_steps, 2 * params.capacity);
 
         // Fill the buffer with experiences.
-        int n_experiences = params.capacity + params.m_args["n_steps"] - 1;
+        int n_experiences = params.capacity + params.args["n_steps"] - 1;
         for (int t = 0; t < n_experiences; t++) {
             buffer->append(experiences[t]);
         }
@@ -148,7 +148,7 @@ namespace relab::test::agents::memory {
         auto params = ReplayBufferParameters(true, 2);
         auto buffer = ReplayBuffer(
             params.capacity, params.batch_size, params.frame_skip, params.stack_size,
-            params.screen_size, params.comp_type, params.p_args
+            params.screen_size, params.comp_type, params.args
         );
         auto observations = getObservations(11, params.frame_skip, params.stack_size);
         auto experiences = getExperiences(observations, 10);
@@ -184,7 +184,7 @@ namespace relab::test::agents::memory {
         auto params = GetParam();
         auto buffer = ReplayBuffer(
             params.capacity, params.batch_size, params.frame_skip, params.stack_size, params.screen_size,
-            params.comp_type, params.p_args
+            params.comp_type, params.args
         );
 
         // Assert.

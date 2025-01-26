@@ -13,13 +13,8 @@ namespace relab::agents::memory {
 
     ReplayBuffer::ReplayBuffer(
         int capacity, int batch_size, int frame_skip, int stack_size, int screen_size, CompressorType type,
-        std::map<std::string, float> p_args, std::map<std::string, float> m_args
+        std::map<std::string, float> args
     ): device(getDevice()) {
-
-        // A map storing all the prioritization and multistep arguments.
-        std::map<std::string, float> args;
-        args.insert(p_args.begin(), p_args.end());
-        args.insert(m_args.begin(), m_args.end());
 
         // Keep in mind whether the replay buffer is prioritized.
         this->prioritized = false;
@@ -31,20 +26,17 @@ namespace relab::agents::memory {
         }
 
         // Default values of the prioritization and multistep arguments.
-        std::map<std::string, float> default_p_args = {
+        std::map<std::string, float> default_args = {
             {"initial_priority", 1.0},
             {"omega", 1.0},
             {"omega_is", 1.0},
-            {"n_children", 10}
-        };
-        std::map<std::string, float> default_m_args = {
+            {"n_children", 10},
             {"n_steps", 1.0},
             {"gamma", 0.99}
         };
 
         // Complete arguments with default values.
-        args.insert(default_p_args.begin(), default_p_args.end());
-        args.insert(default_m_args.begin(), default_m_args.end());
+        args.insert(default_args.begin(), default_args.end());
 
         // Store the buffer parameters.
         this->capacity = capacity;

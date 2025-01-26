@@ -1,5 +1,5 @@
 from os.path import join
-from typing import Optional
+from typing import Optional, List, Tuple
 
 from pandas import DataFrame
 
@@ -16,7 +16,7 @@ class TensorBoard:
     """
 
     @staticmethod
-    def load_log_file(file : str, metric_name : str):  # TODO -> Tuple[]
+    def load_log_file(file : str, metric_name : str) -> Tuple[List[int], List[float]]:
         """!
         Load all the data present in the log file.
         @param file: path to tensorflow log file

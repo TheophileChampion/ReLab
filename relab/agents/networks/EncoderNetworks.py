@@ -74,7 +74,6 @@ class ContinuousEncoderNetwork(nn.Module):
         @param image_shape: the shape of the input image
         @return the shape of the features output by the convolutional encoder
         """
-        # TODO test and remove? image_shape = list(image_shape)
         image_shape.insert(0, 1)
         input_image = torch.zeros(image_shape)
         return self.conv_net(input_image).shape
@@ -161,7 +160,6 @@ class DiscreteEncoderNetwork(nn.Module):
         @param image_shape: the shape of the input image
         @return the shape of the features output by the convolutional encoder
         """
-        # TODO test and remove? image_shape = list(image_shape)
         image_shape.insert(0, 1)
         input_image = torch.zeros(image_shape)
         return self.conv_net(input_image).shape
@@ -257,7 +255,6 @@ class MixedEncoderNetwork(nn.Module):
         @param image_shape: the shape of the input image
         @return the shape of the features output by the convolutional encoder
         """
-        # TODO test and remove? image_shape = list(image_shape)
         image_shape.insert(0, 1)
         input_image = torch.zeros(image_shape)
         return self.conv_net(input_image).shape

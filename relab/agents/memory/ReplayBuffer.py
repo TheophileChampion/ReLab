@@ -41,7 +41,7 @@ class ReplayBuffer:
         frame_skip : Optional[int] = None,
         stack_size : Optional[int] = None,
         screen_size : Optional[int] = None,
-        p_args : Config = None, m_args : Config = None
+        args : Config = None
     ) -> None:
         """!
         Create a replay buffer.
@@ -50,12 +50,11 @@ class ReplayBuffer:
         @param frame_skip: the number of times each action is repeated in the environment, if None use the configuration
         @param stack_size: the number of stacked frame in each observation, if None use the configuration
         @param screen_size: the size of the images used by the agent to learn
-        @param p_args: the prioritization arguments (None for no prioritization) composed of:
+        @param args: the prioritization and multistep arguments composed of:
             - initial_priority: the maximum experience priority given to new transitions
             - omega: the prioritization exponent
             - omega_is: the important sampling exponent
             - n_children: the maximum number of children each node of the priority-tree can have
-        @param m_args: the multistep arguments (None for no multistep) composed of:
             - n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
             - gamma: the discount factor
         """
@@ -64,14 +63,13 @@ class ReplayBuffer:
         frame_skip = relab.config("frame_skip") if frame_skip is None else frame_skip
         screen_size = relab.config("screen_size") if screen_size is None else screen_size
         compressor_type = CompressorType.ZLIB if relab.config("compress_images") is True else CompressorType.RAW
-        p_args = {} if p_args is None else p_args
-        m_args = {} if m_args is None else m_args
+        args = {} if args is None else args
 
         ## @var buffer
         # The C++ implementation of the replay buffer.
         self.buffer = FastReplayBuffer(
             capacity=capacity, batch_size=batch_size, frame_skip=frame_skip, stack_size=stack_size,
-            screen_size=screen_size, type=compressor_type, p_args=p_args, m_args=m_args
+            screen_size=screen_size, type=compressor_type, args=args
         )
 
     def append(self, experience : Experience) -> None:

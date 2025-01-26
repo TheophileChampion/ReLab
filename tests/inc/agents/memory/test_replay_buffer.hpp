@@ -26,8 +26,7 @@ namespace relab::test::agents::memory::impl {
         int n_steps;
         float gamma;
         CompressorType comp_type;
-        std::map<std::string, float> p_args;
-        std::map<std::string, float> m_args;
+        std::map<std::string, float> args;
 
     public:
 

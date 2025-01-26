@@ -768,9 +768,8 @@ class DQN(AgentInterface):
                 param.requires_grad = False
 
             # Update the optimizer and replay buffer.
-            replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps,
-                                                   self.gamma)
-            self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
+            buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma)
+            self.buffer = buffer(capacity=self.buffer_size, batch_size=self.batch_size)
             self.buffer.load(checkpoint_path, buffer_checkpoint_name)
             params = self.value_net.parameters()
             self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)

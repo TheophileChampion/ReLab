@@ -379,11 +379,12 @@ class AgentInterface(ABC):
         """
         m_args = {"n_steps": n_steps, "gamma": gamma}
         p_args = {"initial_priority": 1e9, "omega": omega, "omega_is": omega_is}
+        args = m_args | p_args
         return {
             ReplayType.DEFAULT: ReplayBuffer,
-            ReplayType.PRIORITIZED: partial(ReplayBuffer, p_args=p_args),
-            ReplayType.MULTISTEP: partial(ReplayBuffer, m_args=m_args),
-            ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, m_args=m_args, p_args=p_args),
+            ReplayType.PRIORITIZED: partial(ReplayBuffer, args=p_args),
+            ReplayType.MULTISTEP: partial(ReplayBuffer, args=m_args),
+            ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, args=args),
         }[replay_type]
 
     @staticmethod

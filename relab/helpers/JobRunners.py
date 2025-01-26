@@ -7,7 +7,7 @@ from concurrent.futures import ProcessPoolExecutor, Future
 from concurrent.futures import wait
 from functools import partial
 import logging
-from typing import List
+from typing import List, Callable
 
 from relab.helpers.Typing import Config
 from scripts.draw_graph import draw_graph
@@ -153,7 +153,7 @@ class LocalJobRunner(JobRunnerInterface):
                 return False
         return True
 
-    def submit(self, task : str, kwargs : Config, job_index : int) -> None:
+    def submit(self, task : Callable, kwargs : Config, job_index : int) -> None:
         """!
         Submit a job to the pool (for internal use only).
         @param task: the task to run
@@ -162,7 +162,7 @@ class LocalJobRunner(JobRunnerInterface):
         """
         # @cond IGNORED_BY_DOXYGEN
         logging.info(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
-        future = self.pool.submit(task, **kwargs)  # TODO type error?
+        future = self.pool.submit(task, **kwargs)
         future.add_done_callback(partial(self.check_jobs_to_submit, job_index=job_index))
         self.futures.append(future)
         # @endcond
