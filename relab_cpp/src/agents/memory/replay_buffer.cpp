@@ -59,7 +59,7 @@ namespace relab::agents::memory {
         this->omega_is = args["omega_is"];
 
         // The buffer storing the frames of all experiences.
-        int n_threads = std::min(static_cast<int>(thread::hardware_concurrency()), batch_size);
+        int n_threads = std::min(static_cast<int>(std::thread::hardware_concurrency()), batch_size);
         this->observations = std::make_unique<FrameBuffer>(
             this->capacity, this->frame_skip, this->n_steps, this->stack_size, screen_size, type, n_threads
         );
