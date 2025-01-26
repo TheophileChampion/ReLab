@@ -66,7 +66,7 @@ def initialize(
     torch.manual_seed(seed)
 
 
-def build_cpp_library_and_wrapper(cpp_library_name : str = "relab", python_module_name : str = "cpp") -> None:
+def build_cpp_library_and_wrapper(cpp_library_name : str = "relab", python_module_name : str = "librelab") -> None:
     """!
     Build the C++ shared library and the python module wrapping the library.
     @param cpp_library_name: the name of the shared library to create

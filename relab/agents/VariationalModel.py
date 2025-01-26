@@ -15,7 +15,7 @@ from torch import Tensor, nn
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.agents.memory.cpp import Experience  # TODO change package path "relab_cpp.Experience" (same for all other classes from this package)
+from librelab.agents.memory import Experience
 import numpy as np
 from relab.agents.networks.DecoderNetworks import ContinuousDecoderNetwork, DiscreteDecoderNetwork, MixedDecoderNetwork
 from relab.agents.networks.EncoderNetworks import ContinuousEncoderNetwork, DiscreteEncoderNetwork, MixedEncoderNetwork

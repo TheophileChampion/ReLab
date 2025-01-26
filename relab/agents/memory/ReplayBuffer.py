@@ -2,7 +2,7 @@ import logging
 from typing import Optional
 
 from relab import relab
-from relab.agents.memory.cpp import FastReplayBuffer, CompressorType, Experience
+from librelab.agents.memory import FastReplayBuffer, CompressorType, Experience
 from relab.helpers.FileSystem import FileSystem
 import os
 from os.path import join, isfile
