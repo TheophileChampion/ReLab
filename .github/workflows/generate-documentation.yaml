@@ -17,4 +17,4 @@ jobs:
       - name: Check out the repository to the runner
         uses: actions/checkout@v4
       - name: Generate README.md
-        run: bash ./docs/generate_doc.sh
+        run: apt-get install doxygen && bash ./docs/generate_doc.sh
