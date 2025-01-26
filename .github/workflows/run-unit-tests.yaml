@@ -17,7 +17,7 @@ jobs:
       - name: Create ReLab virtual environment
         run: python3.12 -m venv venv-relab && source ./venv-relab/bin/activate
       - name: Install ReLab dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt && echo $(pwd)
       - name: Ensure the ReLab package is found by python scripts 
         run: pwd > ./venv-relab/lib/python3.12/site-packages/relab.pth
       - name: Build the C++ library and check that installation succeed 
