@@ -101,7 +101,7 @@ After running the above command, ReLab will generate a GIF of the agent's behavi
 ./data/demos/Pong-v5/DQN/0/demo_1000000.gif
 ```
 
-// TODO add GIF demonstrating the learned policy on various games
+// TODO Coming soon: GIF demonstrating the learned policy on various games
 
 ### Comparing the Performance of Various Agents
 
@@ -117,7 +117,7 @@ python ./scripts/draw_graph --agents DQN RainbowDQN --env ALE/Pong-v5 --seeds 0 
 ```
 When multiple seeds are provided, the graph will display a solid line representing the average metric, along with a shaded area indicating the metric's standard deviation.
 
-// TODO add figures comparing the agents performances
+// TODO Coming soon: figures comparing the agents performances
 
 For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](https://theophilechampion.github.io/ReLab/md_Tutorial.html).
 
