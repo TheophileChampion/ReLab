@@ -144,6 +144,8 @@ namespace relab::test::agents::memory {
 
     TEST(TestReplayBuffer, TestReport) {
 
+        EXPECT_EQ(0, 1);  // TODO this test will fail
+
         // Arrange.
         auto params = ReplayBufferParameters(true, 2);
         auto buffer = ReplayBuffer(
