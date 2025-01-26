@@ -141,4 +141,4 @@ ReLab is still in beta. The latest version of ReLab is version 1.0.0-b.
 
 ## License
 
-ReLab has a MIT license, as found in the [LICENSE](LICENSE) file.
+ReLab has a MIT license, as found in the [LICENSE](https://github.com/TheophileChampion/ReLab/blob/main/LICENSE) file.
