@@ -1,15 +1,12 @@
 name: Doxygen GitHub Pages Deploy Action
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
 
 jobs:
-  deploy:
+  deploy_documentation:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
