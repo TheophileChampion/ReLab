@@ -1,3 +1,4 @@
+import argparse
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from functools import partial
@@ -73,7 +74,8 @@ if __name__ == "__main__":
     parser.add_argument("--agents", nargs="+", default=["DQN", "RainbowDQN", "RainbowIQN"], help="name of the agents to train")
     parser.add_argument("--envs", nargs="+", default=atari_games(), help="name of the environments on which to train the agents")
     parser.add_argument("--seeds", nargs="+", default=[str(i) for i in range(5)], help="random seeds to use")
+    parser.add_argument("--local", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
 
     # Train a reinforcement learning agent on a gym environment.
-    run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=True)
+    run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=args.local)
