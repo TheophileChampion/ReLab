@@ -1,5 +1,5 @@
 #!/bin/bash
+# This script must be run from the project root.
 
-./generate_readme.sh
-doxygen
-
+./docs/generate_readme.sh
+doxygen ./docs/Doxyfile
