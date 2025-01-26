@@ -6,7 +6,7 @@ var searchData=
   ['gaussian_5fkl_5fdivergence_3',['gaussian_kl_divergence',['../classrelab_1_1helpers_1_1VariationalInference_1_1VariationalInference.html#afe4c87edce281b1b7fc40fed0373a01a',1,'relab::helpers::VariationalInference::VariationalInference']]],
   ['gaussian_5flog_5flikelihood_4',['gaussian_log_likelihood',['../classrelab_1_1helpers_1_1VariationalInference_1_1VariationalInference.html#abcf01c5778653bff0bb5cf6fc9e61841',1,'relab::helpers::VariationalInference::VariationalInference']]],
   ['gaussian_5freparameterization_5',['gaussian_reparameterization',['../classrelab_1_1helpers_1_1VariationalInference_1_1VariationalInference.html#ac6dc0f7933f81ebf594f750a950e71d2',1,'relab::helpers::VariationalInference::VariationalInference']]],
-  ['get_6',['get',['../classrelab_1_1helpers_1_1SpritesDataset_1_1DataSet.html#a7ada5003f6c5f0a8064c7addfede7f5a',1,'relab.helpers.SpritesDataset.DataSet.get()'],['../classrelab_1_1agents_1_1memory_1_1impl_1_1PriorityTree.html#a3640084515b97d20e656e0c5c6a1c6ea',1,'relab.agents.memory::impl::PriorityTree::get()'],['../classrelab_1_1helpers_1_1Deque.html#a94fc6b125e42a0b6af0a43d83cd29bf1',1,'relab.helpers::Deque::get()']]],
+  ['get_6',['get',['../classrelab_1_1agents_1_1memory_1_1impl_1_1PriorityTree.html#a3640084515b97d20e656e0c5c6a1c6ea',1,'relab.agents.memory::impl::PriorityTree::get()'],['../classrelab_1_1helpers_1_1Deque.html#a94fc6b125e42a0b6af0a43d83cd29bf1',1,'relab.helpers::Deque::get()'],['../classrelab_1_1helpers_1_1SpritesDataset_1_1DataSet.html#a7ada5003f6c5f0a8064c7addfede7f5a',1,'relab.helpers.SpritesDataset.DataSet.get()']]],
   ['get_5faction_5fmeanings_7',['get_action_meanings',['../classrelab_1_1environments_1_1SpritesEnv_1_1SpritesEnv.html#a52f67997b9114acdf0e68cb00806e8df',1,'relab::environments::SpritesEnv::SpritesEnv']]],
   ['get_5fdecoder_5fnetwork_8',['get_decoder_network',['../classrelab_1_1agents_1_1VariationalModel_1_1VariationalModel.html#a38d3c472dfda92ea525c2e63bb4fe649',1,'relab::agents::VariationalModel::VariationalModel']]],
   ['get_5fencoder_5fnetwork_9',['get_encoder_network',['../classrelab_1_1agents_1_1VariationalModel_1_1VariationalModel.html#aa2f1edfa0ada3ceac1984a8fae79a3c5',1,'relab::agents::VariationalModel::VariationalModel']]],
@@ -26,5 +26,11 @@ var searchData=
   ['getprioritized_23',['getPrioritized',['../classrelab_1_1agents_1_1memory_1_1ReplayBuffer.html#a7c77e88105769215b44004b9e30a9454',1,'relab::agents::memory::ReplayBuffer']]],
   ['getpriority_24',['getPriority',['../classrelab_1_1agents_1_1memory_1_1ReplayBuffer.html#af0427e7a70f36ee078d0314f34d31e15',1,'relab::agents::memory::ReplayBuffer']]],
   ['getscreengrayscale_25',['getScreenGrayscale',['../classrelab_1_1environments_1_1SpritesEnv_1_1SpritesALE.html#accd237968a337757341c4aed88ac0de3',1,'relab::environments::SpritesEnv::SpritesALE']]],
-  ['getscreenrgb_26',['getScreenRGB',['../classrelab_1_1environments_1_1SpritesEnv_1_1SpritesALE.html#a920d66053dd67692a51cbd6851bbf665',1,'relab::environments::SpritesEnv::SpritesALE']]]
+  ['getscreenrgb_26',['getScreenRGB',['../classrelab_1_1environments_1_1SpritesEnv_1_1SpritesALE.html#a920d66053dd67692a51cbd6851bbf665',1,'relab::environments::SpritesEnv::SpritesALE']]],
+  ['globalvalue_27',['globalValue',['../file_8h.html#a4a86bef4b6181cb3f53bd0461a9a511b',1,'file.h']]],
+  ['globenum_28',['GlobEnum',['../autolink_8cpp.html#a656d63cf384d2a6f23c2c18523a7bc5e',1,'autolink.cpp']]],
+  ['globvar_29',['globVar',['../autolink_8cpp.html#a88d0bae800d600a11d7bd60f0bc4b858',1,'autolink.cpp']]],
+  ['group_2ecpp_30',['group.cpp',['../group_8cpp.html',1,'']]],
+  ['gval1_31',['GVal1',['../autolink_8cpp.html#a656d63cf384d2a6f23c2c18523a7bc5ea0f016f49e4f3bcd072319b9d68bc927d',1,'autolink.cpp']]],
+  ['gval2_32',['GVal2',['../autolink_8cpp.html#a656d63cf384d2a6f23c2c18523a7bc5ea811876e2eea5c16ae0594a95d98fbd55',1,'autolink.cpp']]]
 ];

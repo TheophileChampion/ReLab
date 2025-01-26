@@ -25,7 +25,17 @@
 var NAVTREE =
 [
   [ "ReLab", "index.html", [
+    [ "pag_example", "pag_example.html", null ],
     [ "📗 Tutorial", "md_Tutorial.html", null ],
+    [ "Bug List", "bug.html", null ],
+    [ "Modules", "modules.html", "modules" ],
+    [ "Namespaces", "namespaces.html", [
+      [ "Namespace List", "namespaces.html", "namespaces_dup" ],
+      [ "Namespace Members", "namespacemembers.html", [
+        [ "All", "namespacemembers.html", null ],
+        [ "Functions", "namespacemembers_func.html", null ]
+      ] ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -34,20 +44,33 @@ var NAVTREE =
         [ "All", "functions.html", "functions_dup" ],
         [ "Functions", "functions_func.html", "functions_func" ],
         [ "Variables", "functions_vars.html", "functions_vars" ],
+        [ "Enumerations", "functions_enum.html", null ],
+        [ "Enumerator", "functions_eval.html", null ],
         [ "Related Functions", "functions_rela.html", null ]
       ] ]
     ] ],
     [ "Files", "files.html", [
-      [ "File List", "files.html", "files_dup" ]
-    ] ]
+      [ "File List", "files.html", "files_dup" ],
+      [ "File Members", "globals.html", [
+        [ "All", "globals.html", null ],
+        [ "Functions", "globals_func.html", null ],
+        [ "Variables", "globals_vars.html", null ],
+        [ "Typedefs", "globals_type.html", null ],
+        [ "Enumerations", "globals_enum.html", null ],
+        [ "Enumerator", "globals_eval.html", null ],
+        [ "Macros", "globals_defs.html", null ]
+      ] ]
+    ] ],
+    [ "Examples", "examples.html", "examples" ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"annotated.html",
-"classrelab_1_1agents_1_1memory_1_1ReplayBuffer.html#af0427e7a70f36ee078d0314f34d31e15",
-"classrelab_1_1agents_1_1networks_1_1layers_1_1ConvTranspose2d_1_1ConvTranspose2d.html#a7d32c929be118758dbbc0d9c5cba1d2f"
+"afterdoc_8h_source.html",
+"classrelab_1_1agents_1_1Random_1_1Random.html#a4145c69de551eca4ec85043c42593034",
+"classrelab_1_1agents_1_1networks_1_1DuelingDeepQNetworks_1_1NoisyDuelingDeepQNetwork.html",
+"diagrams__d_8h_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

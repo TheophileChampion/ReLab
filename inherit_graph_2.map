@@ -1,4 +1,6 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" title=" " alt="" coords="5,13,52,38"/>
-<area shape="rect" id="node2" href="$classrelab_1_1environments_1_1SpritesEnv_1_1SpritesEnv.html" title="A class implementing the dSprites environment." alt="" coords="100,5,299,45"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,45,81,70"/>
+<area shape="rect" id="node2" href="$classrelab_1_1helpers_1_1JobRunners_1_1JobRunnerInterface.html" title="Class that all job runners must implement." alt="" coords="129,37,317,77"/>
+<area shape="rect" id="node3" href="$classrelab_1_1helpers_1_1JobRunners_1_1LocalJobRunner.html" title="Class launching local jobs." alt="" coords="365,5,553,45"/>
+<area shape="rect" id="node4" href="$classrelab_1_1helpers_1_1JobRunners_1_1SlurmJobRunner.html" title="Class launching slurm jobs." alt="" coords="365,69,553,109"/>
 </map>

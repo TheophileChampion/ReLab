@@ -1,5 +1,6 @@
 var searchData=
 [
   ['wait_0',['wait',['../classrelab_1_1helpers_1_1JobRunners_1_1JobRunnerInterface.html#a8b3f231bb77cadba17da9df3cc0f11ac',1,'relab.helpers.JobRunners.JobRunnerInterface.wait()'],['../classrelab_1_1helpers_1_1JobRunners_1_1LocalJobRunner.html#a707f8f78e36817d07cb5cdb5c8d7d104',1,'relab.helpers.JobRunners.LocalJobRunner.wait()']]],
-  ['writer_1',['writer',['../classrelab_1_1agents_1_1AgentInterface_1_1AgentInterface.html#a7ee2c0fa4c30526206bd7d02cfe321ce',1,'relab::agents::AgentInterface::AgentInterface']]]
+  ['write_1',['write',['../structcmd_8h.html#af2a3ea719b83f672637febdd87c36c36',1,'structcmd.h']]],
+  ['writer_2',['writer',['../classrelab_1_1agents_1_1AgentInterface_1_1AgentInterface.html#a7ee2c0fa4c30526206bd7d02cfe321ce',1,'relab::agents::AgentInterface::AgentInterface']]]
 ];
