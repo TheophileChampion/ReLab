@@ -1,6 +1,5 @@
 name: Doxygen GitHub Pages Deploy Action
 
-
 on:
   pull_request:
     branches:
@@ -21,8 +20,6 @@ jobs:
     steps:
       - name: Check out the repository to the runner
         uses: actions/checkout@v4
-        with:
-          ref: 'gh-pages'
       - name: Install Doxygen
         run: sudo apt-get update && sudo apt-get install -y doxygen
       - name: Install Graphviz
