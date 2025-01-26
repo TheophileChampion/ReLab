@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-documentation:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
