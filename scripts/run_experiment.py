@@ -1,13 +1,15 @@
+import argparse
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from functools import partial
+from typing import List
 
-import benchmarks
-from benchmarks.environments import small_benchmark_atari_games as atari_games
-from benchmarks.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
+import relab
+from relab.environments import small_benchmark_atari_games as atari_games
+from relab.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
 
 
-def run_experiment(agent_names, env_names, seeds, local=True):
+def run_experiment(agent_names : List[str], env_names : List[str], seeds : List[int], local : bool = True) -> None:
     """
     Run an experiments by:
     - training all reinforcement learning agents on all gym environments using all seeds
@@ -49,7 +51,7 @@ def run_experiment(agent_names, env_names, seeds, local=True):
                 # Demonstrate the policy learned by the agent on the environment with the specified seed.
                 job_runner.launch_job(
                     task=prefix + os.sep + "run_demo.sh",
-                    kwargs={"agent": agent, "env": env, "seed": seed, "index": benchmarks.config(key="max_n_steps")},
+                    kwargs={"agent": agent, "env": env, "seed": seed, "index": relab.config(key="max_n_steps")},
                     dependencies=[job_id]
                 )
 
@@ -72,7 +74,8 @@ if __name__ == "__main__":
     parser.add_argument("--agents", nargs="+", default=["DQN", "RainbowDQN", "RainbowIQN"], help="name of the agents to train")
     parser.add_argument("--envs", nargs="+", default=atari_games(), help="name of the environments on which to train the agents")
     parser.add_argument("--seeds", nargs="+", default=[str(i) for i in range(5)], help="random seeds to use")
+    parser.add_argument("--local", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
 
     # Train a reinforcement learning agent on a gym environment.
-    run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=True)
+    run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=args.local)

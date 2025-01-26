@@ -1,4 +1,4 @@
-gymnasium[atari, accept-rom-licesnse, other]==1.0.0
+gymnasium[atari, other]==1.0.0
 torch==2.5.1
 torchrl==0.6.0
 tensorboard==2.18.0
@@ -12,3 +12,4 @@ torchvision==0.20.1
 pybind11==2.13.6
 invoke==2.2.0
 psutil==6.1.1
+numpy==2.2.1

@@ -1,11 +1,11 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-from benchmarks import agents
-import benchmarks
-from benchmarks import environments
+from relab import agents
+import relab
+from relab import environments
 
 
-def run_demo(agent, env, seed, index):
+def run_demo(agent : str, env : str, seed : int, index : int):
     """
     Demonstrate the policy learned by a reinforcement learning agent on a gym environment.
     :param agent: the agent name
@@ -15,7 +15,7 @@ def run_demo(agent, env, seed, index):
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent, env, seed)
+    relab.initialize(agent, env, seed)
 
     # Create the environment.
     env = environments.make(env, render_mode="rgb_array")

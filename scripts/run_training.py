@@ -1,11 +1,11 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-from benchmarks import agents
-import benchmarks
-from benchmarks import environments
+from relab import agents
+import relab
+from relab import environments
 
 
-def run_training(agent, env, seed):
+def run_training(agent : str, env : str, seed : int) -> None:
     """
     Train a reinforcement learning agent on a gym environment.
     :param agent: the agent name
@@ -14,7 +14,7 @@ def run_training(agent, env, seed):
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent, env, seed)
+    relab.initialize(agent, env, seed)
 
     # Create the environment.
     env = environments.make(env)

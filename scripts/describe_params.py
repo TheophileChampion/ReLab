@@ -1,10 +1,19 @@
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from typing import Iterator
+
 import torch
+import logging
 
-import benchmarks
-from benchmarks import agents
+import relab
+from relab import agents
+from relab.helpers.Typing import Parameter
 
 
-def describe(parameters, n_copies=1, memory_unit="GB"):
+def describe(
+    parameters : Iterator[Parameter],
+    n_copies : int = 1,
+    memory_unit : str = "GB"
+) -> None:
     """
     Describe the parameters passed as arguments.
     :param parameters: the parameters to describe
@@ -40,30 +49,37 @@ def describe(parameters, n_copies=1, memory_unit="GB"):
     # Display the parameter summary on the standard output.
     if all([dtype == dtypes[0] for dtype in dtypes]) is True:
         dtypes = dtypes[0]
-    print(f"Parameter type: {dtypes}.")
-    print(f"Number of parameters: {total_n_params}.")
-    print(f"Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
+    logging.info(f"Parameter type: {dtypes}.")
+    logging.info(f"Number of parameters: {total_n_params}.")
+    logging.info(f"Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
 
 
-def describe_params(agent_name, env_name, seed):
+def describe_params(agent : str, env : str, seed : int) -> None:
     """
     Describe the agent's parameters.
-    :param agent_name: the agent name
-    :param env_name: the environment name
+    :param agent: the agent name
+    :param env: the environment name
     :param seed: the random seed
     """
 
     # Initialize the benchmark.
-    benchmarks.initialize(agent_name, env_name, seed)
+    relab.initialize(agent, env, seed)
 
     # Create the requested agent.
-    agent = agents.make(agent_name, training=True)
+    agent = agents.make(agent, training=True)
 
     # Describe the agent parameters.
-    describe(agent.value_net.parameters(), n_copies=2)
+    describe(agent.value_net.parameters(), n_copies=2)  # TODO make is compatible with variational models
 
 
 if __name__ == "__main__":
 
+    # Parse the script arguments.
+    parser = ArgumentParser(prog="describe_params", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
+    parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
+    parser.add_argument("--seed", type=int, default=0, help="random seed to use")
+    args = parser.parse_args()
+
     # Describe the agent's parameters.
-    describe_params(agent_name="DuelingDDQN", env_name="ALE/Pong-v5", seed=0)
+    describe_params(agent=args.agent, env=args.env, seed=args.seed)

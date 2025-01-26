@@ -2,29 +2,40 @@ import logging
 import os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import join, exists
+from typing import List
+
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-import benchmarks
-from benchmarks.helpers.FileSystem import FileSystem
-from benchmarks.helpers.MatPlotLib import MatPlotLib
-from benchmarks.helpers.TensorBoard import TensorBoard
+import relab
+from relab.helpers.FileSystem import FileSystem
+from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.TensorBoard import TensorBoard
+from pandas import DataFrame
 
 
-def display_name(metric):
+def display_name(metric : str) -> str:
     """
     Retrieves the display name corresponding to the metric.
     :param metric: the metric name
     :return: the display name
     """
     return {
+        "mean_time_elapsed_ms": "Time Per Training Iteration (ms)",
+        "mean_residential_memory_gb": "Memory Usage (GB)",
         "mean_episodic_reward": "Reward",
         "mean_episode_length": "Episode Length",
     }[metric]
 
 
-def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_statistics_path):
+def compute_summary_statistics(
+    agent_name : str,
+    env_name : str,
+    seeds : List[int],
+    metric : str,
+    summary_statistics_path : str
+) -> DataFrame:
     """
     Compute the mean and standard deviations of the metric over all seeds.
     :param agent_name: the agent for which the mean and standard deviation of the metric is computed
@@ -40,7 +51,7 @@ def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_stat
     for seed in seeds:
 
         # Extract the metric values of the current seed.
-        benchmarks.initialize(agent_name, env_name, seed, paths_only=True)
+        relab.initialize(agent_name, env_name, seed, paths_only=True)
         metric_values = TensorBoard.load_log_directory(os.environ["TENSORBOARD_DIRECTORY"], metric)
         if metric_values is None:
             continue
@@ -51,11 +62,11 @@ def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_stat
     summary_statistics = summary_statistics.groupby("step", as_index=False)
 
     # Compute the mean and standard deviation of the metric values.
-    log_interval = benchmarks.config("tensorboard_log_interval")
+    log_interval = relab.config("tensorboard_log_interval")
     mean = summary_statistics.mean().rename(columns={metric: "mean"})
-    mean = mean[mean.index % log_interval == 0]
+    mean = mean[mean.step % log_interval == 0]
     std = summary_statistics.std().rename(columns={metric: "std"})
-    std = std[std.index % log_interval == 0]
+    std = std[std.step % log_interval == 0]
     if len(seeds) == 1:
         std = std.fillna(0)
     summary_statistics = mean.merge(std, on=["step", "step"]).dropna()
@@ -66,7 +77,7 @@ def compute_summary_statistics(agent_name, env_name, seeds, metric, summary_stat
     return summary_statistics
 
 
-def draw_graph(agents, env, seeds, metric, overwrite=False):
+def draw_graph(agents : List[str], env : str, seeds : List[int], metric : str, overwrite : bool = False) -> None:
     """
     Generate a graph representing the agents performance in an environment according to the specified metric.
     :param agents: the agent names
@@ -82,7 +93,7 @@ def draw_graph(agents, env, seeds, metric, overwrite=False):
     for agent in agents:
 
         # Get the path where the summary statistics should be stored.
-        benchmarks.initialize(agent, env, paths_only=True)
+        relab.initialize(agent, env, paths_only=True)
         summary_statistics_path = join(os.environ["STATISTICS_DIRECTORY"], f"{metric}.tsv")
 
         # Compute the summary statistics for the current agent.
@@ -117,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment for which to draw the graph")
     parser.add_argument("--seeds", nargs="+", type=int, default=[i for i in range(5)], help="random seeds to use")
     parser.add_argument("--metric", type=str, default="mean_episodic_reward", help="the metric to display in the graph")
-    parser.add_argument("--overwrite", type=bool, default=False, help="whether to overwrite the previously computed metric values")
+    parser.add_argument("--overwrite", type=bool, default=True, help="whether to overwrite the previously computed metric values")
     args = parser.parse_args()
 
     # Generate a graph representing the agents performance in an environment according to the specified metric.
