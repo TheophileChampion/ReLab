@@ -1,0 +1,31 @@
+name: Run All Unit Tests Action
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  buil_relab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository to the runner
+        uses: actions/checkout@v4
+      - name: Create ReLab virtual environment
+        run: python3.12 -m venv venv-relab && source ./venv-relab/bin/activate
+      - name: Install ReLab dependencies
+        run: pip install -r requirements.txt
+      - name: Ensure the ReLab package is found by python scripts 
+        run: pwd > ./venv-relab/lib/python3.12/site-packages/relab.pth
+      - name: Build the C++ library and check that installation succeed 
+        run: python ./scripts/test_install.py
+  run_unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository to the runner
+        uses: actions/checkout@v4
+      - name: Run unit tests
+        run: ctest --output-on-failure
