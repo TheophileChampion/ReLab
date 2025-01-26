@@ -119,11 +119,11 @@ When multiple seeds are provided, the graph will display a solid line representi
 
 // TODO add figures comparing the agents performances
 
-For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](Tutorial).
+For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](https://theophilechampion.github.io/ReLab/md_Tutorial.html).
 
 ## Documentation
 
-ReLab [documentation](https://TheophileChampion.github.com/ReLab/) is based on doxygen and hosted with GitHub Pages.
+ReLab [documentation](https://theophilechampion.github.io/ReLab/) is based on doxygen and hosted with GitHub Pages.
 
 ## Releases and Contributing
 
