@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <iomanip>
 #include <random>
@@ -8,6 +9,7 @@
 #include "helpers/torch.hpp"
 
 using namespace relab::helpers;
+using namespace std::filesystem;
 
 namespace relab::agents::memory {
 
@@ -119,7 +121,15 @@ namespace relab::agents::memory {
         return loss * weights / weights.max();
     }
 
-    void ReplayBuffer::load(const std::string &checkpoint_path) {
+    void ReplayBuffer::load(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all) {
+
+        // Check that the replay buffer checkpoint exist.
+        auto buffer_checkpoint_path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
+        struct std::stat status;
+        if (stat(path, &status) == 0 && status == s.st_mode & S_IFREG) {
+            logging.info("Could not load the replay buffer from: " + buffer_checkpoint_path);
+            return;
+        }
 
         // Open the checkpoint file.
         std::ifstream checkpoint;
@@ -146,7 +156,11 @@ namespace relab::agents::memory {
         this->indices = load_tensor<long>(checkpoint);
     }
 
-    void ReplayBuffer::save(const std::string &checkpoint_path) {
+    void ReplayBuffer::save(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all) {
+
+        // Create the replay buffer checkpoint directory and file, if they do not exist.
+        auto buffer_checkpoint_path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
+        this->create_directory_and_file(buffer_checkpoint_path);  // TODO move to filesystem.hpp
 
         // Open the checkpoint file.
         std::ofstream checkpoint;
@@ -171,6 +185,35 @@ namespace relab::agents::memory {
         this->observations->save(checkpoint);
         this->data->save(checkpoint);
         save_tensor<long>(this->indices, checkpoint);
+    }
+
+    std::string ReplayBuffer::getCheckpointPath(
+        const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all
+    ) {
+
+        // If all replay buffer must be saved and checkpoint name was not provided,
+        // replace "model" by "buffer" in the checkpoint path.
+        if (checkpoint_name == "" && save_all == true) {
+            auto index = checkpoint_path.find("model_");
+            return checkpoint_path.replace(index, 6, "buffer_");
+        }
+
+        // Concatenate the checkpoint directory with the checkpoint file name.
+        path directory(std::getenv("CHECKPOINT_DIRECTORY"));
+        path file((checkpoint_name == "") ? "buffer.pt" : checkpoint_name);
+        return (directory / file).string();
+    }
+
+    void ReplayBuffer::create_directory_and_file(const std::string &path) {
+        path checkpoint_path(path);
+        stringif checkpoint_path.has_filename() {
+            checkpoint_path
+        }
+        checkpoint_dir = dirname(path)
+        if not exists(checkpoint_dir):
+            os.makedirs(checkpoint_dir)
+        if not exists(path):
+            Path(path).touch(exist_ok=True)
     }
 
     void ReplayBuffer::print(bool verbose) {

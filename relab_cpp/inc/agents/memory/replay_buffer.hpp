@@ -101,9 +101,11 @@ namespace relab::agents::memory {
 
         /**
          * Load a replay buffer from the filesystem.
-         * @param checkpoint_path the full checkpoint path from which the replay buffer must be loaded
+         * @param checkpoint_path: the full checkpoint path from which the agent has been loaded
+         * @param checkpoint_name: the name of the checkpoint from which the replay buffer must be loaded ("" for default name)
+         * @param save_all: true if all replay buffer must be saved, false otherwise
          */
-        void load(const std::string &checkpoint_path);
+        void load(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all);
 
         /**
          * Load a replay buffer from the filesystem.
@@ -113,15 +115,34 @@ namespace relab::agents::memory {
 
         /**
          * Save the replay buffer on the filesystem.
-         * @param checkpoint_path the full checkpoint path in which the replay buffer must be saved
+         * @param checkpoint_path: the full checkpoint path in which the agent has been saved
+         * @param checkpoint_name: the name of the checkpoint in which the replay buffer must be saved ("" for default name)
+         * @param save_all: true if all replay buffer must be saved, false otherwise
          */
-        void save(const std::string &checkpoint_path);
+        void save(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all);
 
         /**
          * Save the replay buffer on the filesystem.
          * @param checkpoint a stream writing into the checkpoint file
          */
         void saveToFile(std::ostream &checkpoint);
+
+        /**
+         * Retrieve the path to the file in which the replay buffer must be saved.
+         * @param checkpoint_path: the full checkpoint path in which the agent has been saved
+         * @param checkpoint_name: the name of the checkpoint in which the replay buffer must be saved ("" for default name)
+         * @param save_all: true if all replay buffer must be saved, false otherwise
+         * @return the path to the file in which the replay buffer must be saved
+         */
+        std::string getCheckpointPath(
+            const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all
+        );
+
+        /* TODO move to FILESYTEM.hpp
+        Create the directory and file corresponding to the path passed as parameter.
+        @param path: the file's path
+        */
+        void create_directory_and_file(const std::string &path);
 
         /**
          * Print the replay buffer on the standard output.

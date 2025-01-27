@@ -342,15 +342,6 @@ class HMM(VariationalModel):
             self.transition.train(self.training)
             self.transition.to(self.device)
 
-            # Update the replay buffer.
-            # TODO move to VariationalModel.load?
-            replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
-            self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
-            self.buffer.load(checkpoint_path, buffer_checkpoint_name)
-
-            # Update the reparameterization function to use with the world model.
-            self.reparameterize = self.get_reparameterization(self.latent_space_type)
-
             # Update the optimizer.
             params = list(self.encoder.parameters()) + list(self.decoder.parameters()) + list(self.transition.parameters())
             self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)

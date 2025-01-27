@@ -122,6 +122,8 @@ namespace relab::helpers {
         }
     }
 
+    //TODO implement a Logger
+
     // Explicit instantiations.
     template void print_tensor<int>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
     template void print_tensor<long>(const torch::Tensor &tensor, int max_n_elements, bool new_line);

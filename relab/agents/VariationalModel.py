@@ -484,6 +484,14 @@ class VariationalModel(AgentInterface):
         self.n_continuous_vars = self.safe_load(checkpoint, "n_continuous_vars")
         self.n_discrete_vars = self.safe_load(checkpoint, "n_discrete_vars")
         self.n_discrete_vals = self.safe_load(checkpoint, "n_discrete_vals")
+
+        # Update the replay buffer.
+        replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
+        self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
+        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
+
+        # Get the reparameterization function to use with the world model.
+        self.reparameterize = self.get_reparameterization(self.latent_space_type)
         return checkpoint_path, checkpoint
 
     def as_dict(self):
