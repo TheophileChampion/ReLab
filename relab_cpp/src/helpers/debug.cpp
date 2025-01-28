@@ -122,7 +122,48 @@ namespace relab::helpers {
         }
     }
 
-    //TODO implement a Logger
+    std::string Logger::levelToString(LogLevel level)
+    {
+        switch (level) {
+        case DEBUG:
+            return "DEBUG";
+        case INFO:
+            return "INFO";
+        case WARNING:
+            return "WARNING";
+        case ERROR:
+            return "ERROR";
+        case CRITICAL:
+            return "CRITICAL";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
+    Logger::Logger(LogLevel level, const std::string &logger_name)
+        : level(level), logger_name(logger_name) {}
+
+    void Logger::debug(const std::string &message) {
+        this->log(DEBUG, message);
+    }
+
+    void Logger::info(const std::string &message) {
+        this->log(INFO, message);
+    }
+
+    void Logger::warning(const std::string &message) {
+        this->log(WARNING, message);
+    }
+
+    void Logger::critical(const std::string &message) {
+        this->log(CRITICAL, message);
+    }
+
+    void Logger::log(LogLevel level, const std::string &message) {
+        if (level >= this->level) {
+            std::cout << this->levelToString(level) << ":" << this->logger_name << ":" << message << std::endl;
+        }
+    }
 
     // Explicit instantiations.
     template void print_tensor<int>(const torch::Tensor &tensor, int max_n_elements, bool new_line);

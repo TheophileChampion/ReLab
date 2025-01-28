@@ -152,8 +152,8 @@ class AgentInterface(ABC):
 
     def load(
         self,
-        checkpoint_name : Optional[str] = None,
-        buffer_checkpoint_name : Optional[str] = None
+        checkpoint_name : str = "",
+        buffer_checkpoint_name : str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -163,7 +163,7 @@ class AgentInterface(ABC):
         """
 
         # Retrieve the full agent checkpoint path.
-        if checkpoint_name is None:
+        if checkpoint_name == "":
             checkpoint_path = self.get_latest_checkpoint()
         else:
             checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
@@ -182,7 +182,7 @@ class AgentInterface(ABC):
         self.current_step = self.safe_load(checkpoint, "current_step")
         self.max_queue_len = self.safe_load(checkpoint, "max_queue_len")
         self.current_episodic_reward = self.safe_load(checkpoint, "current_episodic_reward")
-        self.last_time = self.safe_load(checkpoint, "last_time")
+        self.last_time = -1
         self.current_episode_length = self.safe_load(checkpoint, "current_episode_length")
         self.vfe_losses = self.safe_load(checkpoint, "vfe_losses")
         self.betas = self.safe_load(checkpoint, "betas")
@@ -205,7 +205,6 @@ class AgentInterface(ABC):
             "current_step": self.current_step,
             "max_queue_len": self.max_queue_len,
             "current_episodic_reward": self.current_episodic_reward,
-            "last_time": self.last_time,
             "current_episode_length": self.current_episode_length,
             "vfe_losses": self.vfe_losses,
             "betas": self.betas,
@@ -219,7 +218,7 @@ class AgentInterface(ABC):
         }
 
     @abc.abstractmethod
-    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def save(self, checkpoint_name : str, buffer_checkpoint_name : str = "") -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
@@ -277,7 +276,9 @@ class AgentInterface(ABC):
 
         # Keep track of time elapsed since last training iteration.
         now = time.time() * 1000
-        if self.last_time is not None:
+        if self.last_time == -1:
+            self.time_elapsed.append(self.time_elapsed[-1])  # Ensure a smooth time curve upon reload.
+        elif self.last_time is not None:
             self.time_elapsed.append(now - self.last_time)
         self.last_time = now
 

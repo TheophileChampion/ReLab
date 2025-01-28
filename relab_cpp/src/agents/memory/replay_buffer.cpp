@@ -1,4 +1,3 @@
-#include <filesystem>
 #include <iostream>
 #include <iomanip>
 #include <random>
@@ -121,19 +120,18 @@ namespace relab::agents::memory {
         return loss * weights / weights.max();
     }
 
-    void ReplayBuffer::load(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all) {
+    void ReplayBuffer::load(std::string checkpoint_path, std::string checkpoint_name, bool save_all) {
 
         // Check that the replay buffer checkpoint exist.
         auto buffer_checkpoint_path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
-        struct std::stat status;
-        if (stat(path, &status) == 0 && status == s.st_mode & S_IFREG) {
-            logging.info("Could not load the replay buffer from: " + buffer_checkpoint_path);
+        if (!exists(buffer_checkpoint_path) || !buffer_checkpoint_path.has_filename()) {
+            logging.info("Could not load the replay buffer from: " + buffer_checkpoint_path.string());
             return;
         }
 
         // Open the checkpoint file.
         std::ifstream checkpoint;
-        checkpoint.open(checkpoint_path);
+        checkpoint.open(buffer_checkpoint_path.string());
         this->loadFromFile(checkpoint);
     }
 
@@ -156,15 +154,19 @@ namespace relab::agents::memory {
         this->indices = load_tensor<long>(checkpoint);
     }
 
-    void ReplayBuffer::save(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all) {
+    void ReplayBuffer::save(std::string checkpoint_path, std::string checkpoint_name, bool save_all) {
 
         // Create the replay buffer checkpoint directory and file, if they do not exist.
-        auto buffer_checkpoint_path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
-        this->create_directory_and_file(buffer_checkpoint_path);  // TODO move to filesystem.hpp
+        auto path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
+
+        auto directory_name = (path.has_filename()) ? path.parent_path() : path;
+        if (!exists(directory_name)) {
+            create_directory(directory_name);
+        }
 
         // Open the checkpoint file.
         std::ofstream checkpoint;
-        checkpoint.open(checkpoint_path);
+        checkpoint.open(buffer_checkpoint_path.string());
         this->saveToFile(checkpoint);
     }
 
@@ -187,33 +189,22 @@ namespace relab::agents::memory {
         save_tensor<long>(this->indices, checkpoint);
     }
 
-    std::string ReplayBuffer::getCheckpointPath(
-        const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all
+    std::filesystem::path ReplayBuffer::getCheckpointPath(
+        std::string &checkpoint_path, std::string &checkpoint_name, bool save_all
     ) {
 
         // If all replay buffer must be saved and checkpoint name was not provided,
         // replace "model" by "buffer" in the checkpoint path.
         if (checkpoint_name == "" && save_all == true) {
-            auto index = checkpoint_path.find("model_");
-            return checkpoint_path.replace(index, 6, "buffer_");
+            int index = checkpoint_path.find("model_");
+            path new_checkpoint_path = checkpoint_path.replace(index, 6, "buffer_");
+            return new_checkpoint_path;
         }
 
         // Concatenate the checkpoint directory with the checkpoint file name.
         path directory(std::getenv("CHECKPOINT_DIRECTORY"));
         path file((checkpoint_name == "") ? "buffer.pt" : checkpoint_name);
-        return (directory / file).string();
-    }
-
-    void ReplayBuffer::create_directory_and_file(const std::string &path) {
-        path checkpoint_path(path);
-        stringif checkpoint_path.has_filename() {
-            checkpoint_path
-        }
-        checkpoint_dir = dirname(path)
-        if not exists(checkpoint_dir):
-            os.makedirs(checkpoint_dir)
-        if not exists(path):
-            Path(path).touch(exist_ok=True)
+        return directory / file;
     }
 
     void ReplayBuffer::print(bool verbose) {

@@ -719,8 +719,8 @@ class DQN(AgentInterface):
 
     def load(
         self,
-        checkpoint_name : Optional[str] = None,
-        buffer_checkpoint_name : Optional[str] = None
+        checkpoint_name : str = "",
+        buffer_checkpoint_name : str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -810,7 +810,7 @@ class DQN(AgentInterface):
             "optimizer": self.optimizer.state_dict()
         } | super().as_dict()
 
-    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def save(self, checkpoint_name : str, buffer_checkpoint_name : str = "") -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

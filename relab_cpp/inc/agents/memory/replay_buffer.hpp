@@ -7,6 +7,7 @@
 #define REPLAY_BUFFER_HPP
 
 #include <torch/extension.h>
+#include <filesystem>
 #include "agents/memory/frame_buffer.hpp"
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/data_buffer.hpp"
@@ -105,7 +106,7 @@ namespace relab::agents::memory {
          * @param checkpoint_name: the name of the checkpoint from which the replay buffer must be loaded ("" for default name)
          * @param save_all: true if all replay buffer must be saved, false otherwise
          */
-        void load(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all);
+        void load(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
         /**
          * Load a replay buffer from the filesystem.
@@ -119,7 +120,7 @@ namespace relab::agents::memory {
          * @param checkpoint_name: the name of the checkpoint in which the replay buffer must be saved ("" for default name)
          * @param save_all: true if all replay buffer must be saved, false otherwise
          */
-        void save(const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all);
+        void save(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
         /**
          * Save the replay buffer on the filesystem.
@@ -134,15 +135,9 @@ namespace relab::agents::memory {
          * @param save_all: true if all replay buffer must be saved, false otherwise
          * @return the path to the file in which the replay buffer must be saved
          */
-        std::string getCheckpointPath(
-            const std::string &checkpoint_path, const std::string &checkpoint_name, bool save_all
+        std::filesystem::path getCheckpointPath(
+            std::string &checkpoint_path, std::string &checkpoint_name, bool save_all
         );
-
-        /* TODO move to FILESYTEM.hpp
-        Create the directory and file corresponding to the path passed as parameter.
-        @param path: the file's path
-        */
-        void create_directory_and_file(const std::string &path);
 
         /**
          * Print the replay buffer on the standard output.

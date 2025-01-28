@@ -449,8 +449,8 @@ class VariationalModel(AgentInterface):
 
     def load(
         self,
-        checkpoint_name : Optional[str] = None,
-        buffer_checkpoint_name : Optional[str] = None
+        checkpoint_name : str = "",
+        buffer_checkpoint_name : str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
