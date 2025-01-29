@@ -21,6 +21,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: main
           path: .github/actions/
+      - name: TODO remove
+        run: ls .github/actions/
       - name: Build ReLab
         uses: ./.github/actions/build-relab.yaml
       - name: Run unit tests
