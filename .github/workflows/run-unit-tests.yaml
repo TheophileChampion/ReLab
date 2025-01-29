@@ -22,6 +22,6 @@ jobs:
           ref: main
           path: .github/actions/
       - name: Build ReLab
-        uses: .github/actions/build-relab.yaml
+        uses: ./.github/actions/build-relab.yaml
       - name: Run unit tests
         run: cd build && ctest --output-on-failure
