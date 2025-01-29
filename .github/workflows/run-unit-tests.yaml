@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: TheophileChampion/ContinousDelivery
+          path: .github/actions/
       - name: Build ReLab
         run: ls .github/actions
       - name: Run unit tests
