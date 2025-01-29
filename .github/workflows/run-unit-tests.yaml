@@ -14,7 +14,11 @@ jobs:
     steps:
       - name: Clone ReLab repository
         uses: actions/checkout@v4
+      - name: Clone ContinuousDelivery repository
+        uses: actions/checkout@v4
+        with:
+          repository: TheophileChampion/ContinousDelivery
       - name: Build ReLab
-        uses: TheophileChampion/ContinousDelivery-build-relab@v0.1.1
+        run: ls .github/actions
       - name: Run unit tests
         run: cd build && ctest --output-on-failure
