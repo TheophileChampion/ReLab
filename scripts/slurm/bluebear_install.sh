@@ -3,11 +3,11 @@
 # After executing this script, activate the virtual environment using:
 #     source ./venv-relab/bin/activate
 # Launch a dummy script such as:
-#     python3 ./scripts/run_experiment.py --agents DQN --envs "ALE/Pong-v5" --seeds 0
+#     python3 ./scripts/run_experiment --agents DQN --envs "ALE/Pong-v5" --seeds 0
 # When the slurm-xxxxxx.out indicates that the virtual environment installation is finished on the node, cancel the job using:
 #     scancel -u user_name
 # The full experiment can now be launched without conflicts using:
-#     python3 ./scripts/run_experiment.py --agents DQN --envs "ALE/Pong-v5" --seeds 0
+#     python3 ./scripts/run_experiment --agents DQN --envs "ALE/Pong-v5" --seeds 0
 
 # Export environment variables.
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"

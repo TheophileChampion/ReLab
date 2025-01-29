@@ -149,8 +149,6 @@ class VAE(VariationalModel):
         """
         # @cond IGNORED_BY_DOXYGEN
 
-        obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
-
         # Compute required tensors.
         mean_hat, log_var_hat = self.encoder(obs)
         state = self.reparameterize((mean_hat, log_var_hat))
@@ -249,12 +247,9 @@ class VAE(VariationalModel):
                 # Retrieve the ground truth and reconstructed images.
                 obs, _ = env.reset()
                 obs = torch.unsqueeze(obs, dim=0).to(self.device)
-                obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
                 parameters = self.encoder(obs)
                 state = self.reparameterize(parameters, tau=tau)
                 reconstructed_obs = self.reconstructed_image_from(self.decoder(state))
-                obs = obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
-                reconstructed_obs = reconstructed_obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
 
                 # Draw the ground truth image.
                 fig.add_subplot(gs[2 * h, w + n_cols])

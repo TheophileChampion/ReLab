@@ -14,7 +14,7 @@ from gymnasium import Env
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from librelab.agents.memory import Experience
+from relab.cpp.agents.memory import Experience
 from relab.agents.networks.CategoricalDeepQNetworks import CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork
 from relab.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
 from torch import optim

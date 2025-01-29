@@ -48,7 +48,7 @@ pwd > ./venv-relab/lib/python3.12/site-packages/relab.pth
 ### Check that the installation was successful
 
 ```
-python ./scripts/test_install.py
+python ./scripts/test_install
 ```
 
 Note, when running the above command for the first time, ReLab will compile its C++ library.
@@ -66,7 +66,7 @@ source ./venv-relab/bin/activate
 
 An agent can be trained by running the following command:
 ```
-python ./scripts/run_training.py --agent DQN --env ALE/Pong-v5 --seed 0
+python ./scripts/run_training --agent DQN --env ALE/Pong-v5 --seed 0
 ```
 The training script accepts three parameters:
 - `--agent` specifies the reinforcement learning agent to train,
@@ -87,13 +87,13 @@ This will open a graphical interface at http://localhost:6006/, allowing you to 
 By default, ReLab saves the learned policy every 500,000 training iterations.
 Once an agent has been trained, you can visualize its learned policy using the following command:
 ```
-python ./scripts/run_demo.py --agent DQN --env ALE/Pong-v5 --seed 0
+python ./scripts/run_demo --agent DQN --env ALE/Pong-v5 --seed 0
 ```
 These parameters should look familiar, as they are identical to those used in the training script.
 By default, ReLab demonstrates the latest policy.
 However, you can specify a particular model checkpoint using the following command:
 ```
-python ./scripts/run_demo.py --agent DQN --env ALE/Pong-v5 --seed 0 --index 1000000
+python ./scripts/run_demo --agent DQN --env ALE/Pong-v5 --seed 0 --index 1000000
 ```
 Here, the `--index` parameter allows you to select the policy learned by the agent after 1,000,000 training iterations.
 After running the above command, ReLab will generate a GIF of the agent's behavior, which can be found in:

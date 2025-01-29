@@ -34,8 +34,7 @@ class ContinuousDecoderNetwork(nn.Module):
 
         ## @var stack_size
         # Number of stacked frames in each observation
-        self.stack_size = 1
-        # TODO self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
 
         ## @var up_conv_net
         # Transposed convolution layers that upscale the feature maps to the final image.

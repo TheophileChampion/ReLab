@@ -26,8 +26,7 @@ class ContinuousEncoderNetwork(nn.Module):
 
         ## @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = 1
-        # TODO self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
 
         ## @var conv_net
         # Convolutional encoder network that processes the input images.

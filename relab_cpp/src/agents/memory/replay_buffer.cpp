@@ -123,15 +123,15 @@ namespace relab::agents::memory {
     void ReplayBuffer::load(std::string checkpoint_path, std::string checkpoint_name, bool save_all) {
 
         // Check that the replay buffer checkpoint exist.
-        auto buffer_checkpoint_path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
-        if (!exists(buffer_checkpoint_path) || !buffer_checkpoint_path.has_filename()) {
-            logging.info("Could not load the replay buffer from: " + buffer_checkpoint_path.string());
+        auto path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
+        if (!exists(path) || !path.has_filename()) {
+            logging.info("Could not load the replay buffer from: " + path.string());
             return;
         }
 
         // Open the checkpoint file.
         std::ifstream checkpoint;
-        checkpoint.open(buffer_checkpoint_path.string());
+        checkpoint.open(path.string());
         this->loadFromFile(checkpoint);
     }
 
@@ -166,7 +166,7 @@ namespace relab::agents::memory {
 
         // Open the checkpoint file.
         std::ofstream checkpoint;
-        checkpoint.open(buffer_checkpoint_path.string());
+        checkpoint.open(path.string());
         this->saveToFile(checkpoint);
     }
 

@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
 ### 6. Running your First Experiment
 
-While, you could use the individual scripts such as `run_training.py` and `run_demo.py` manually, 
+While, you could use the individual scripts such as `run_training` and `run_demo` manually, 
 ReLab allows you to run entire experiments. An experiment automates training, evaluation, and result visualization
 across multiple agents, environments, and seeds. Here's a breakdown of what the script does:
 
@@ -283,7 +283,7 @@ across multiple agents, environments, and seeds. Here's a breakdown of what the 
 ##### Example Usage:
 - Specify agents, environments, and seeds using command-line arguments. For example:
   ```bash
-  python run_experiments.py --agents DQN RainbowDQN --envs ALE/Pong-v5 --seeds 0 1 2 --no-local
+  python ./scripts/run_experiments --agents DQN RainbowDQN --envs ALE/Pong-v5 --seeds 0 1 2 --no-local
   ```
 - Use the `--no-local` flag to run experiments using Slurm. Omitting it defaults to run locally.
 
