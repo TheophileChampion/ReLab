@@ -17,8 +17,9 @@ jobs:
       - name: Clone ContinuousDelivery repository
         uses: actions/checkout@v4
         with:
-          repository: TheophileChampion/ContinousDelivery
+          repository: TheophileChampion/ContinuousDelivery
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
           path: .github/actions/
       - name: Build ReLab
         run: ls .github/actions
