@@ -25,7 +25,7 @@ include_directories(${PROJECT_SOURCE_DIR}/relab_cpp/inc/ ${ADDITIONAL_INCLUDES})
 include_directories(${PROJECT_SOURCE_DIR}/tests/inc/)
 
 # Add link directories required by shared libraries.
-link_directories(${PROJECT_SOURCE_DIR}/scripts/ ${PROJECT_SOURCE_DIR}/scripts/build/)
+link_directories(${PROJECT_SOURCE_DIR}/scripts/ ${PROJECT_SOURCE_DIR}/build/)
 
 # Add the torch library.
 list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/${VENV_DIR}/lib/python3.12/site-packages/torch")
@@ -37,6 +37,17 @@ find_library(TORCH_PYTHON_LIBRARY torch_python PATH "${TORCH_INSTALL_PREFIX}/lib
 
 # Add the zlib library.
 find_package(ZLIB REQUIRED)
+
+# Add python library.
+find_package(Python 3.12 EXACT REQUIRED COMPONENTS Interpreter Development)
+
+# Create a list containing all libraries shared by all executables and shared libraries of the project.
+list(APPEND ALL_LIBRARIES
+    ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
+    ZLIB::ZLIB
+    ${Python_LIBRARIES}
+    pthread
+)
 
 # Download and make Google test available.
 include(FetchContent)
@@ -64,20 +75,11 @@ add_library(relab SHARED
     relab_cpp/src/helpers/timer.cpp
     relab_cpp/src/helpers/torch.cpp
 )
-target_link_libraries(relab PRIVATE
-    ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
-    ZLIB::ZLIB
-    pthread
-)
+target_link_libraries(relab PRIVATE ${ALL_LIBRARIES})
 
 # Add the wrapper shared library: librelab_wrapper.so
 add_library(relab_wrapper SHARED relab_cpp/pybind11_wrapper.cpp)
-target_link_libraries(relab_wrapper PRIVATE
-    relab
-    ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
-    ZLIB::ZLIB
-    pthread
-)
+target_link_libraries(relab_wrapper PRIVATE relab ${ALL_LIBRARIES})
 
 # Create an executable running unit tests.
 add_executable(all_tests
@@ -88,22 +90,10 @@ add_executable(all_tests
     tests/src/helpers/test_deque.cpp
     tests/src/relab_test.cpp
 )
-target_link_libraries(all_tests
-    relab
-    ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
-    ZLIB::ZLIB
-    python3.12
-    GTest::gtest_main
-)
+target_link_libraries(all_tests relab ${ALL_LIBRARIES} GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(all_tests)
 
-# Add the testing executable with access to the shared library: librelab.so
+# Add the testing executable with access to the project's shared libraries.
 add_executable(main_test tests/main.cpp)
-target_link_libraries(main_test PRIVATE
-    relab_wrapper relab
-    ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
-    ZLIB::ZLIB
-    pthread
-    python3.12
-)
+target_link_libraries(main_test PRIVATE ${ALL_LIBRARIES} relab_wrapper relab)
