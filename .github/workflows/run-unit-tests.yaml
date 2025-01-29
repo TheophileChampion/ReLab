@@ -12,21 +12,9 @@ jobs:
   run_unit_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: Jimver/cuda-toolkit@v0.2.20
-        id: cuda-toolkit
-        with:
-          cuda: '12.6.0'
-      - name: Install pthread library
-        run: sudo apt-get install libpthread-stubs0-dev
-      - name: Check out the repository to the runner
+      - name: Clone ReLab repository
         uses: actions/checkout@v4
-      - name: Create ReLab virtual environment
-        run: python3.12 -m venv venv-relab
-      - name: Install ReLab dependencies
-        run:  source ./venv-relab/bin/activate && pip install .
-      - name: Ensure the ReLab package is found by python scripts 
-        run: pwd > ./venv-relab/lib/python3.12/site-packages/relab.pth
-      - name: Build the C++ library and check that installation succeed 
-        run: source ./venv-relab/bin/activate && python3 ./scripts/test_install
+      - name: Build ReLab
+        uses: TheophileChampion/ContinousDelivery-build-relab@v0.1.1
       - name: Run unit tests
         run: cd build && ctest --output-on-failure
