@@ -30,7 +30,7 @@ def initialize(
 
     # Ensure the data directory is valid.
     if "DATA_DIRECTORY" not in os.environ.keys() and data_directory is None:
-        os.environ["DATA_DIRECTORY"] = abspath(join(dirname(__file__), "..", "data")) + os.sep
+        os.environ["DATA_DIRECTORY"] = abspath(join(os.getcwd(), "data")) + os.sep
         logging.info(f"Using default data directory location: {os.environ["DATA_DIRECTORY"]}")
 
     # Set the environment variable "DATA_DIRECTORY" if provided as parameters by the user.
