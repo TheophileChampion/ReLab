@@ -11,21 +11,21 @@ class NoisyCDQN(DQN):
 
     def __init__(
         self,
-        gamma : float = 0.99,
-        learning_rate : float = 0.00001,
-        buffer_size : int = 1000000,
-        batch_size : int = 32,
-        learning_starts : int = 200000,
-        target_update_interval : int = 40000,
-        adam_eps : float = 1.5e-4,
-        n_actions : int = 18,
-        n_atoms : int = 21,
-        v_min : float = -10,
-        v_max : float = 10,
-        training : bool = True,
-        replay_type : ReplayType = ReplayType.DEFAULT,
-        loss_type : LossType = LossType.KL_DIVERGENCE,
-        network_type : NetworkType = NetworkType.NOISY_CATEGORICAL
+        gamma: float = 0.99,
+        learning_rate: float = 0.00001,
+        buffer_size: int = 1000000,
+        batch_size: int = 32,
+        learning_starts: int = 200000,
+        target_update_interval: int = 40000,
+        adam_eps: float = 1.5e-4,
+        n_actions: int = 18,
+        n_atoms: int = 21,
+        v_min: float = -10,
+        v_max: float = 10,
+        training: bool = True,
+        replay_type: ReplayType = ReplayType.DEFAULT,
+        loss_type: LossType = LossType.KL_DIVERGENCE,
+        network_type: NetworkType = NetworkType.NOISY_CATEGORICAL
     ) -> None:
         """!
         Create a categorical DQN agent.
@@ -48,8 +48,19 @@ class NoisyCDQN(DQN):
 
         # Call the parent constructor.
         super().__init__(
-            gamma=gamma, learning_rate=learning_rate, buffer_size=buffer_size, batch_size=batch_size,
-            learning_starts=learning_starts, target_update_interval=target_update_interval, adam_eps=adam_eps,
-            n_actions=n_actions, n_atoms=n_atoms, v_min=v_min, v_max=v_max, training=training,
-            replay_type=replay_type, loss_type=loss_type, network_type=network_type
+            gamma=gamma,
+            learning_rate=learning_rate,
+            buffer_size=buffer_size,
+            batch_size=batch_size,
+            learning_starts=learning_starts,
+            target_update_interval=target_update_interval,
+            adam_eps=adam_eps,
+            n_actions=n_actions,
+            n_atoms=n_atoms,
+            v_min=v_min,
+            v_max=v_max,
+            training=training,
+            replay_type=replay_type,
+            loss_type=loss_type,
+            network_type=network_type
         )

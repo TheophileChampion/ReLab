@@ -22,21 +22,21 @@ class RainbowIQN(DQN):
 
     def __init__(
         self,
-        gamma : float = 0.99,
-        learning_rate : float = 0.00001,
-        buffer_size : int = 1000000,
-        batch_size : int = 32,
-        learning_starts : int = 200000,
-        kappa : float = 1.0,
-        target_update_interval : int = 40000,
-        adam_eps : float = 1.5e-4,
-        n_actions : int = 18,
-        n_atoms : int = 8,
-        training : bool = True,
-        n_steps : int = 3, omega : float = 0.5,
-        replay_type : ReplayType = ReplayType.MULTISTEP_PRIORITIZED,
-        loss_type : LossType = LossType.RAINBOW_IQN,
-        network_type : NetworkType = NetworkType.RAINBOW_IQN
+        gamma: float = 0.99,
+        learning_rate: float = 0.00001,
+        buffer_size: int = 1000000,
+        batch_size: int = 32,
+        learning_starts: int = 200000,
+        kappa: float = 1.0,
+        target_update_interval: int = 40000,
+        adam_eps: float = 1.5e-4,
+        n_actions: int = 18,
+        n_atoms: int = 8,
+        training: bool = True,
+        n_steps: int = 3, omega: float = 0.5,
+        replay_type: ReplayType = ReplayType.MULTISTEP_PRIORITIZED,
+        loss_type: LossType = LossType.RAINBOW_IQN,
+        network_type: NetworkType = NetworkType.RAINBOW_IQN
     ) -> None:
         """!
         Create a rainbow IQN agent.
@@ -60,8 +60,21 @@ class RainbowIQN(DQN):
 
         # Call the parent constructor.
         super().__init__(
-            gamma=gamma, learning_rate=learning_rate, buffer_size=buffer_size, batch_size=batch_size, kappa=kappa,
-            learning_starts=learning_starts, target_update_interval=target_update_interval, adam_eps=adam_eps,
-            n_actions=n_actions, n_atoms=n_atoms, training=training, n_steps=n_steps, omega=omega,
-            replay_type=replay_type, loss_type=loss_type, network_type=network_type, epsilon_schedule=[(0, 0)]
+            gamma=gamma,
+            learning_rate=learning_rate,
+            buffer_size=buffer_size,
+            batch_size=batch_size,
+            kappa=kappa,
+            learning_starts=learning_starts,
+            target_update_interval=target_update_interval,
+            adam_eps=adam_eps,
+            n_actions=n_actions,
+            n_atoms=n_atoms,
+            training=training,
+            n_steps=n_steps,
+            omega=omega,
+            replay_type=replay_type,
+            loss_type=loss_type,
+            network_type=network_type,
+            epsilon_schedule=[(0, 0)]
         )

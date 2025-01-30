@@ -24,24 +24,24 @@ class JointVAE(VAE):
 
     def __init__(
         self,
-        learning_starts : int = 200000,
-        n_actions : int = 18,
-        training : bool = True,
-        learning_rate : float = 0.00001,
-        adam_eps : float = 1.5e-4,
-        likelihood_type : LikelihoodType = LikelihoodType.BERNOULLI,
-        latent_space_type : LatentSpaceType = LatentSpaceType.MIXED,
-        n_continuous_vars : int = 10,
-        n_discrete_vars : int = 20,
-        n_discrete_vals : int = 10,
-        beta_schedule : Any = None,
-        tau_schedule : Any = None,
-        replay_type : ReplayType = ReplayType.DEFAULT,
-        buffer_size : int = 1000000,
-        batch_size : int = 32,
-        n_steps : int = 1,
-        omega : float = 1.0,
-        omega_is : float = 1.0
+        learning_starts: int = 200000,
+        n_actions: int = 18,
+        training: bool = True,
+        learning_rate: float = 0.00001,
+        adam_eps: float = 1.5e-4,
+        likelihood_type: LikelihoodType = LikelihoodType.BERNOULLI,
+        latent_space_type: LatentSpaceType = LatentSpaceType.MIXED,
+        n_continuous_vars: int = 10,
+        n_discrete_vars: int = 20,
+        n_discrete_vals: int = 10,
+        beta_schedule: Any = None,
+        tau_schedule: Any = None,
+        replay_type: ReplayType = ReplayType.DEFAULT,
+        buffer_size: int = 1000000,
+        batch_size: int = 32,
+        n_steps: int = 1,
+        omega: float = 1.0,
+        omega_is: float = 1.0
     ) -> None:
         """!
         Create a Variational Auto-Encoder agent taking random actions.
@@ -68,9 +68,22 @@ class JointVAE(VAE):
 
         # Call the parent constructor.
         super().__init__(
-            learning_starts=learning_starts, n_actions=n_actions, training=training, likelihood_type=likelihood_type,
-            latent_space_type=latent_space_type, n_continuous_vars=n_continuous_vars, n_discrete_vars=n_discrete_vars,
-            n_discrete_vals=n_discrete_vals, learning_rate=learning_rate, adam_eps=adam_eps, tau_schedule=tau_schedule,
-            beta_schedule=beta_schedule, replay_type=replay_type, buffer_size=buffer_size,  batch_size=batch_size,
-            n_steps=n_steps, omega=omega, omega_is=omega_is
+            learning_starts=learning_starts,
+            n_actions=n_actions,
+            training=training,
+            likelihood_type=likelihood_type,
+            latent_space_type=latent_space_type,
+            n_continuous_vars=n_continuous_vars,
+            n_discrete_vars=n_discrete_vars,
+            n_discrete_vals=n_discrete_vals,
+            learning_rate=learning_rate,
+            adam_eps=adam_eps,
+            tau_schedule=tau_schedule,
+            beta_schedule=beta_schedule,
+            replay_type=replay_type,
+            buffer_size=buffer_size,
+            batch_size=batch_size,
+            n_steps=n_steps,
+            omega=omega,
+            omega_is=omega_is
         )

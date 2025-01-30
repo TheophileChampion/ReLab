@@ -11,17 +11,17 @@ class NoisyDQN(DQN):
 
     def __init__(
         self,
-        gamma : float = 0.99,
-        learning_rate : float = 0.00001,
-        buffer_size : int = 1000000,
-        batch_size : int = 32,
-        learning_starts : int = 200000,
-        target_update_interval : int = 40000,
-        adam_eps : float = 1.5e-4,
-        replay_type : ReplayType = ReplayType.DEFAULT,
-        loss_type : LossType = LossType.DQN_SL1,
-        network_type : NetworkType = NetworkType.NOISY,
-        training : bool = True
+        gamma: float = 0.99,
+        learning_rate: float = 0.00001,
+        buffer_size: int = 1000000,
+        batch_size: int = 32,
+        learning_starts: int = 200000,
+        target_update_interval: int = 40000,
+        adam_eps: float = 1.5e-4,
+        replay_type: ReplayType = ReplayType.DEFAULT,
+        loss_type: LossType = LossType.DQN_SL1,
+        network_type: NetworkType = NetworkType.NOISY,
+        training: bool = True
     ) -> None:
         """!
         Create a DQN agent.
@@ -40,7 +40,15 @@ class NoisyDQN(DQN):
 
         # Call the parent constructor.
         super().__init__(
-            gamma=gamma, learning_rate=learning_rate, buffer_size=buffer_size, batch_size=batch_size,
-            learning_starts=learning_starts, target_update_interval=target_update_interval, adam_eps=adam_eps,
-            replay_type=replay_type, loss_type=loss_type, network_type=network_type, training=training
+            gamma=gamma,
+            learning_rate=learning_rate,
+            buffer_size=buffer_size,
+            batch_size=batch_size,
+            learning_starts=learning_starts,
+            target_update_interval=target_update_interval,
+            adam_eps=adam_eps,
+            replay_type=replay_type,
+            loss_type=loss_type,
+            network_type=network_type,
+            training=training
         )

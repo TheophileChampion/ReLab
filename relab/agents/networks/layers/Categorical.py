@@ -6,7 +6,12 @@ class Categorical(nn.Module):
     @brief Layer predicting the log-probabilities of categorical distributions.
     """
 
-    def __init__(self, input_size : int, n_discrete_vars : int, n_discrete_vals : int) -> None:
+    def __init__(
+        self,
+        input_size: int,
+        n_discrete_vars: int,
+        n_discrete_vals: int
+    ) -> None:
         """!
         Constructor.
         @param input_size: size of the vector send as input of the layer
@@ -22,17 +27,17 @@ class Categorical(nn.Module):
         if not isinstance(n_discrete_vals, list):
             n_discrete_vals = [n_discrete_vals] * n_discrete_vars
 
-        ## @var n_discrete_vals
-        # List containing the number of values that each discrete variable can take.
+        # @var n_discrete_vals
+        # List containing the number of values each discrete variable can take.
         self.n_discrete_vals = n_discrete_vals
 
-        ## @var log_alpha
-        # Layer that outputs the log-probabilities for each categorical distribution.
+        # @var log_alpha
+        # Layer predicting the log-probabilities of all discrete distributions.
         self.log_alpha = nn.Sequential(
             nn.Linear(input_size, sum(self.n_discrete_vals))
         )
 
-    def forward(self, x : Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """!
         Compute the log-probabilities of the categorical distributions.
         @param x: the input vector
@@ -44,4 +49,4 @@ class Categorical(nn.Module):
         for n_discrete_val in self.n_discrete_vals:
             xs.append(x[:, shift:shift + n_discrete_val])
             shift += n_discrete_val
-        return xs
+        return xs  # TODO invalid return type

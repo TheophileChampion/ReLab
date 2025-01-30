@@ -17,10 +17,12 @@ class FireReset(gym.Wrapper):
         @param env: environment to wrap
         """
         super().__init__(env)
-        assert env.unwrapped.get_action_meanings()[1] == "FIRE"  # type: ignore[attr-defined]
-        assert len(env.unwrapped.get_action_meanings()) >= 3  # type: ignore[attr-defined]
+        actions = \
+            env.unwrapped.get_action_meanings()  # type: ignore[attr-defined]
+        assert actions[1] == "FIRE"
+        assert len(actions) >= 3
 
-    def reset(self, **kwargs : Any) -> Tuple[ndarray, Dict]:
+    def reset(self, **kwargs: Any) -> Tuple[ndarray, Dict]:
         """!
         Reset the environment and take the firing action if it is available in the environment.
         @param kwargs: the keyword arguments to pass to the environment's reset function

@@ -8,7 +8,7 @@ import relab
 from relab.environments.wrapper.FireReset import FireReset
 
 
-def make(env_name : str, **kwargs : Any) -> Env:
+def make(env_name: str, **kwargs: Any) -> Env:
     """!
     Create the environment whose name is passed as parameters.
     @param env_name: the name of the environment to instantiate

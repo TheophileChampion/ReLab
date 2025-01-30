@@ -16,7 +16,10 @@ class TensorBoard:
     """
 
     @staticmethod
-    def load_log_file(file : str, metric_name : str) -> Tuple[List[int], List[float]]:
+    def load_log_file(
+        file: str,
+        metric_name: str
+    ) -> Tuple[List[int], List[float]]:
         """!
         Load all the data present in the log file.
         @param file: path to tensorflow log file
@@ -44,8 +47,12 @@ class TensorBoard:
             logging.error(f"Could not process '{file}': {e}.")
             return [], []
 
-    @staticmethod
-    def load_log_directory(directory : str, metric : str) -> Optional[DataFrame]:
+    @classmethod
+    def load_log_directory(
+        cls,
+        directory: str,
+        metric: str
+    ) -> Optional[DataFrame]:
         """!
         Load all the event files present in the directory.
         @param directory: the target directory
@@ -58,7 +65,7 @@ class TensorBoard:
         for file in FileSystem.files_in(directory):
 
             # Extract the steps and metric values from the current file.
-            steps, values = TensorBoard.load_log_file(join(directory, file), metric)
+            steps, values = cls.load_log_file(join(directory, file), metric)
             all_steps += steps
             all_values += values
 

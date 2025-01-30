@@ -14,7 +14,7 @@ class MatPlotLib:
     """
 
     @staticmethod
-    def format_image(img : Tensor, n_channels : int = 3) -> ndarray:
+    def format_image(img: Tensor, n_channels: int = 3) -> ndarray:
         """!
         Turn a 4d pytorch tensor into a 3d numpy array
         @param img: the 4d tensor
@@ -28,10 +28,10 @@ class MatPlotLib:
 
     @staticmethod
     def save_figure(
-        figure_path : str,
-        dpi : int = 300,
-        tight : bool = True,
-        close : bool = True
+        figure_path: str,
+        dpi: int = 300,
+        tight: bool = True,
+        close: bool = True
     ) -> None:
         """!
         Save a matplotlib figure.
@@ -47,7 +47,7 @@ class MatPlotLib:
             MatPlotLib.close()
 
     @staticmethod
-    def close(fig : Optional[Figure] = None) -> None:
+    def close(fig: Optional[Figure] = None) -> None:
         """!
         Close the figure passed as parameter or the current figure.
         @param fig: the figure to close

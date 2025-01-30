@@ -29,7 +29,7 @@ from relab.agents.Random import Random
 from relab.agents.VAE import VAE
 
 
-def make(agent_name : str, **kwargs : Any) -> AgentInterface:
+def make(agent_name: str, **kwargs: Any) -> AgentInterface:
     """!
     Create the agent whose name is passed as parameters.
     @param agent_name: the name of the agent to instantiate

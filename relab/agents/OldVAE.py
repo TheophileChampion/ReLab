@@ -1,4 +1,3 @@
-import errno
 import os
 from math import prod
 from typing import Union, Optional
@@ -66,10 +65,18 @@ class SelectRandomAction:
         """
         return np.random.choice(quality.shape[1])
 
+
 #
 # Class storing an experience.
 #
-Experience = collections.namedtuple('Experience', field_names=['obs', 'action', 'reward', 'done', 'next_obs'])
+Experience = collections.namedtuple(
+    'Experience',
+    field_names=[
+        'obs',
+        'action',
+        'reward',
+        'done',
+        'next_obs'])
 
 
 class ReplayBuffer:
@@ -123,7 +130,8 @@ class ReplayBuffer:
 
         # Sample a batch from the replay buffer.
         indices = np.random.choice(len(self.buffer), batch_size, replace=False)
-        obs, actions, rewards, done, next_obs = zip(*[self.buffer[idx] for idx in indices])
+        obs, actions, rewards, done, next_obs = zip(
+            *[self.buffer[idx] for idx in indices])
 
         # Convert the batch into a torch tensor stored on the proper device.
         return self.list_to_tensor(obs).to(self.device), \
@@ -131,6 +139,7 @@ class ReplayBuffer:
             FloatTensor(rewards).to(self.device), \
             BoolTensor(done).to(self.device), \
             self.list_to_tensor(next_obs).to(self.device)
+
 
 def safe_mean(arr: Union[np.ndarray, list, deque]) -> float:
     """
@@ -140,7 +149,9 @@ def safe_mean(arr: Union[np.ndarray, list, deque]) -> float:
     :param arr: Numpy array or list of values
     :return:
     """
-    return np.nan if len(arr) == 0 else float(np.mean(arr))  # type: ignore[arg-type]
+    return np.nan if len(arr) == 0 else float(
+        np.mean(arr))  # type: ignore[arg-type]
+
 
 class AgentInterface(ABC):
     """
@@ -206,7 +217,13 @@ class AgentInterface(ABC):
         """
         ...
 
-    def test(self, env, config, reward_name=None, n_steps_done=0, total_rewards=0):
+    def test(
+            self,
+            env,
+            config,
+            reward_name=None,
+            n_steps_done=0,
+            total_rewards=0):
         """
         Test the agent in the gym environment passed as parameters
         :param env: the gym environment
@@ -234,7 +251,8 @@ class AgentInterface(ABC):
             if self.writer is not None:
                 total_rewards += reward
                 if self.steps_done % config.tensorboard.log_interval == 0:
-                    self.writer.add_scalar("total_rewards", total_rewards, self.steps_done)
+                    self.writer.add_scalar(
+                        "total_rewards", total_rewards, self.steps_done)
                     self.log_episode_info(info, config.task.name)
 
             # Reset the environment when a trial ends.
@@ -289,13 +307,17 @@ class AgentInterface(ABC):
         # Log mean episodic reward and mean episode length.
         if len(self.ep_info_buffer) > 0 and len(self.ep_info_buffer[0]) > 0:
 
-            # Log mean episodic reward into tensorboard, and report it to ray tune (if needed).
+            # Log mean episodic reward into tensorboard, and report it to ray
+            # tune (if needed).
             ep_rew_mean = self.compute_mean_episodic_reward()
-            self.writer.add_scalar("rollout/ep_rew_mean", ep_rew_mean, steps_done)
+            self.writer.add_scalar(
+                "rollout/ep_rew_mean", ep_rew_mean, steps_done)
 
             # Log mean episode length.
-            ep_len_mean = safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer])
-            self.writer.add_scalar("rollout/ep_len_mean", ep_len_mean, steps_done)
+            ep_len_mean = safe_mean([ep_info["l"]
+                                    for ep_info in self.ep_info_buffer])
+            self.writer.add_scalar(
+                "rollout/ep_len_mean", ep_len_mean, steps_done)
 
     def draw_reconstructed_images(self, env, grid_size):
         """
@@ -303,7 +325,8 @@ class AgentInterface(ABC):
         :param env: the gym environment
         :param grid_size: the size of the image grid to generate
         """
-        raise Exception("The function 'get_reconstructed_images' is not implemented by this agent.")
+        raise Exception(
+            "The function 'get_reconstructed_images' is not implemented by this agent.")
 
 
 class Checkpoint:
@@ -325,17 +348,20 @@ class Checkpoint:
             return
 
         # Load checkpoint from path.
-        self.checkpoint = torch.load(checkpoint_file, map_location=Device.get())
+        self.checkpoint = torch.load(
+            checkpoint_file, map_location=Device.get())
         if "checkpoint_dir" in self.checkpoint and self.checkpoint["checkpoint_dir"] != directory:
             self.checkpoint["checkpoint_dir"] = directory
-            logging.info("The given checkpoint directory does not match the one found in the file.")
+            logging.info(
+                "The given checkpoint directory does not match the one found in the file.")
             logging.info("Overwriting checkpoint directory to: " + directory)
 
         # Store the tensorboard directory
         self.tb_dir = tb_dir
         if "tensorboard_dir" in self.checkpoint and self.checkpoint["tensorboard_dir"] != directory:
             self.checkpoint["tensorboard_dir"] = directory
-            logging.info("The given tensorboard directory does not match the one found in the file.")
+            logging.info(
+                "The given tensorboard directory does not match the one found in the file.")
             logging.info("Overwriting tensorboard directory to: " + directory)
 
     @staticmethod
@@ -346,28 +372,40 @@ class Checkpoint:
         :param regex: the regex checking whether a file name is a valid checkpoint file
         :return: None if an error occurred, else the path to the latest checkpoint
         """
-        # If the path is not a directory or does not exist, return without trying to load the checkpoint.
+        # If the path is not a directory or does not exist, return without
+        # trying to load the checkpoint.
         if not exists(directory) or not isdir(directory):
-            logging.warning("The following directory was not found: " + directory)
+            logging.warning(
+                "The following directory was not found: " +
+                directory)
             return None
 
-        # If the directory does not contain any files, return without trying to load the checkpoint.
-        files = [file for file in listdir(directory) if isfile(join(directory, file))]
+        # If the directory does not contain any files, return without trying to
+        # load the checkpoint.
+        files = [
+            file for file in listdir(directory) if isfile(
+                join(
+                    directory,
+                    file))]
         if len(files) == 0:
             logging.warning("No checkpoint found in directory: " + directory)
             return None
 
         # Retrieve the file whose name contain the largest number.
-        # This number is assumed to be the time step at which the agent was saved.
+        # This number is assumed to be the time step at which the agent was
+        # saved.
         max_number = - math.inf
         file = None
         for curr_file in files:
-            # Retrieve the number of training steps of the current checkpoint file.
+            # Retrieve the number of training steps of the current checkpoint
+            # file.
             if len(re.findall(regex, curr_file)) == 0:
                 continue
-            current_number = max([int(number) for number in re.findall(r'\d+', curr_file)])
+            current_number = max([int(number)
+                                 for number in re.findall(r'\d+', curr_file)])
 
-            # Remember the checkpoint file with the highest number of training steps.
+            # Remember the checkpoint file with the highest number of training
+            # steps.
             if current_number > max_number:
                 max_number = current_number
                 file = join(directory, curr_file)
@@ -404,7 +442,8 @@ class Checkpoint:
         agent_class = getattr(agent_module, self.checkpoint["agent_class"])
 
         # Load the parameters of the constructor from the checkpoint.
-        param = agent_class.load_constructor_parameters(self.tb_dir, self.checkpoint, training_mode)
+        param = agent_class.load_constructor_parameters(
+            self.tb_dir, self.checkpoint, training_mode)
 
         # Instantiate the agent.
         return agent_class(**param)
@@ -444,9 +483,13 @@ class Checkpoint:
         """
 
         # Load value network.
-        value_net_module = importlib.import_module(checkpoint[f"value_net{prefix}_module"])
-        value_net_class = getattr(value_net_module, checkpoint[f"value_net{prefix}_class"])
-        value_net = value_net_class(n_actions=checkpoint["n_actions"], n_states=checkpoint["n_states"])
+        value_net_module = importlib.import_module(
+            checkpoint[f"value_net{prefix}_module"])
+        value_net_class = getattr(value_net_module,
+                                  checkpoint[f"value_net{prefix}_class"])
+        value_net = value_net_class(
+            n_actions=checkpoint["n_actions"],
+            n_states=checkpoint["n_states"])
         value_net.load_state_dict(checkpoint[f"value_net{prefix}_state_dict"])
 
         # Set the training mode of the value network.
@@ -477,12 +520,15 @@ class Checkpoint:
         """
 
         # Load number of states and the image shape.
-        image_shape = checkpoint["image_shape"]
+        # image_shape = checkpoint["image_shape"]
         n_states = checkpoint["n_states"]
 
         # Load decoder network.
-        decoder_module = importlib.import_module(checkpoint["decoder_net_module"])
-        decoder_class = getattr(decoder_module, checkpoint["decoder_net_class"])
+        decoder_module = importlib.import_module(
+            checkpoint["decoder_net_module"])
+        decoder_class = getattr(
+            decoder_module,
+            checkpoint["decoder_net_class"])
         decoder = decoder_class(n_states, 4)
         decoder.load_state_dict(checkpoint["decoder_net_state_dict"])
 
@@ -500,13 +546,16 @@ class Checkpoint:
         """
 
         # Load number of states and the image shape.
-        image_shape = checkpoint["image_shape"]
+        # image_shape = checkpoint["image_shape"]
         n_states = checkpoint["n_states"]
-        n_actions = checkpoint["n_actions"] if "n_actions" in checkpoint else -1
+        # n_actions = checkpoint["n_actions"] if "n_actions" in checkpoint else -1
 
         # Load encoder network.
-        encoder_module = importlib.import_module(checkpoint["encoder_net_module"])
-        encoder_class = getattr(encoder_module, checkpoint["encoder_net_class"])
+        encoder_module = importlib.import_module(
+            checkpoint["encoder_net_module"])
+        encoder_class = getattr(
+            encoder_module,
+            checkpoint["encoder_net_class"])
         encoder = encoder_class(n_states, 4)
         encoder.load_state_dict(checkpoint["encoder_net_state_dict"])
 
@@ -524,8 +573,11 @@ class Checkpoint:
         """
 
         # Load transition network.
-        transition_module = importlib.import_module(checkpoint["transition_net_module"])
-        transition_class = getattr(transition_module, checkpoint["transition_net_class"])
+        transition_module = importlib.import_module(
+            checkpoint["transition_net_module"])
+        transition_class = getattr(
+            transition_module,
+            checkpoint["transition_net_class"])
         transition = transition_class(
             n_states=checkpoint["n_states"], n_actions=checkpoint["n_actions"]
         )
@@ -536,7 +588,11 @@ class Checkpoint:
         return transition
 
     @staticmethod
-    def load_critic(checkpoint, training_mode=True, n_states_key="n_states", network_key="critic_net"):
+    def load_critic(
+            checkpoint,
+            training_mode=True,
+            n_states_key="n_states",
+            network_key="critic_net"):
         """
         Load the critic from the checkpoint
         :param checkpoint: the checkpoint
@@ -546,16 +602,20 @@ class Checkpoint:
         :return: the critic.
         """
         # Check validity of inputs
-        if network_key + '_module' not in checkpoint.keys() or network_key + '_class' not in checkpoint.keys():
+        if network_key + '_module' not in checkpoint.keys() or network_key + \
+                '_class' not in checkpoint.keys():
             return None
 
         # Load critic network.
-        critic_module = importlib.import_module(checkpoint[network_key + "_module"])
-        critic_class = getattr(critic_module, checkpoint[network_key + "_class"])
+        critic_module = importlib.import_module(
+            checkpoint[network_key + "_module"])
+        critic_class = getattr(critic_module,
+                               checkpoint[network_key + "_class"])
         image_shape = checkpoint["image_shape"] if "image_shape" in checkpoint else None
         critic = critic_class(
-            n_states=checkpoint[n_states_key], n_actions=checkpoint["n_actions"], image_shape=image_shape
-        )
+            n_states=checkpoint[n_states_key],
+            n_actions=checkpoint["n_actions"],
+            image_shape=image_shape)
         critic.load_state_dict(checkpoint[network_key + "_state_dict"])
 
         # Set the training mode of the critic.
@@ -563,7 +623,11 @@ class Checkpoint:
         return critic
 
     @staticmethod
-    def load_value(checkpoint, training_mode=True, n_states_key="n_states", network_key="value_net"):
+    def load_value(
+            checkpoint,
+            training_mode=True,
+            n_states_key="n_states",
+            network_key="value_net"):
         """
         Load the value from the checkpoint
         :param checkpoint: the checkpoint
@@ -573,15 +637,17 @@ class Checkpoint:
         :return: the value.
         """
         # Check validity of inputs
-        if network_key + '_module' not in checkpoint.keys() or network_key + '_class' not in checkpoint.keys():
+        if network_key + '_module' not in checkpoint.keys() or network_key + \
+                '_class' not in checkpoint.keys():
             return None
 
         # Load value network.
-        value_module = importlib.import_module(checkpoint[network_key + "_module"])
+        value_module = importlib.import_module(
+            checkpoint[network_key + "_module"])
         value_class = getattr(value_module, checkpoint[network_key + "_class"])
         value = value_class(
-            n_states=checkpoint[n_states_key], n_actions=checkpoint["n_actions"]
-        )
+            n_states=checkpoint[n_states_key],
+            n_actions=checkpoint["n_actions"])
         value.load_state_dict(checkpoint[network_key + "_state_dict"])
 
         # Set the training mode of the value.
@@ -602,6 +668,7 @@ class Checkpoint:
         obj_module = importlib.import_module(obj["module"])
         obj_class = getattr(obj_module, obj["class"])
         return obj_class(**obj)
+
 
 def entropy_gaussian(log_var, sum_dims=None):
     """
@@ -638,7 +705,13 @@ def kl_div_categorical_with_logits(log_pi_hat, log_pi):
     return kl.sum()
 
 
-def kl_div_gaussian(mean_hat, log_var_hat, mean=None, log_var=None, sum_dims=None, min_var=10e-4):
+def kl_div_gaussian(
+        mean_hat,
+        log_var_hat,
+        mean=None,
+        log_var=None,
+        sum_dims=None,
+        min_var=10e-4):
     """
     Compute the KL-divergence between two Gaussian distributions
     :param mean_hat: the mean of the first Gaussian distribution
@@ -650,7 +723,8 @@ def kl_div_gaussian(mean_hat, log_var_hat, mean=None, log_var=None, sum_dims=Non
     :return: the KL-divergence between the two Gaussian distributions
     """
 
-    # Initialise the mean and log variance vectors to zero, if they are not provided as parameters.
+    # Initialise the mean and log variance vectors to zero, if they are not
+    # provided as parameters.
     if mean is None:
         mean = torch.zeros_like(mean_hat)
     if log_var is None:
@@ -659,7 +733,8 @@ def kl_div_gaussian(mean_hat, log_var_hat, mean=None, log_var=None, sum_dims=Non
     # Compute the KL-divergence
     var = log_var.exp()
     var = torch.clamp(var, min=min_var)
-    kl_div = log_var - log_var_hat + torch.exp(log_var_hat - log_var) + (mean - mean_hat) ** 2 / var
+    kl_div = log_var - log_var_hat + \
+        torch.exp(log_var_hat - log_var) + (mean - mean_hat) ** 2 / var
 
     if sum_dims is None:
         return 0.5 * kl_div.sum(dim=1).mean()
@@ -678,7 +753,8 @@ def log_bernoulli_with_logits(obs, alpha):
     """
     one = torch.ones_like(alpha)
     zero = torch.zeros_like(alpha)
-    out = - torch.maximum(alpha, zero) + alpha * obs - torch.log(one + torch.exp(-torch.abs(alpha)))
+    out = - torch.maximum(alpha, zero) + alpha * obs - \
+        torch.log(one + torch.exp(-torch.abs(alpha)))
     return out.sum(dim=(1, 2, 3)).mean()
 
 
@@ -690,7 +766,8 @@ def reparameterize(mean, log_var):
     :return: a sample from the Gaussian on which back-propagation can be performed
     """
     nb_states = mean.shape[1]
-    epsilon = MultivariateNormal(zeros(nb_states), eye(nb_states)).sample([mean.shape[0]]).to(Device.get())
+    epsilon = MultivariateNormal(zeros(nb_states), eye(
+        nb_states)).sample([mean.shape[0]]).to(Device.get())
     return epsilon * torch.exp(0.5 * log_var) + mean
 
 
@@ -717,6 +794,7 @@ def compute_info_gain(g_value, mean, log_var, mean_hat, log_var_hat):
         info_gain = - entropy_gaussian(log_var) - entropy_gaussian(log_var_hat)
     return info_gain
 
+
 class PlotsBuilder:
     """
     Allows the creation of complex plots to visualize models based on Gaussian Mixture.
@@ -734,7 +812,17 @@ class PlotsBuilder:
 
         # Create the list of colors to use.
         self.colors = list(colors.CSS4_COLORS.keys())
-        first_colors = ['red', 'green', 'blue', 'purple', 'gray', 'pink', 'turquoise', 'orange', 'brown', 'cyan']
+        first_colors = [
+            'red',
+            'green',
+            'blue',
+            'purple',
+            'gray',
+            'pink',
+            'turquoise',
+            'orange',
+            'brown',
+            'cyan']
         for i, color in enumerate(first_colors):
             index = self.colors.index(color)
             i_color = self.colors[i]
@@ -750,9 +838,18 @@ class PlotsBuilder:
             return self.axes
         if self.n_rows == 1 or self.n_cols == 1:
             return self.axes[self.current_plot_index]
-        return self.axes[int(self.current_plot_index / self.n_cols)][self.current_plot_index % self.n_cols]
+        return self.axes[int(self.current_plot_index /
+                             self.n_cols)][self.current_plot_index %
+                                           self.n_cols]
 
-    def draw_gaussian_mixture(self, title="", data=None, r=None, params=None, clusters=False, ellipses=True):
+    def draw_gaussian_mixture(
+            self,
+            title="",
+            data=None,
+            r=None,
+            params=None,
+            clusters=False,
+            ellipses=True):
 
         # Set the subplot title.
         self.current_axis.set_title(title)
@@ -764,7 +861,8 @@ class PlotsBuilder:
             y = [x_tensor[1] for x_tensor in data]
 
             r = torch.softmax(r, dim=1)
-            c = [tuple(r_n) for r_n in r] if r.shape[1] == 3 else [self.colors[torch.argmax(r_n)] for r_n in r]
+            c = [tuple(r_n) for r_n in r] if r.shape[1] == 3 else [
+                self.colors[torch.argmax(r_n)] for r_n in r]
             self.current_axis.scatter(x=x, y=y, c=c)
 
         # Draw the ellipses corresponding to the current model believes.
@@ -777,7 +875,8 @@ class PlotsBuilder:
             μ, _, _ = params
             x = [μ_k[0] for μ_k in μ]
             y = [μ_k[1] for μ_k in μ]
-            self.current_axis.scatter(x=x, y=y, marker="X", s=100, c="black", edgecolor="white")
+            self.current_axis.scatter(
+                x=x, y=y, marker="X", s=100, c="black", edgecolor="white")
 
         # Move to the next axis.
         self.current_plot_index += 1
@@ -797,7 +896,8 @@ class PlotsBuilder:
             v = 3. * np.sqrt(2.) * np.sqrt(np.maximum(v, 0))
             mean = m_hat[k]
             mean = mean.reshape(2, 1)
-            ell = mpl.patches.Ellipse(mean, v[0], v[1], 180 + angle, color=color)
+            ell = mpl.patches.Ellipse(
+                mean, v[0], v[1], 180 + angle, color=color)
             ell.set_clip_box(self.current_axis.bbox)
             ell.set_alpha(0.5)
             self.current_axis.add_artist(ell)
@@ -824,7 +924,8 @@ class PlotsBuilder:
         # Retrieve the dataset size and the number of states.
         n_states = r.shape[1]
 
-        # Draw a bar plot representing how many point are attributed to each component.
+        # Draw a bar plot representing how many point are attributed to each
+        # component.
         x = [state for state in range(n_states)]
         y = r.sum(dim=0).tolist()
         bars = self.current_axis.bar(x, y, align='center')
@@ -876,7 +977,10 @@ class MatPlotLib:
         :param img: the 4d tensor
         :return: the 3d array
         """
-        return torch.squeeze(img)[:3, :, :].swapaxes(0, 1).swapaxes(1, 2).detach().cpu().numpy()
+        return torch.squeeze(img)[
+            :3, :, :].swapaxes(
+            0, 1).swapaxes(
+            1, 2).detach().cpu().numpy()
 
     @staticmethod
     def save_figure(out_f_name, dpi=300, tight=True):
@@ -892,7 +996,14 @@ class MatPlotLib:
         MatPlotLib.close()
 
     @staticmethod
-    def draw_gm_graph(params, data, r, title="", clusters=False, ellipses=True, skip_fc=None):
+    def draw_gm_graph(
+            params,
+            data,
+            r,
+            title="",
+            clusters=False,
+            ellipses=True,
+            skip_fc=None):
         """
         Draw the Gaussian Mixture graph
         :param params: a 3-tuples of the form (m_hat, v_hat, W_hat)
@@ -907,21 +1018,39 @@ class MatPlotLib:
         # Draw the plots.
         plots = PlotsBuilder(title, n_cols=2)
         plots.draw_gaussian_mixture(
-            title="Observation at t = 0", data=data, r=r, params=params, clusters=clusters, ellipses=ellipses
-        )
-        plots.draw_responsibility_histograms(title="Responsibilities at t = 0", r=r)
+            title="Observation at t = 0",
+            data=data,
+            r=r,
+            params=params,
+            clusters=clusters,
+            ellipses=ellipses)
+        plots.draw_responsibility_histograms(
+            title="Responsibilities at t = 0", r=r)
 
         # Add the skip button.
         if skip_fc is not None:
             plt.gcf().add_axes([0.97, 0.97, 0.02, 0.02])
-            b_next = Button(plt.gca(), 'Skip', color="limegreen", hovercolor="forestgreen")
+            b_next = Button(
+                plt.gca(),
+                'Skip',
+                color="limegreen",
+                hovercolor="forestgreen")
             b_next.on_clicked(skip_fc)
 
         # Display the graph.
         plots.show()
 
     @staticmethod
-    def draw_tgm_graph(action_names, params, x0, x1, a0, r, title="", clusters=False, ellipses=True):
+    def draw_tgm_graph(
+            action_names,
+            params,
+            x0,
+            x1,
+            a0,
+            r,
+            title="",
+            clusters=False,
+            ellipses=True):
         """
         Draw the Temporal Gaussian Mixture graph
         :param action_names: name of all the environment's actions
@@ -939,27 +1068,53 @@ class MatPlotLib:
         n_actions = len(action_names)
 
         # Create the plot builder.
-        plots = PlotsBuilder(title, n_rows=1 + math.ceil(n_actions / 4.0), n_cols=4)
+        plots = PlotsBuilder(
+            title,
+            n_rows=1 +
+            math.ceil(
+                n_actions /
+                4.0),
+            n_cols=4)
 
         # Draw the model's beliefs.
         plots.draw_gaussian_mixture(
-            title="Observation at t = 0", data=x0, r=r[0], params=params, clusters=clusters, ellipses=ellipses
-        )
+            title="Observation at t = 0",
+            data=x0,
+            r=r[0],
+            params=params,
+            clusters=clusters,
+            ellipses=ellipses)
         plots.draw_gaussian_mixture(
-            title="Observation at t = 1", data=x1, r=r[1], params=params, clusters=clusters, ellipses=ellipses
-        )
+            title="Observation at t = 1",
+            data=x1,
+            r=r[1],
+            params=params,
+            clusters=clusters,
+            ellipses=ellipses)
 
         # Draw the responsibilities.
-        plots.draw_responsibility_histograms(title="Responsibilities at t = 0", r=r[0])
-        plots.draw_responsibility_histograms(title="Responsibilities at t = 1", r=r[1])
+        plots.draw_responsibility_histograms(
+            title="Responsibilities at t = 0", r=r[0])
+        plots.draw_responsibility_histograms(
+            title="Responsibilities at t = 1", r=r[1])
 
         # Show all the plots.
         plots.show()
 
     @staticmethod
     def draw_dirichlet_tmhgm_graph(
-        action_names, params0, params1, x0, x1, a0, r, b_hat, title="", clusters=False, ellipses=True, skip_fc=None
-    ):
+            action_names,
+            params0,
+            params1,
+            x0,
+            x1,
+            a0,
+            r,
+            b_hat,
+            title="",
+            clusters=False,
+            ellipses=True,
+            skip_fc=None):
         """
         Draw the Temporal Gaussian Mixture graph
         :param action_names: name of all the environment's actions
@@ -980,28 +1135,52 @@ class MatPlotLib:
         n_actions = len(action_names)
 
         # Create the plot builder.
-        plots = PlotsBuilder(title, n_rows=1 + 2 * math.ceil(n_actions / 4.0), n_cols=4)
+        plots = PlotsBuilder(
+            title,
+            n_rows=1 +
+            2 *
+            math.ceil(
+                n_actions /
+                4.0),
+            n_cols=4)
 
         # Draw the model's beliefs.
         plots.draw_gaussian_mixture(
-            title="Observation at t = 0", data=x0, r=r[0], params=params0, clusters=clusters, ellipses=ellipses
-        )
+            title="Observation at t = 0",
+            data=x0,
+            r=r[0],
+            params=params0,
+            clusters=clusters,
+            ellipses=ellipses)
         plots.draw_gaussian_mixture(
-            title="Observation at t = 1", data=x1, r=r[1], params=params1, clusters=clusters, ellipses=ellipses
-        )
+            title="Observation at t = 1",
+            data=x1,
+            r=r[1],
+            params=params1,
+            clusters=clusters,
+            ellipses=ellipses)
 
         # Draw the responsibilities.
-        plots.draw_responsibility_histograms(title="Responsibilities at t = 0", r=r[0])
-        plots.draw_responsibility_histograms(title="Responsibilities at t = 1", r=r[1])
+        plots.draw_responsibility_histograms(
+            title="Responsibilities at t = 0", r=r[0])
+        plots.draw_responsibility_histograms(
+            title="Responsibilities at t = 1", r=r[1])
 
         # Draw the transition matrix for each action.
         for action in range(n_actions):
-            plots.draw_matrix(b_hat[action], title=f"Transition matrix for action = {action_names[action]}")
+            plots.draw_matrix(
+                b_hat[action],
+                title=f"Transition matrix for action = {
+                    action_names[action]}")
 
         # Add the skip button.
         if skip_fc is not None:
             plt.gcf().add_axes([0.97, 0.97, 0.02, 0.02])
-            b_next = Button(plt.gca(), 'Skip', color="limegreen", hovercolor="forestgreen")
+            b_next = Button(
+                plt.gca(),
+                'Skip',
+                color="limegreen",
+                hovercolor="forestgreen")
             b_next.on_clicked(skip_fc)
 
         # Show all the plots.
@@ -1013,7 +1192,8 @@ class Device:
     Singleton to access the type of device to use, i.e. GPU or CPU.
     """
 
-    # Specify the device on which models and tensors must be sent (i.e., None, cpu or cuda).
+    # Specify the device on which models and tensors must be sent (i.e., None,
+    # cpu or cuda).
     device_name = "cuda"
 
     @staticmethod
@@ -1027,7 +1207,8 @@ class Device:
         # - select cuda if cuda is available
         # - select cpu otherwise
         if Device.device_name is None:
-            Device.device_name = 'cuda' if torch.cuda.is_available() and torch.cuda.device_count() >= 1 else 'cpu'
+            Device.device_name = 'cuda' if torch.cuda.is_available(
+            ) and torch.cuda.device_count() >= 1 else 'cpu'
 
         # Create the device.
         return torch.device(Device.device_name)
@@ -1059,6 +1240,8 @@ def get_adam(modules, lr):
 # Class implementing a network that maps a vector of size n into two vectors representing the mean
 # and variance of a Gaussian with diagonal covariance matrix.
 #
+
+
 class DiagonalGaussian(nn.Module):
 
     def __init__(self, input_size, nb_components):
@@ -1086,6 +1269,8 @@ class DiagonalGaussian(nn.Module):
 #
 # Class implementing a deconvolution decoder for 64 by 64 images.
 #
+
+
 class ConvDecoder64(nn.Module):
 
     def __init__(self, n_states, image_shape):
@@ -1105,14 +1290,22 @@ class ConvDecoder64(nn.Module):
             nn.ReLU(),
         )
         self.__up_conv_net = nn.Sequential(
-            nn.ConvTranspose2d(64, 64, (4, 4), stride=(2, 2), output_padding=(1, 1)),
-            nn.ReLU(),
-            nn.ConvTranspose2d(64, 32, (4, 4), stride=(2, 2), padding=(0, 0), output_padding=(1, 1)),
-            nn.ReLU(),
-            nn.ConvTranspose2d(32, 32, (4, 4), stride=(2, 2), padding=(0, 0), output_padding=(1, 1)),
-            nn.ReLU(),
-            nn.ConvTranspose2d(32, image_shape[0], (4, 4), stride=(1, 1), padding=(0, 0), output_padding=(0, 0)),
-        )
+            nn.ConvTranspose2d(
+                64, 64, (4, 4), stride=(
+                    2, 2), output_padding=(
+                    1, 1)), nn.ReLU(), nn.ConvTranspose2d(
+                64, 32, (4, 4), stride=(
+                    2, 2), padding=(
+                    0, 0), output_padding=(
+                    1, 1)), nn.ReLU(), nn.ConvTranspose2d(
+                32, 32, (4, 4), stride=(
+                    2, 2), padding=(
+                    0, 0), output_padding=(
+                    1, 1)), nn.ReLU(), nn.ConvTranspose2d(
+                32, image_shape[0], (4, 4), stride=(
+                    1, 1), padding=(
+                    0, 0), output_padding=(
+                    0, 0)), )
 
     def forward(self, x):
         """
@@ -1123,11 +1316,13 @@ class ConvDecoder64(nn.Module):
         x = self.__lin_net(x)
         x = torch.reshape(x, (x.shape[0], 64, 5, 5))
         x = self.__up_conv_net(x)
-        return x # TODO .permute(0, 2, 3, 1)
+        return x  # TODO .permute(0, 2, 3, 1)
 
 #
 # Class implementing a convolutional encoder for 64 by 64 images.
 #
+
+
 class ConvEncoder64(nn.Module):
 
     def __init__(self, n_states, image_shape, **_):
@@ -1188,16 +1383,30 @@ class ConvEncoder64(nn.Module):
         # TODO x = x.permute(0, 3, 1, 2)
         return self.__net(x)
 
+
 class VAE(AgentInterface):
     """
     Implement a Variational Auto-Encoder agent acting randomly.
     """
 
     def __init__(
-        self, name="OldVAE", n_steps_beta_reset=10000000000, beta=1.0, lr=0.0001, beta_starting_step=0,
-        beta_rate=0.0000, queue_capacity=50000, n_actions=18, n_states=10, image_shape=[4,64,64], steps_done=0,
-        verbose=False, **_
-    ):
+            self,
+            name="OldVAE",
+            n_steps_beta_reset=10000000000,
+            beta=1.0,
+            lr=0.0001,
+            beta_starting_step=0,
+            beta_rate=0.0000,
+            queue_capacity=50000,
+            n_actions=18,
+            n_states=10,
+            image_shape=[
+                4,
+                64,
+                64],
+            steps_done=0,
+            verbose=False,
+            **_):
         """
         Constructor
         :param name: the agent name
@@ -1323,7 +1532,8 @@ class VAE(AgentInterface):
             if self.writer is not None:
                 self.total_rewards += reward
                 if self.steps_done % 1 == 0:
-                    self.writer.add_scalar("total_rewards", self.total_rewards, self.steps_done)
+                    self.writer.add_scalar(
+                        "total_rewards", self.total_rewards, self.steps_done)
                     self.log_episode_info(info, "training")
 
             # Reset the environment when a trial ends.
@@ -1388,18 +1598,24 @@ class VAE(AgentInterface):
         # Display debug information, if needed.
         if self.writer is not None and self.steps_done % min(1, 50) == 0:
 
-            # Log the mean, min and max values of weights, if requested by user.
+            # Log the mean, min and max values of weights, if requested by
+            # user.
             if self.verbose and self.steps_done % min(1 * 10, 500) == 0:
 
                 for neural_network in [self.encoder, self.decoder]:
                     for name, param in neural_network.named_parameters():
-                        self.writer.add_scalar(f"{name}.mean", param.mean(), self.steps_done)
-                        self.writer.add_scalar(f"{name}.min", param.min(), self.steps_done)
-                        self.writer.add_scalar(f"{name}.max", param.min(), self.steps_done)
+                        self.writer.add_scalar(
+                            f"{name}.mean", param.mean(), self.steps_done)
+                        self.writer.add_scalar(
+                            f"{name}.min", param.min(), self.steps_done)
+                        self.writer.add_scalar(
+                            f"{name}.max", param.min(), self.steps_done)
 
-            # Log the KL-divergence, the negative log likelihood, beta and the variational free energy.
+            # Log the KL-divergence, the negative log likelihood, beta and the
+            # variational free energy.
             self.writer.add_scalar("kl_div_hs", kl_div_hs, self.steps_done)
-            self.writer.add_scalar("neg_log_likelihood", - log_likelihood, self.steps_done)
+            self.writer.add_scalar(
+                "neg_log_likelihood", - log_likelihood, self.steps_done)
             self.writer.add_scalar("beta", self.beta, self.steps_done)
             self.writer.add_scalar("vfe", vfe_loss, self.steps_done)
 
@@ -1462,11 +1678,17 @@ class VAE(AgentInterface):
         """
         return {
             "name": checkpoint["name"],
-            "encoder": Checkpoint.load_encoder(checkpoint, training_mode),
-            "decoder": Checkpoint.load_decoder(checkpoint, training_mode),
+            "encoder": Checkpoint.load_encoder(
+                checkpoint,
+                training_mode),
+            "decoder": Checkpoint.load_decoder(
+                checkpoint,
+                training_mode),
             "image_shape": checkpoint["image_shape"],
             "lr": checkpoint["lr"],
-            "action_selection": Checkpoint.load_object_from_dictionary(checkpoint, "action_selection"),
+            "action_selection": Checkpoint.load_object_from_dictionary(
+                checkpoint,
+                "action_selection"),
             "beta": checkpoint["beta"],
             "n_actions": checkpoint["n_actions"],
             "n_states": checkpoint["n_states"],
@@ -1487,37 +1709,47 @@ class VAE(AgentInterface):
         @return None if an error occurred, else the path to the latest checkpoint
         """
 
-        # If the path is not a directory or does not exist, return without trying to load the checkpoint.
+        # If the path is not a directory or does not exist, return without
+        # trying to load the checkpoint.
         directory = os.environ["CHECKPOINT_DIRECTORY"]
         if not exists(directory) or not isdir(directory):
-            logging.warning("The following directory was not found: " + directory)
+            logging.warning(
+                "The following directory was not found: " +
+                directory)
             return None
 
-        # If the directory does not contain any files, return without trying to load the checkpoint.
-        files = [file for file in os.listdir(directory) if isfile(join(directory, file))]
+        # If the directory does not contain any files, return without trying to
+        # load the checkpoint.
+        files = [file for file in os.listdir(
+            directory) if isfile(join(directory, file))]
         if len(files) == 0:
             logging.warning("No checkpoint found in directory: " + directory)
             return None
 
         # Retrieve the file whose name contain the largest number.
-        # This number is assumed to be the time step at which the agent was saved.
+        # This number is assumed to be the time step at which the agent was
+        # saved.
         max_number = - math.inf
         file = None
         for current_file in files:
 
-            # Retrieve the number of training steps of the current checkpoint file.
+            # Retrieve the number of training steps of the current checkpoint
+            # file.
             if len(re.findall(regex, current_file)) == 0:
                 continue
-            current_number = max([int(number) for number in re.findall(r"\d+", current_file)])
+            current_number = max([int(number)
+                                 for number in re.findall(r"\d+", current_file)])
 
-            # Remember the checkpoint file with the highest number of training steps.
+            # Remember the checkpoint file with the highest number of training
+            # steps.
             if current_number > max_number:
                 max_number = current_number
                 file = join(directory, current_file)
 
         return file
 
-    def load(self, checkpoint_name : str = "", buffer_checkpoint_name : str = ""):
+    def load(self, checkpoint_name: str = "",
+             buffer_checkpoint_name: str = ""):
         """
         Create the agent according to the configuration
         :return: the created agent
@@ -1527,7 +1759,9 @@ class VAE(AgentInterface):
         if checkpoint_name == "":
             checkpoint_path = self.get_latest_checkpoint()
         else:
-            checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+            checkpoint_path = join(
+                os.environ["CHECKPOINT_DIRECTORY"],
+                checkpoint_name)
 
         # Check if the checkpoint can be loaded.
         if checkpoint_path is None:
@@ -1535,9 +1769,14 @@ class VAE(AgentInterface):
             return
 
         # Load the checkpoint from the file system.
-        logging.info("Loading agent from the following file: " + checkpoint_path)
+        logging.info(
+            "Loading agent from the following file: " +
+            checkpoint_path)
         self.device = Device.get()
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+        checkpoint = torch.load(
+            checkpoint_path,
+            map_location=self.device,
+            weights_only=False)
 
         self.name = checkpoint["name"]
         self.encoder = Checkpoint.load_encoder(checkpoint, True)
@@ -1546,7 +1785,8 @@ class VAE(AgentInterface):
         self.decoder.to(self.device)
         self.image_shape = checkpoint["image_shape"]
         self.lr = checkpoint["lr"]
-        self.action_selection = Checkpoint.load_object_from_dictionary(checkpoint, "action_selection")
+        self.action_selection = Checkpoint.load_object_from_dictionary(
+            checkpoint, "action_selection")
         self.beta = checkpoint["beta"]
         self.n_actions = checkpoint["n_actions"]
         self.n_states = checkpoint["n_states"]

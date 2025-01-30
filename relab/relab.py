@@ -1,4 +1,5 @@
 import os
+from os import getcwd
 import random
 from os.path import join, isfile, abspath
 from typing import Optional
@@ -17,7 +18,11 @@ from relab.helpers.Typing import Device, ConfigInfo
 
 
 def initialize(
-    agent_name: str, env_name: str, seed: int = None, data_directory : str = None, paths_only: bool = False
+    agent_name: str,
+    env_name: str,
+    seed: int = None,
+    data_directory: str = None,
+    paths_only: bool = False
 ) -> None:
     """!
     Initialize the 'relab' package.
@@ -29,27 +34,28 @@ def initialize(
     """
 
     # Ensure the data directory is valid.
-    if "DATA_DIRECTORY" not in os.environ.keys() and data_directory is None:
-        os.environ["DATA_DIRECTORY"] = abspath(join(os.getcwd(), "data")) + os.sep
-        logging.info(f"Using default data directory location: {os.environ["DATA_DIRECTORY"]}")
-
-    # Set the environment variable "DATA_DIRECTORY" if provided as parameters by the user.
     if data_directory is not None:
         os.environ["DATA_DIRECTORY"] = data_directory
+    elif data_directory is None and "DATA_DIRECTORY" in os.environ.keys():
+        data_directory = os.environ["DATA_DIRECTORY"]
+    else:
+        data_directory = abspath(join(getcwd(), "data")) + os.sep
+        os.environ["DATA_DIRECTORY"] = data_directory
+        logging.info(f"Using default data directory: {data_directory}")
 
     # Set the environment variables:
-    #  "CHECKPOINT_DIRECTORY", "TENSORBOARD_DIRECTORY", "DEMO_DIRECTORY", "GRAPH_DIRECTORY",
-    #  "STATISTICS_DIRECTORY", and "DATASET_DIRECTORY".
+    #  "CHECKPOINT_DIRECTORY", "TENSORBOARD_DIRECTORY", "DEMO_DIRECTORY",
+    #  "GRAPH_DIRECTORY", "STATISTICS_DIRECTORY", and "DATASET_DIRECTORY".
     suffix = env_name.replace("ALE/", "") + os.sep
-    os.environ["GRAPH_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "graphs", suffix)
+    os.environ["GRAPH_DIRECTORY"] = join(data_directory, "graphs", suffix)
     suffix += agent_name + os.sep
-    os.environ["STATISTICS_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "graphs", suffix)
+    os.environ["STATISTICS_DIRECTORY"] = join(data_directory, "graphs", suffix)
     if seed is not None:
         suffix += f"{seed}" + os.sep
-    os.environ["CHECKPOINT_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "saves", suffix)
-    os.environ["TENSORBOARD_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "runs", suffix)
-    os.environ["DEMO_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "demos", suffix)
-    os.environ["DATASET_DIRECTORY"] = join(os.environ["DATA_DIRECTORY"], "datasets")
+    os.environ["CHECKPOINT_DIRECTORY"] = join(data_directory, "saves", suffix)
+    os.environ["TENSORBOARD_DIRECTORY"] = join(data_directory, "runs", suffix)
+    os.environ["DEMO_DIRECTORY"] = join(data_directory, "demos", suffix)
+    os.environ["DATASET_DIRECTORY"] = join(data_directory, "datasets")
 
     # Check whether only the paths should be initialized.
     if paths_only is True:
@@ -66,7 +72,10 @@ def initialize(
     torch.manual_seed(seed)
 
 
-def build_cpp_library_and_wrapper(cpp_library_name : str = "relab", python_module_name : str = "cpp") -> None:
+def build_cpp_library_and_wrapper(
+    cpp_library_name: str = "relab",
+    python_module_name: str = "cpp"
+) -> None:
     """!
     Build the C++ shared library and the python module wrapping the library.
     @param cpp_library_name: the name of the shared library to create
@@ -93,23 +102,32 @@ def device() -> Device:
     Retrieves the device on which the computation should be performed.
     @return the device
     """
-    return torch.device("cuda" if torch.cuda.is_available() and torch.cuda.device_count() >= 1 else "cpu")
+    cuda = torch.cuda.is_available() and torch.cuda.device_count() >= 1
+    return torch.device("cuda" if cuda is True else "cpu")
 
 
-def config(key : Optional[str] = None) -> ConfigInfo:
+def config(key: Optional[str] = None) -> ConfigInfo:
     """!
     Retrieves the benchmark configuration.
     @param key: the key whose value in the configuration must be returned, None if the entire configure is requested
     @return the configuration or the entry in the configuration corresponding to the key passed as parameters
     """
     conf = {
-        "max_n_steps": 50000000,  # Maximum number of training iterations
-        "checkpoint_frequency": 500000,  # Number of training iterations between two checkpoints
-        "tensorboard_log_interval": 5000,  # Number of training iterations between two logging of values in tensorboard
-        "stack_size": 4,  # Number of frames per observation
-        "frame_skip": 1,  # Number of times each action is repeated in the environment
-        "screen_size": 84,  # Size of the images used by the agent to learn
-        "compress_images": True,  # True, if in-memory compression must be performed, False otherwise
-        "save_all_replay_buffers": False,  # False, if only the last replay buffer must be saved, True otherwise
+        # Maximum number of training iterations
+        "max_n_steps": 50000000,
+        # Number of training iterations between two checkpoints
+        "checkpoint_frequency": 500000,
+        # Number of training iterations between two tensorboard logging
+        "tensorboard_log_interval": 5000,
+        # Number of frames per observation
+        "stack_size": 4,
+        # Number of times each action is repeated in the environment
+        "frame_skip": 1,
+        # Size of the images used by the agent to learn
+        "screen_size": 84,
+        # True, if in-memory compression must be performed, False otherwise
+        "compress_images": True,
+        # False, if only the last replay buffer must be saved, True otherwise
+        "save_all_replay_buffers": False,
     }
     return conf if key is None else conf[key]

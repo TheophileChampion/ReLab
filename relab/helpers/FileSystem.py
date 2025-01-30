@@ -11,7 +11,7 @@ class FileSystem:
     """
 
     @staticmethod
-    def files_in(directory : str, regex : Optional[str] = None) -> List[str]:
+    def files_in(directory: str, regex: Optional[str] = None) -> List[str]:
         """!
         Retrieve the name of the files present within the directory passed as parameters.
         @param directory: the directory whose files must be returned
@@ -38,7 +38,7 @@ class FileSystem:
         return files
 
     @staticmethod
-    def create_directory_and_file(path : str) -> None:
+    def create_directory_and_file(path: str) -> None:
         """!
         Create the directory and file corresponding to the path passed as parameter.
         @param path: the file's path

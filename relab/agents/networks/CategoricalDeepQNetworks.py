@@ -13,16 +13,16 @@ class CategoricalDeepQNetwork(nn.Module):
 
     def __init__(
         self,
-        n_atoms : int = 21,
-        n_actions : int = 18,
-        v_min : float = -10,
-        v_max : float = 10,
-        stack_size : Optional[int] = None
+        n_actions: int = 18,
+        n_atoms: int = 21,
+        v_min: float = -10,
+        v_max: float = 10,
+        stack_size: Optional[int] = None
     ) -> None:
         """!
         Constructor.
-        @param n_atoms: the number of atoms used to approximate the distribution over returns
         @param n_actions: the number of actions available to the agent
+        @param n_atoms: the number of atoms used to approximate the distribution over returns
         @param v_min: the minimum amount of returns
         @param v_max: the maximum amount of returns
         @param stack_size: the number of stacked frame in each observation, if None use the configuration
@@ -31,37 +31,38 @@ class CategoricalDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        ## @var n_atoms
+        # @var n_atoms
         # Number of atoms used to approximate the distribution over returns.
         self.n_atoms = n_atoms
 
-        ## @var n_actions
+        # @var n_actions
         # Number of possible actions.
         self.n_actions = n_actions
 
-        ## @var v_min
+        # @var v_min
         # Minimum value of the support of the distribution over returns.
         self.v_min = v_min
 
-        ## @var v_max
+        # @var v_max
         # Maximum value of the support of the distribution over returns.
         self.v_max = v_max
 
-        ## @var delta_z
+        # @var delta_z
         # Step size between atoms in the support.
         self.delta_z = (v_max - v_min) / (n_atoms - 1)
 
-        ## @var atoms
+        # @var atoms
         # Support of the returns distribution.
         self.atoms = torch.arange(v_min, v_max + 1, self.delta_z)
         self.atoms = self.atoms.unsqueeze(1).repeat(1, n_actions)
         self.atoms = self.atoms.to(relab.device())
 
-        ## @var stack_size
+        # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = \
+            relab.config("stack_size") if stack_size is None else stack_size
 
-        ## @var net
+        # @var net
         # Complete network that processes images and outputs atom logits.
         self.net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, 8, stride=4),
@@ -81,7 +82,7 @@ class CategoricalDeepQNetwork(nn.Module):
             if "weight" in name:
                 torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -103,7 +104,7 @@ class CategoricalDeepQNetwork(nn.Module):
         # Return all atoms, their probabilities and log-probabilities.
         return atoms, probs, log_probs
 
-    def q_values(self, x : Tensor) -> Tensor:
+    def q_values(self, x: Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation
@@ -120,16 +121,16 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
 
     def __init__(
         self,
-        n_atoms : int = 21,
-        n_actions : int = 18,
-        v_min : float = -10,
-        v_max : float = 10,
-        stack_size : Optional[int] = None
+        n_actions: int = 18,
+        n_atoms: int = 21,
+        v_min: float = -10,
+        v_max: float = 10,
+        stack_size: Optional[int] = None
     ) -> None:
         """!
         Constructor.
-        @param n_atoms: the number of atoms used to approximate the distribution over returns
         @param n_actions: the number of actions available to the agent
+        @param n_atoms: the number of atoms used to approximate the distribution over returns
         @param v_min: the minimum amount of returns
         @param v_max: the maximum amount of returns
         @param stack_size: the number of stacked frame in each observation, if None use the configuration
@@ -138,37 +139,38 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        ## @var n_atoms
+        # @var n_atoms
         # Number of atoms used to approximate the distribution over returns.
         self.n_atoms = n_atoms
 
-        ## @var n_actions
+        # @var n_actions
         # Number of possible actions.
         self.n_actions = n_actions
 
-        ## @var v_min
+        # @var v_min
         # Minimum value of the support of the returns distribution.
         self.v_min = v_min
 
-        ## @var v_max
-        # Maximum value of the support of the returns distribution.
+        # @var v_max
+        # Maximum value of the support of the return distribution.
         self.v_max = v_max
 
-        ## @var delta_z
+        # @var delta_z
         # Step size between atoms in the support.
         self.delta_z = (v_max - v_min) / (n_atoms - 1)
 
-        ## @var atoms
+        # @var atoms
         # Support of the returns distribution.
         self.atoms = torch.arange(v_min, v_max + 1, self.delta_z)
         self.atoms = self.atoms.unsqueeze(1).repeat(1, n_actions)
         self.atoms = self.atoms.to(relab.device())
 
-        ## @var stack_size
+        # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config(
+            "stack_size") if stack_size is None else stack_size
 
-        ## @var net
+        # @var net
         # Complete network that processes images and outputs atom logits.
         self.net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, 8, stride=4),
@@ -188,7 +190,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
             if "weight" in name:
                 torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -210,7 +212,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         # Return all atoms, their probabilities and log-probabilities.
         return atoms, probs, log_probs
 
-    def q_values(self, x : Tensor) -> Tensor:
+    def q_values(self, x: Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation
