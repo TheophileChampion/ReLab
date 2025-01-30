@@ -39,7 +39,7 @@ if [[ ! -d ${VENV_DIR} ]]; then
 
 	# Activate the environment.
 	# shellcheck source=/dev/null
-	source ${VENV_DIR}/bin/activate
+	source "${VENV_DIR}/bin/activate"
 
 	# Install project dependencies.
 	pip install -r requirements.txt
