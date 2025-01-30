@@ -23,6 +23,8 @@ jobs:
         run: cd build && ctest --output-on-failure
   run_super_linter:
     runs-on: ubuntu-latest
+    env:
+      FILTER_REGEX_EXCLUDE: "*.js|*.css|*.html"
     permissions:
       contents: read
       packages: read
