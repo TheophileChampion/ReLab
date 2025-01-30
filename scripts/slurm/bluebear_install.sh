@@ -10,7 +10,7 @@
 #     python3 ./scripts/run_experiment --agents DQN --envs "ALE/Pong-v5" --seeds 0
 
 # Export environment variables.
-local PYTHONPATH, CONDA_ENV_PATH, CONDA_PKGS_DIRS, TMPDIR, PIP_CACHE_DIR  # TODO working?
+local PYTHONPATH, CONDA_ENV_PATH, CONDA_PKGS_DIRS, TMPDIR, PIP_CACHE_DIR # TODO working?
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 export CONDA_ENV_PATH=/rds/projects/b/bowmanh-theophile-work/deep-active-inference/data/${USER}_dai_env
 export CONDA_PKGS_DIRS="/scratch/${USER}/conda"

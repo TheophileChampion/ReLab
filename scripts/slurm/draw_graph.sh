@@ -31,25 +31,25 @@ export VENV_DIR="${PROJECT_PATH}/rl-benchmarks-${BB_CPU}"
 # Check if virtual environment exists and create it if not.
 if [[ ! -d ${VENV_DIR} ]]; then
 
-    # Let the user know that the environment was not found and will be created.
-    echo "${VENV_DIR} does not exists, it will be created."
+	# Let the user know that the environment was not found and will be created.
+	echo "${VENV_DIR} does not exists, it will be created."
 
-    # Create the virtual environment.
-    python3 -m venv --system-site-packages "${VENV_DIR}"
+	# Create the virtual environment.
+	python3 -m venv --system-site-packages "${VENV_DIR}"
 
-    # Activate the environment.
-    source ${VENV_DIR}/bin/activate
+	# Activate the environment.
+	source ${VENV_DIR}/bin/activate
 
-    # Install project dependencies.
-    pip install -r requirements.txt
+	# Install project dependencies.
+	pip install -r requirements.txt
 
 else
 
-    # Let the user know that the environment was not found and will be activated.
-    echo "${VENV_DIR} exists, it will be activated."
+	# Let the user know that the environment was not found and will be activated.
+	echo "${VENV_DIR} exists, it will be activated."
 
-    # Activate the environment.
-    source "${VENV_DIR}/bin/activate"
+	# Activate the environment.
+	source "${VENV_DIR}/bin/activate"
 fi
 
 # Export data directory.

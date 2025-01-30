@@ -173,12 +173,15 @@ rl-venv-3.11/
 venv-benchmarks/
 venv-relab/
 
-# Do not push the documentation
+# Do not push the documentation.
 docs/html/
 docs/latex/
 docs/README.md
 *.html.bak
 *.css.bak
 
-# Ignore testing directory
+# Ignore testing directory.
 Testing/
+
+# Output files.
+*.out
