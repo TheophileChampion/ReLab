@@ -35,10 +35,10 @@ if [[ ! -d ${VENV_DIR} ]]; then
     echo "${VENV_DIR} does not exists, it will be created."
 
     # Create the virtual environment.
-    python3 -m venv --system-site-packages ${VENV_DIR}
+    python3 -m venv --system-site-packages "${VENV_DIR}"
 
     # Activate the environment.
-    source ${VENV_DIR}/bin/activate
+    source "${VENV_DIR}/bin/activate"
 
     # Install project dependencies.
     pip install -r requirements.txt
@@ -49,11 +49,11 @@ else
     echo "${VENV_DIR} exists, it will be activated."
 
     # Activate the environment.
-    source ${VENV_DIR}/bin/activate
+    source "${VENV_DIR}/bin/activate"
 fi
 
 # Export data directory.
 export DATA_DIRECTORY=${PROJECT_PATH}/data/
 
 # Run the training script with the provided parameters.
-python3 ${PROJECT_PATH}/scripts/run_training.py $*
+python3 ${PROJECT_PATH}/scripts/run_training.py "$*"

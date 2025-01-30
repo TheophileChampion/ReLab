@@ -17,7 +17,7 @@ export TMPDIR=/scratch/${USER}/tmp
 export PIP_CACHE_DIR=/scratch/${USER}/pip
 
 # Create the temporary directory if it does not currently exist.
-mkdir -p $TMPDIR
+mkdir -p "$TMPDIR"
 
 # Load required models.
 module purge
