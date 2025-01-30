@@ -1,0 +1,26 @@
+name: Check if Pull Request can be merged
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  check_pull_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone ReLab repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build ReLab library
+        uses: TheophileChampion/ContinuousDelivery/build-relab@v0.1.4
+      - name: Run unit tests
+        run: cd build && ctest --output-on-failure
+      - name: Run Super-Linter
+        uses: super-linter/super-linter@v7.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
