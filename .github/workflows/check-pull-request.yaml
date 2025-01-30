@@ -9,17 +9,22 @@ on:
       - main
 
 jobs:
-  check_pull_request:
+  run_unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone ReLab repository
+        uses: actions/checkout@v4
+      - name: Build ReLab library
+        uses: TheophileChampion/ContinuousDelivery/build-relab@v0.1.5
+      - name: Run unit tests
+        run: cd build && ctest --output-on-failure
+  run_super_linter:
     runs-on: ubuntu-latest
     steps:
       - name: Clone ReLab repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Build ReLab library
-        uses: TheophileChampion/ContinuousDelivery/build-relab@v0.1.5
-      - name: Run unit tests
-        run: cd build && ctest --output-on-failure
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.2.1
         env:
