@@ -24,7 +24,7 @@ jobs:
   run_super_linter:
     runs-on: ubuntu-latest
     env:
-      FILTER_REGEX_EXCLUDE: "**/*.js|**/*.css|**/*.html"
+      FILTER_REGEX_EXCLUDE: "**/*.js"
     permissions:
       contents: read
       packages: read
