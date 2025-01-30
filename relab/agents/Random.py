@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 from os.path import join
-from typing import Optional, Tuple
+from typing import Tuple
 
 import torch
 from gymnasium import Env

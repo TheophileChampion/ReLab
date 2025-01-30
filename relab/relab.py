@@ -1,6 +1,6 @@
 import os
 import random
-from os.path import join, isfile, abspath, dirname
+from os.path import join, isfile, abspath
 from typing import Optional
 
 import invoke

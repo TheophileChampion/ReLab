@@ -1,5 +1,8 @@
-from relab.relab import initialize, device, config
-from os.path import join, dirname
+from relab.relab import initialize as initialize
+from relab.relab import device as device
+from relab.relab import config as config
+from relab.relab import build_cpp_library_and_wrapper as build_cpp_library_and_wrapper
+from os.path import join
 import logging
 import os
 
@@ -15,4 +18,4 @@ os.environ["BUILD_DIRECTORY"] = join(os.environ["ROOT_DIRECTORY"], "build")
 os.environ["CPP_MODULE_DIRECTORY"] = join(os.environ["ROOT_DIRECTORY"], "relab")
 
 # Build the C++ library and the python module wrapping the library.
-relab.build_cpp_library_and_wrapper()
+build_cpp_library_and_wrapper()

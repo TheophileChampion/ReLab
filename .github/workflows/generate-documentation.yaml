@@ -6,6 +6,8 @@ on:
     branches:
       - main
 
+permissions: {}
+
 jobs:
   deploy_documentation:
     runs-on: ubuntu-latest
