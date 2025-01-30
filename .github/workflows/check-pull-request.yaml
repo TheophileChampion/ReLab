@@ -1,4 +1,4 @@
-name: Check if Pull Request can be merged
+name: Check Pull Request Mergeability
 
 on:
   pull_request:
