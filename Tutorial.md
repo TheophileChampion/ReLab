@@ -1,14 +1,14 @@
-## 📗 Tutorial
+# 📗 Tutorial
 
-ReLab is a flexible and powerful library for training, evaluating, and analyzing reinforcement 
+ReLab is a flexible and powerful library for training, evaluating, and analyzing reinforcement
 learning agents. This tutorial will guide you through its core features, from configuring environments
 and creating agents to running complete experiments using ReLab's python API.
 
-### 1. Understanding the Data Directory Structure  
+## 1. Understanding the Data Directory Structure  
 
-When running ReLab scripts, the library organizes all generated files into 
-a `data` directory. This structured directory ensures that your experiment 
-outputs are logically grouped, making it easy to access and analyze the 
+When running ReLab scripts, the library organizes all generated files into
+a `data` directory. This structured directory ensures that your experiment
+outputs are logically grouped, making it easy to access and analyze the
 results. Below is an overview of the `data` directory and its purpose:
 
 ```commandline
@@ -59,7 +59,7 @@ Here’s what each folder contains:
 
 By organizing experiment outputs in this way, ReLab ensures that your data is easy to locate and manage, enabling you to efficiently analyze results, compare agents, and showcase their learned behaviors.
 
-### 2. ReLab Configuration and Initialization
+## 2. ReLab Configuration and Initialization
 
 ReLab's configuration allows you to customize key aspects of training and logging. Here are the most relevant entries:
 
@@ -75,7 +75,7 @@ ReLab's configuration allows you to customize key aspects of training and loggin
 - `save_all_replay_buffers`: Determines whether all replay buffers are saved (default: `False`).  
   If `False`, only the replay buffer associated with the most recent checkpoint is saved.
 
-##### Example Usage
+**Example Usage**
 
 ```python
 # Retrieve a specific config value.
@@ -85,8 +85,8 @@ print(f"Maximum training steps: {max_steps}")
 
 ----
 
-Before doing anything with ReLab, the `relab.initialize()` function must be called. 
-It is the first step to setting up the library, ensuring that all paths are properly configured. 
+Before doing anything with ReLab, the `relab.initialize()` function must be called.
+It is the first step to setting up the library, ensuring that all paths are properly configured.
 Here's a quick breakdown:
 
 ```python
@@ -104,11 +104,11 @@ This function performs several key steps:
 - Registers additional environments (e.g., Atari games and custom environments) with the Gym framework.  
 - Initializes environment variables (e.g., `CHECKPOINT_DIRECTORY` and `TENSORBOARD_DIRECTORY`) to define where specific files are stored, ensuring consistency across scripts.
 
-### 3. Creating Agents
+## 3. Creating Agents
 
 The `relab.agents.make()` function is a factory method that simplifies the creation of reinforcement learning agents in ReLab. By passing the name of the desired agent and optional keyword arguments, you can create and configure agents with ease.
 
-#### 3.1. Function Overview
+### 3.1. Function Overview
 
 ```python
 def make(agent_name: str, **kwargs: Any) -> AgentInterface:
@@ -117,7 +117,7 @@ def make(agent_name: str, **kwargs: Any) -> AgentInterface:
 - `agent_name`: The name of the agent to instantiate. Must be one of the supported agents (listed below). If an unsupported name is provided, the function raises an error.  
 - `kwargs`: Keyword arguments forwarded to the agent's constructor, allowing you to customize the agent's behavior.
 
-##### Example Usage
+**Example Usage**
 
 ```python
 from relab import agents
@@ -126,7 +126,7 @@ from relab import agents
 agent = agents.make("DuelingDDQN", learning_rate=0.0001, gamma=0.99)
 ```
 
-#### 3.2. Supported Agents: Overview Table
+### 3.2. Supported Agents: Overview Table
 
 Here’s a table summarizing the supported agents in ReLab. It includes their full names, abbreviations, and key characteristics such as whether they are value-based, distributional, random, or learn a world model.
 
@@ -158,18 +158,18 @@ Here’s a table summarizing the supported agents in ReLab. It includes their fu
 | **DiscreteHMM**    | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                | ✅              |
 | **JointHMM**       | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                | ✅              |
 
-##### Notes:
+**Notes:**
 1. **Value-Based Agents**: Agents like DQN and DDQN focus on learning a value function to determine optimal actions.
 2. **Distributional Agents**: Distributional RL agents (e.g., QRDQN, CDQN) model the distribution of returns instead of estimating a single expected return.
 3. **Random Actions**: Several agents take random actions, they can be used either to learn a world model or as a baseline for comparing more sophisticated agents.
 4. **World Model Agents**: Agents like VAEs and HMMs focus on learning a representation of the environment or the "world model," which can be used for planning or analysis.
 
-### 4. Creating Environments
+## 4. Creating Environments
 
-The `relab.environments.make()` function is a factory that provides an easy and customizable way to set up 
+The `relab.environments.make()` function is a factory that provides an easy and customizable way to set up
 Gym environments for training reinforcement learning agents.
 
-#### 4.1. Function Overview
+### 4.1. Function Overview
 
 ```python
 def make(env_name: str, **kwargs: Any) -> Env:
@@ -178,7 +178,7 @@ def make(env_name: str, **kwargs: Any) -> Env:
 - `env_name`: The name of the environment to instantiate.
 - `kwargs`: Keyword arguments forwarded to the environment's constructor, allowing you to customize the environment.
 
-##### Note, the function applies several preprocessing steps:
+The function applies several preprocessing steps:
 - **Environment Setup**: Initializes the environment with `gym.make`, by default the entire action space is used (18 actions for all Atari games).
 - **FireReset Wrapper**: Ensures that the environment resets properly by simulating a fire action where applicable.
 - **Atari Preprocessing**:
@@ -189,7 +189,7 @@ def make(env_name: str, **kwargs: Any) -> Env:
 - **Frame Stacking**: Stacks the last `stack_size` observations to provide temporal context for agents.
 - **Torch Integration**: Converts environment outputs to PyTorch tensors for seamless agent interaction.
 
-##### Example Usage
+**Example Usage**
 
 ```python
 from relab import environments
@@ -198,9 +198,9 @@ from relab import environments
 env = environments.make("ALE/Pong-v5")
 ```
 
-#### 4.2. Predefined Atari Game Sets
+### 4.2. Predefined Atari Game Sets
 
-At times, you might want to evaluate your agents on a specific subset of Atari games. 
+At times, you might want to evaluate your agents on a specific subset of Atari games.
 ReLab provides three predefined Atari benchmarks to simplify this process:
 
 1. `small_benchmark_atari_games()`
@@ -218,7 +218,7 @@ ReLab provides three predefined Atari benchmarks to simplify this process:
 3. `all_atari_games()`
    - Returns all available Atari games, including the benchmark games and extra titles like Adventure and Air Raid.
 
-##### Example Usage:
+**Example Usage:**
 
 ```python
 from relab import environments
@@ -228,10 +228,10 @@ benchmark_games = environments.benchmark_atari_games()
 print(f"Total Atari Benchmark Games: {len(benchmark_games)}")
 ```
 
-### 5. Training your First Agent
+## 5. Training your First Agent
 
-By now, you’ve learned about ReLab's features, how to configure the library, create agents and environments, 
-and manage saved data and benchmarks. Let’s bring it all together with a complete training script to 
+By now, you’ve learned about ReLab's features, how to configure the library, create agents and environments,
+and manage saved data and benchmarks. Let’s bring it all together with a complete training script to
 demonstrate how these components work in practice:
 
 ```python
@@ -266,33 +266,33 @@ if __name__ == "__main__":
     run_training(agent="DDQN", env="ALE/Pong-v5", seed=0)
 ```
 
-### 6. Running your First Experiment
+## 6. Running your First Experiment
 
-While, you could use the individual scripts such as `run_training` and `run_demo` manually, 
+While, you could use the individual scripts such as `run_training` and `run_demo` manually,
 ReLab allows you to run entire experiments. An experiment automates training, evaluation, and result visualization
 across multiple agents, environments, and seeds. Here's a breakdown of what the script does:
 
 1. **Training Agents**: For each combination of agent, environment, and seed, the script launches training jobs either locally or using Slurm (a workload manager for distributed systems).
-   
+
 2. **Policy Demonstrations**: After training, it generates GIFs to visually demonstrate the learned policies for each agent-environment-seed combination.
 
 3. **Performance Analysis**: The script creates performance graphs (e.g., mean episodic rewards with standard deviations) for each environment, summarizing how all agents performed.
 
 4. **Parallelization**: Jobs are managed efficiently either on the local machine (with multiple workers) or on a Slurm cluster, depending on the user’s choice.
 
-##### Example Usage:
+**Example Usage:**
 - Specify agents, environments, and seeds using command-line arguments. For example:
   ```bash
   python ./scripts/run_experiments --agents DQN RainbowDQN --envs ALE/Pong-v5 --seeds 0 1 2 --no-local
   ```
 - Use the `--no-local` flag to run experiments using Slurm. Omitting it defaults to run locally.
 
-This script ensures a streamlined workflow for conducting experiments, from training to visualization, 
+This script ensures a streamlined workflow for conducting experiments, from training to visualization,
 with minimal manual intervention!
 
-### 7. What's Next?
+## 7. What's Next?
 
-For more details, you can explore the official documentation, which provides an in-depth explanation 
-of all ReLab’s classes. Additionally, the Python scripts in the `scripts` directory offer practical 
-examples to help you understand how ReLab works. These resources are great starting points for 
+For more details, you can explore the official documentation, which provides an in-depth explanation
+of all ReLab’s classes. Additionally, the Python scripts in the `scripts` directory offer practical
+examples to help you understand how ReLab works. These resources are great starting points for
 deepening your understanding and making the most out of ReLab!

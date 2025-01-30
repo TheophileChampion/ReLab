@@ -8,61 +8,61 @@
 
 namespace relab::test::agents::memory::impl {
 
-    using namespace relab::agents::memory;
+using namespace relab::agents::memory;
+
+/**
+ * A class storing the parameters of the frame buffer tests.
+ */
+class FrameBufferParameters {
+
+public:
+
+    int capacity;
+    int frame_skip;
+    int n_steps;
+    int stack_size;
+    float gamma;
+
+public:
 
     /**
-     * A class storing the parameters of the frame buffer tests.
+     * Create a structure storing the parameters of the frame buffer tests.
+     * @param capacity the number of experiences the buffer can store
+     * @param frame_skip the number of times each action is repeated in the environment
+     * @param n_steps the number of steps for which rewards are accumulated in multistep Q-learning
+     * @param stack_size the number of frames per observation
      */
-    class FrameBufferParameters {
-
-    public:
-
-        int capacity;
-        int frame_skip;
-        int n_steps;
-        int stack_size;
-        float gamma;
-
-    public:
-
-        /**
-         * Create a structure storing the parameters of the frame buffer tests.
-         * @param capacity the number of experiences the buffer can store
-         * @param frame_skip the number of times each action is repeated in the environment
-         * @param n_steps the number of steps for which rewards are accumulated in multistep Q-learning
-         * @param stack_size the number of frames per observation
-         */
-        FrameBufferParameters(int capacity, int frame_skip, int n_steps, int stack_size);
-
-        /**
-         * Create a structure storing the parameters of the frame buffer tests.
-         */
-        FrameBufferParameters();
-    };
+    FrameBufferParameters(int capacity, int frame_skip, int n_steps, int stack_size);
 
     /**
-     * A fixture class for testing the frame buffer.
+     * Create a structure storing the parameters of the frame buffer tests.
      */
-    class TestFrameBuffer : public testing::TestWithParam<FrameBufferParameters> {
+    FrameBufferParameters();
+};
 
-    public:
+/**
+ * A fixture class for testing the frame buffer.
+ */
+class TestFrameBuffer : public testing::TestWithParam<FrameBufferParameters> {
 
-        FrameBufferParameters params;
-        std::unique_ptr<FrameBuffer> buffer;
-        std::vector<torch::Tensor> observations;
+public:
 
-    public:
+    FrameBufferParameters params;
+    std::unique_ptr<FrameBuffer> buffer;
+    std::vector<torch::Tensor> observations;
 
-        /**
-         * Setup of th fixture class before calling a unit test.
-         */
-        void SetUp();
-    };
+public:
+
+    /**
+     * Setup of th fixture class before calling a unit test.
+     */
+    void SetUp();
+};
 }
 
 namespace relab::test::agents::memory {
-    using impl::TestFrameBuffer;
-    using impl::FrameBufferParameters;
+using impl::TestFrameBuffer;
+using impl::FrameBufferParameters;
 }
 
 #endif //TEST_FRAME_BUFFER_HPP
