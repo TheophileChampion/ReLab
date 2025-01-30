@@ -4,7 +4,7 @@ ReLab is a flexible and powerful library for training, evaluating, and analyzing
 learning agents. This tutorial will guide you through its core features, from configuring environments
 and creating agents to running complete experiments using ReLab's python API.
 
-## 1. Understanding the Data Directory Structure  
+## 1. Understanding the Data Directory Structure
 
 When running ReLab scripts, the library organizes all generated files into
 a `data` directory. This structured directory ensures that your experiment
@@ -39,21 +39,24 @@ data/
 Here’s what each folder contains:
 
 1. `demos/`:  
-   This folder contains GIFs demonstrating the agent's learned policy.  
-   - For each environment, agent, and random seed, ReLab generates GIFs representing specific training iterations.  
+   This folder contains GIFs demonstrating the agent's learned policy.
+
+   - For each environment, agent, and random seed, ReLab generates GIFs representing specific training iterations.
    - Example: `demo_500000.gif` shows the agent's behavior after 500,000 training iterations.
 
 2. `graphs/`:  
-   This folder contains visualizations of agent performance metrics.  
-   - Metric graphs (e.g., `mean_episodic_reward.pdf`) are stored for each environment and summarize the performance of one or more agents.  
+   This folder contains visualizations of agent performance metrics.
+
+   - Metric graphs (e.g., `mean_episodic_reward.pdf`) are stored for each environment and summarize the performance of one or more agents.
    - Detailed data files (e.g., `mean_episodic_reward.tsv`) are also stored here for individual agents, containing the mean and standard deviation of the specified metric at each training step.
 
 3. `runs/`:  
-   This folder logs training data in a format compatible with [TensorBoard](https://www.tensorflow.org/tensorboard).  
+   This folder logs training data in a format compatible with [TensorBoard](https://www.tensorflow.org/tensorboard).
+
    - Each environment-agent-seed combination has its own folder containing event files (e.g., `events.out.tfevents...`) that allow you to track the agent’s progress during training.
 
 4. `saves/`:  
-   This folder stores the saved models for each training session.  
+   This folder stores the saved models for each training session.
    - Model checkpoints are saved for specific training iterations (e.g., `model_500000.pt`), allowing you to reload and evaluate the agent at different stages of training.
    - Replay buffer checkpoint (e.g., `buffer.pt`) saves the replay buffer associated with the last checkpoint iteration, ensuring training can resume seamlessly from where it was left off. For example, if the directory contains `model_500.pt` and `model_1000.pt`, then `buffer.pt` corresponds to the replay buffer at iteration 1000.
 
@@ -83,7 +86,7 @@ max_steps = relab.config("max_n_steps")
 print(f"Maximum training steps: {max_steps}")
 ```
 
-----
+---
 
 Before doing anything with ReLab, the `relab.initialize()` function must be called.
 It is the first step to setting up the library, ensuring that all paths are properly configured.
@@ -99,9 +102,10 @@ relab.initialize(
 )
 ```
 
-This function performs several key steps:  
-- Ensures reproducibility by setting the random seed for NumPy, Python, and PyTorch.  
-- Registers additional environments (e.g., Atari games and custom environments) with the Gym framework.  
+This function performs several key steps:
+
+- Ensures reproducibility by setting the random seed for NumPy, Python, and PyTorch.
+- Registers additional environments (e.g., Atari games and custom environments) with the Gym framework.
 - Initializes environment variables (e.g., `CHECKPOINT_DIRECTORY` and `TENSORBOARD_DIRECTORY`) to define where specific files are stored, ensuring consistency across scripts.
 
 ## 3. Creating Agents
@@ -114,7 +118,7 @@ The `relab.agents.make()` function is a factory method that simplifies the creat
 def make(agent_name: str, **kwargs: Any) -> AgentInterface:
 ```
 
-- `agent_name`: The name of the agent to instantiate. Must be one of the supported agents (listed below). If an unsupported name is provided, the function raises an error.  
+- `agent_name`: The name of the agent to instantiate. Must be one of the supported agents (listed below). If an unsupported name is provided, the function raises an error.
 - `kwargs`: Keyword arguments forwarded to the agent's constructor, allowing you to customize the agent's behavior.
 
 **Example Usage**
@@ -130,35 +134,36 @@ agent = agents.make("DuelingDDQN", learning_rate=0.0001, gamma=0.99)
 
 Here’s a table summarizing the supported agents in ReLab. It includes their full names, abbreviations, and key characteristics such as whether they are value-based, distributional, random, or learn a world model.
 
-| **Abbreviation**   | **Full Name**                           | **Value-Based** | **Distributional** | **Random Actions**               | **World Model** |
-|---------------------|-----------------------------------------|-----------------|--------------------|----------------------------------|-----------------|
-| **DQN**            | Deep Q-Network                         | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **DDQN**           | Double Deep Q-Network                  | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **CDQN**           | Categorical Deep Q-Network             | ✅              | ✅                 | ✖️                                | ✖️              |
-| **MDQN**           | Multi-step Deep Q-Network              | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **QRDQN**          | Quantile Regression Deep Q-Network     | ✅              | ✅                 | ✖️                                | ✖️              |
-| **NoisyDQN**       | Noisy Deep Q-Network                   | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️ |
-| **NoisyDDQN**      | Noisy Double Deep Q-Network            | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️ |
-| **NoisyCDQN**      | Noisy Categorical Deep Q-Network       | ✅              | ✅                 | ✖️ (noisy layers for exploration) | ✖️ |
-| **DuelingDQN**     | Dueling Deep Q-Network                 | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **DuelingDDQN**    | Dueling Double Deep Q-Network          | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedDQN** | Prioritized Experience Replay DQN      | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedDDQN**| Prioritized Experience Replay DDQN     | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedMDQN**| Prioritized Multi-step DQN             | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **RainbowDQN**     | Rainbow Deep Q-Network                 | ✅              | ✅                 | ✖️                                | ✖️              |
-| **RainbowIQN**     | Rainbow with Implicit Quantile Network | ✅              | ✅                 | ✖️                                | ✖️              |
-| **IQN**            | Implicit Quantile Network              | ✅              | ✅                 | ✖️                                | ✖️              |
-| **Random**         | Random Agent                           | ✖️              | ✖️                 | ✅                                | ✖️              |
-| **VAE**            | Variational Autoencoder                | ✖️              | ✖️                 | ✅                                | ✅              |
-| **BetaVAE**        | Beta Variational Autoencoder           | ✖️              | ✖️                 | ✅                                | ✅              |
-| **DiscreteVAE**    | Discrete Variational Autoencoder       | ✖️              | ✖️                 | ✅                                | ✅              |
-| **JointVAE**       | Joint Variational Autoencoder          | ✖️              | ✖️                 | ✅                                | ✅              |
-| **HMM**            | Hidden Markov Model                   | ✖️              | ✖️                 | ✅                                | ✅              |
-| **BetaHMM**        | Beta Hidden Markov Model               | ✖️              | ✖️                 | ✅                                | ✅              |
-| **DiscreteHMM**    | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                | ✅              |
-| **JointHMM**       | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                | ✅              |
+| **Abbreviation**    | **Full Name**                          | **Value-Based** | **Distributional** | **Random Actions**                | **World Model** |
+| ------------------- | -------------------------------------- | --------------- | ------------------ | --------------------------------- | --------------- |
+| **DQN**             | Deep Q-Network                         | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **DDQN**            | Double Deep Q-Network                  | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **CDQN**            | Categorical Deep Q-Network             | ✅              | ✅                 | ✖️                                | ✖️              |
+| **MDQN**            | Multi-step Deep Q-Network              | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **QRDQN**           | Quantile Regression Deep Q-Network     | ✅              | ✅                 | ✖️                                | ✖️              |
+| **NoisyDQN**        | Noisy Deep Q-Network                   | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
+| **NoisyDDQN**       | Noisy Double Deep Q-Network            | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
+| **NoisyCDQN**       | Noisy Categorical Deep Q-Network       | ✅              | ✅                 | ✖️ (noisy layers for exploration) | ✖️              |
+| **DuelingDQN**      | Dueling Deep Q-Network                 | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **DuelingDDQN**     | Dueling Double Deep Q-Network          | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedDQN**  | Prioritized Experience Replay DQN      | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedDDQN** | Prioritized Experience Replay DDQN     | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedMDQN** | Prioritized Multi-step DQN             | ✅              | ✖️                 | ✖️                                | ✖️              |
+| **RainbowDQN**      | Rainbow Deep Q-Network                 | ✅              | ✅                 | ✖️                                | ✖️              |
+| **RainbowIQN**      | Rainbow with Implicit Quantile Network | ✅              | ✅                 | ✖️                                | ✖️              |
+| **IQN**             | Implicit Quantile Network              | ✅              | ✅                 | ✖️                                | ✖️              |
+| **Random**          | Random Agent                           | ✖️              | ✖️                 | ✅                                | ✖️              |
+| **VAE**             | Variational Autoencoder                | ✖️              | ✖️                 | ✅                                | ✅              |
+| **BetaVAE**         | Beta Variational Autoencoder           | ✖️              | ✖️                 | ✅                                | ✅              |
+| **DiscreteVAE**     | Discrete Variational Autoencoder       | ✖️              | ✖️                 | ✅                                | ✅              |
+| **JointVAE**        | Joint Variational Autoencoder          | ✖️              | ✖️                 | ✅                                | ✅              |
+| **HMM**             | Hidden Markov Model                    | ✖️              | ✖️                 | ✅                                | ✅              |
+| **BetaHMM**         | Beta Hidden Markov Model               | ✖️              | ✖️                 | ✅                                | ✅              |
+| **DiscreteHMM**     | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                | ✅              |
+| **JointHMM**        | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                | ✅              |
 
 **Notes:**
+
 1. **Value-Based Agents**: Agents like DQN and DDQN focus on learning a value function to determine optimal actions.
 2. **Distributional Agents**: Distributional RL agents (e.g., QRDQN, CDQN) model the distribution of returns instead of estimating a single expected return.
 3. **Random Actions**: Several agents take random actions, they can be used either to learn a world model or as a baseline for comparing more sophisticated agents.
@@ -179,6 +184,7 @@ def make(env_name: str, **kwargs: Any) -> Env:
 - `kwargs`: Keyword arguments forwarded to the environment's constructor, allowing you to customize the environment.
 
 The function applies several preprocessing steps:
+
 - **Environment Setup**: Initializes the environment with `gym.make`, by default the entire action space is used (18 actions for all Atari games).
 - **FireReset Wrapper**: Ensures that the environment resets properly by simulating a fire action where applicable.
 - **Atari Preprocessing**:
@@ -204,6 +210,7 @@ At times, you might want to evaluate your agents on a specific subset of Atari g
 ReLab provides three predefined Atari benchmarks to simplify this process:
 
 1. `small_benchmark_atari_games()`
+
    - Returns a small subset of five Atari games for quick benchmarking:
      - Breakout
      - Freeway
@@ -212,6 +219,7 @@ ReLab provides three predefined Atari benchmarks to simplify this process:
      - Space Invaders
 
 2. `benchmark_atari_games()`
+
    - Returns the standard set of 57 Atari games used in reinforcement learning research benchmarks.
    - Includes all games from `small_benchmark_atari_games()` plus additional titles like Asteroids, Seaquest, and Montezuma’s Revenge.
 
@@ -281,6 +289,7 @@ across multiple agents, environments, and seeds. Here's a breakdown of what the 
 4. **Parallelization**: Jobs are managed efficiently either on the local machine (with multiple workers) or on a Slurm cluster, depending on the user’s choice.
 
 **Example Usage:**
+
 - Specify agents, environments, and seeds using command-line arguments. For example:
   ```bash
   python ./scripts/run_experiments --agents DQN RainbowDQN --envs ALE/Pong-v5 --seeds 0 1 2 --no-local

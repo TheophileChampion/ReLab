@@ -23,16 +23,16 @@ applications, ReLab simplifies the process, saving you time and effort.
 - [License](#license)
 <!-- tocstop -->
 
-# Installation
+## Installation
 
-## Clone the ReLab source code
+### Clone the ReLab source code
 
 ```console
 git clone git@github.com:TheophileChampion/ReLab.git
 cd ReLab
 ```
 
-## Download ReLab dependencies
+### Download ReLab dependencies
 
 ```console
 python3.12 -m venv venv-relab
@@ -40,13 +40,13 @@ source ./venv-relab/bin/activate
 pip install -r requirements.txt
 ```
 
-## Ensure that python scripts can find the ReLab package
+### Ensure that python scripts can find the ReLab package
 
 ```console
 pwd > ./venv-relab/lib/python3.12/site-packages/relab.pth
 ```
 
-## Check that the installation was successful
+### Check that the installation was successful
 
 ```console
 python ./scripts/test_install
@@ -54,7 +54,7 @@ python ./scripts/test_install
 
 Note, when running the above command for the first time, ReLab will compile its C++ library.
 
-# Getting Started
+## Getting Started
 
 ReLab provides a collection of well-known reinforcement learning agents and enables you to train them on any [Gym](https://gymnasium.farama.org/) environment.
 You can then visualize the learned policies and compare the performance of various agents.
@@ -64,7 +64,7 @@ Before proceeding with the following sections, make sure that ReLab is [installe
 source ./venv-relab/bin/activate
 ```
 
-## Training an Agent
+### Training an Agent
 
 An agent can be trained by running the following command:
 
@@ -90,7 +90,7 @@ This will open a graphical interface at <http://localhost:6006/>, allowing you t
 - the training speed (in milliseconds per training iteration), and
 - the memory usage of the training script.
 
-## Visualizing a Learned Policy
+### Visualizing a Learned Policy
 
 By default, ReLab saves the learned policy every 500,000 training iterations.
 Once an agent has been trained, you can visualize its learned policy using the following command:
@@ -116,7 +116,7 @@ After running the above command, ReLab will generate a GIF of the agent's behavi
 
 <img alt="PrioritizedDDQN playing the Atari game Pong." width="500" height="300" src="https://github.com/TheophileChampion/ReLab/tree/main/assets/demo_prioritized_ddqn_pong.gif">
 
-## Comparing the Performance of Various Agents
+### Comparing the Performance of Various Agents
 
 ReLab also provides a script to generate graphs summarizing the agent performance:
 
@@ -138,11 +138,11 @@ When multiple seeds are provided, the graph will display a solid line representi
 
 For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](https://theophilechampion.github.io/ReLab/md_Tutorial.html).
 
-# Documentation
+## Documentation
 
 ReLab [documentation](https://theophilechampion.github.io/ReLab/) is based on doxygen and hosted with GitHub Pages.
 
-# Releases and Contributing
+## Releases and Contributing
 
 Please let us know if you encounter a bug by [filing an issue](https://github.com/TheophileChampion/ReLab/issues).
 
@@ -157,6 +157,6 @@ ReLab follows a "fork and pull request" workflow. If you are planning to contrib
 
 ReLab is still in beta. The latest version of ReLab is version 1.0.0-b.
 
-# License
+## License
 
 ReLab has a MIT license, as found in the [LICENSE](https://github.com/TheophileChampion/ReLab/blob/main/LICENSE) file.
