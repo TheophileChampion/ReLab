@@ -14,16 +14,7 @@ jobs:
     steps:
       - name: Clone ReLab repository
         uses: actions/checkout@v4
-      - name: Clone ContinuousDelivery repository
-        uses: actions/checkout@v4
-        with:
-          repository: TheophileChampion/ContinuousDelivery
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: main
-          path: .github/actions/
-      - name: TODO remove
-        run: ls .github/actions/
-      - name: Build ReLab
-        uses: ./.github/actions/build-relab.yaml
+      - name: Build ReLab library
+        uses: TheophileChampion/ContinuousDelivery/build-relab@v0.1.2
       - name: Run unit tests
         run: cd build && ctest --output-on-failure
