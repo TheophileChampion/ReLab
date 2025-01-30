@@ -18,3 +18,5 @@ jobs:
         uses: TheophileChampion/ContinuousDelivery/build-relab@v0.1.2
       - name: Run unit tests
         run: cd build && ctest --output-on-failure
+      - name: Run super linter
+        run: echo "TODO Super Linter"
