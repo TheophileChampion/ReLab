@@ -28,5 +28,6 @@ module load Python/3.11.3-GCCcore-12.3.0
 
 # Create the virtual environment and install all the dependencies.
 python3 -m venv venv-relab
+# shellcheck source=/dev/null
 source ./venv-relab/bin/activate
 pip install -r requirements.txt

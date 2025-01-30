@@ -38,6 +38,7 @@ if [[ ! -d ${VENV_DIR} ]]; then
 	python3 -m venv --system-site-packages "${VENV_DIR}"
 
 	# Activate the environment.
+	# shellcheck source=/dev/null
 	source "${VENV_DIR}/bin/activate"
 
 	# Install project dependencies.
@@ -49,6 +50,7 @@ else
 	echo "${VENV_DIR} exists, it will be activated."
 
 	# Activate the environment.
+	# shellcheck source=/dev/null
 	source "${VENV_DIR}/bin/activate"
 fi
 
