@@ -24,9 +24,11 @@ def build_cpp_library_and_wrapper(
         return
 
     # Create the shared libraries.
+    librelab_wrapper = "./build/librelab_wrapper.so"
+    extension = "python3.12-config --extension-suffix"
     invoke.run(
         f"mkdir -p {build_directory} && cd {build_directory} && cmake .. && make && cd .. "
-        f"&& mv ./build/librelab_wrapper.so {module_directory}/{python_module_name}`python3.12-config --extension-suffix`"
+        f"&& mv {librelab_wrapper} {module_directory}/{python_module_name}`{extension}`"
     )
 
 

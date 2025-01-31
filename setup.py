@@ -4,7 +4,8 @@ from setuptools import setup, find_packages
 setup(
     name="relab",
     version="1.0.0",
-    description="ReLab is a user-friendly library to streamline reinforcement learning experiments, offering prebuilt RL agents, Gym integration, and performance visualization.",
+    description="ReLab is a user-friendly library to streamline reinforcement learning experiments, "
+                "offering prebuilt RL agents, Gym integration, and performance visualization.",
     keywords="pytorch, reinforcement learning, deep learning",
     author="Théophile Champion",
     author_email="theoph.champion@gmail.com",
