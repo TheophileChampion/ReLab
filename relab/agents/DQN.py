@@ -4,39 +4,32 @@ from datetime import datetime
 from enum import IntEnum
 from functools import partial
 from os.path import join
-from typing import Callable, Any, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
+import numpy as np
 import torch
-from torch.nn import SmoothL1Loss, MSELoss, CrossEntropyLoss, HuberLoss
-from torch import nn, Tensor
 from gymnasium import Env
+from torch import Tensor, nn
+from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.cpp.agents.memory import Experience
 from relab.agents.networks.CategoricalDeepQNetworks import (
-    CategoricalDeepQNetwork,
-    NoisyCategoricalDeepQNetwork,
-)
+    CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork)
 from relab.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
-import numpy as np
-
-from relab.helpers.Serialization import safe_load, get_optimizer, safe_load_state_dict
 from relab.agents.networks.DuelingDeepQNetworks import (
-    DuelingDeepQNetwork,
-    NoisyDuelingDeepQNetwork,
-)
+    DuelingDeepQNetwork, NoisyDuelingDeepQNetwork)
 from relab.agents.networks.QuantileDeepQNetworks import (
-    QuantileDeepQNetwork,
-    ImplicitQuantileNetwork,
-)
+    ImplicitQuantileNetwork, QuantileDeepQNetwork)
 from relab.agents.networks.RainbowDeepQNetwork import (
-    RainbowDeepQNetwork,
-    RainbowImplicitQuantileNetwork,
-)
-from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
+    RainbowDeepQNetwork, RainbowImplicitQuantileNetwork)
+from relab.agents.schedule.PiecewiseLinearSchedule import \
+    PiecewiseLinearSchedule
+from relab.cpp.agents.memory import Experience
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Typing import ActionType, Loss, Checkpoint, ObservationType
+from relab.helpers.Serialization import (get_optimizer, safe_load,
+                                         safe_load_state_dict)
+from relab.helpers.Typing import ActionType, Checkpoint, Loss, ObservationType
 
 
 class LossType(IntEnum):

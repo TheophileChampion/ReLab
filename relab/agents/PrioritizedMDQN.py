@@ -1,4 +1,4 @@
-from relab.agents.DQN import ReplayType, NetworkType, LossType, DQN
+from relab.agents.DQN import DQN, LossType, NetworkType, ReplayType
 
 
 class PrioritizedMDQN(DQN):

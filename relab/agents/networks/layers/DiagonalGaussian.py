@@ -1,7 +1,6 @@
 from typing import Tuple
-from torch import Tensor
 
-from torch import nn
+from torch import Tensor, nn
 
 
 class DiagonalGaussian(nn.Module):

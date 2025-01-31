@@ -1,8 +1,8 @@
-from typing import List, Tuple, Optional
-
-from torch import nn, Tensor
-import torch
 from math import prod
+from typing import List, Optional, Tuple
+
+import torch
+from torch import Tensor, nn
 
 from relab import relab
 from relab.agents.networks.layers.Categorical import Categorical

@@ -1,6 +1,6 @@
-import re
-from os.path import isfile, join, exists, dirname
 import os
+import re
+from os.path import dirname, exists, isfile, join
 from pathlib import Path
 from typing import List, Optional
 
@@ -20,8 +20,7 @@ class FileSystem:
         """
 
         # Compile the regex, if needed.
-        if regex is not None:
-            regex = re.compile(regex)
+        pattern = None if regex is None else re.compile(regex)
 
         # Iterate over all directory entries.
         files = []
@@ -30,9 +29,9 @@ class FileSystem:
             # Add the current entry, if it is a file matching the regex.
             if not isfile(join(directory, entry)):
                 continue
-            if regex is None:
+            if pattern is None:
                 files.append(entry)
-            elif regex.match(entry):
+            elif pattern.match(entry):
                 files.append(entry)
 
         return files

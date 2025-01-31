@@ -1,9 +1,10 @@
 import math
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
 
 import torch
-from torch.nn.functional import gumbel_softmax, binary_cross_entropy_with_logits
 from torch import Tensor
+from torch.nn.functional import (binary_cross_entropy_with_logits,
+                                 gumbel_softmax)
 
 
 def gaussian_kl_divergence(

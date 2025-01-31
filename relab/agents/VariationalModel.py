@@ -1,51 +1,42 @@
 import abc
 import logging
 import os
+import re
 from datetime import datetime
-from os.path import join
 from enum import IntEnum
 from functools import partial
-import re
-from typing import Any, Callable, Tuple, Dict, Optional
+from os.path import join
+from typing import Any, Callable, Dict, Optional, Tuple
+
+import numpy as np
+import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
-
-import torch
 from torch import Tensor, nn
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.cpp.agents.memory import Experience
-import numpy as np
-from relab.agents.networks.DecoderNetworks import (
-    ContinuousDecoderNetwork,
-    DiscreteDecoderNetwork,
-    MixedDecoderNetwork,
-)
-from relab.agents.networks.EncoderNetworks import (
-    ContinuousEncoderNetwork,
-    DiscreteEncoderNetwork,
-    MixedEncoderNetwork,
-)
+from relab.agents.networks.DecoderNetworks import (ContinuousDecoderNetwork,
+                                                   DiscreteDecoderNetwork,
+                                                   MixedDecoderNetwork)
+from relab.agents.networks.EncoderNetworks import (ContinuousEncoderNetwork,
+                                                   DiscreteEncoderNetwork,
+                                                   MixedEncoderNetwork)
 from relab.agents.networks.TransitionNetworks import (
-    ContinuousTransitionNetwork,
-    DiscreteTransitionNetwork,
-    MixedTransitionNetwork,
-)
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
-from relab.helpers.Serialization import safe_load
-
-from relab.helpers.VariationalInference import (
-    continuous_reparameterization,
-    discrete_reparameterization,
-    mixed_reparameterization,
-    gaussian_log_likelihood,
-    bernoulli_log_likelihood,
-)
-
-from relab.helpers.MatPlotLib import MatPlotLib
+    ContinuousTransitionNetwork, DiscreteTransitionNetwork,
+    MixedTransitionNetwork)
 from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
-from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
+from relab.agents.schedule.PiecewiseLinearSchedule import \
+    PiecewiseLinearSchedule
+from relab.cpp.agents.memory import Experience
+from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.Serialization import safe_load
+from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
+from relab.helpers.VariationalInference import (bernoulli_log_likelihood,
+                                                continuous_reparameterization,
+                                                discrete_reparameterization,
+                                                gaussian_log_likelihood,
+                                                mixed_reparameterization)
 
 
 class LatentSpaceType(IntEnum):

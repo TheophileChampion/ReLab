@@ -1,19 +1,18 @@
-import os
-from os import getcwd
-import random
-from os.path import join, abspath
-from typing import Optional, Any
-
 import logging
+import os
+import random
+from os import getcwd
+from os.path import abspath, join
+from typing import Any, Optional
 
-import gymnasium as gym
 import ale_py
+import gymnasium as gym
 import numpy as np
 import torch
 
-from relab.environments.SpritesEnv import SpritesEnv
-from relab.helpers.Typing import Device, ConfigInfo
 from relab.cpp.agents.memory import CompressorType as Compressor
+from relab.environments.SpritesEnv import SpritesEnv
+from relab.helpers.Typing import ConfigInfo, Device
 
 
 def initialize(

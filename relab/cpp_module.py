@@ -1,6 +1,8 @@
 import os
-from os.path import join, isfile
+from os.path import isfile, join
+
 import invoke
+
 from relab.helpers.FileSystem import FileSystem
 
 

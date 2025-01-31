@@ -1,8 +1,8 @@
 from typing import Any
 
 from relab.agents.AgentInterface import ReplayType
-from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
 from relab.agents.VAE import VAE
+from relab.agents.VariationalModel import LatentSpaceType, LikelihoodType
 
 
 class JointVAE(VAE):

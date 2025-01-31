@@ -1,37 +1,31 @@
-import os
-from math import prod
-from typing import Union, Optional
-
-from torch import zeros_like
-from torch.optim import Adam
-from torch import nn
+import abc
+import collections
 import gc
-from matplotlib.widgets import Button
+import importlib
+import logging
+import math
+import os
+import re
+from abc import ABC
+from collections import deque
+from datetime import datetime
+from math import prod
+from os import listdir, makedirs
+from os.path import dirname, exists, isdir, isfile, join
+from pathlib import Path
+from typing import Optional, Union
 
-from matplotlib import colors
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-from torch.distributions.multivariate_normal import MultivariateNormal
-from torch import zeros, eye
-
-import math
-from os import listdir, makedirs
-from os.path import isfile, isdir, join, exists, dirname
-from pathlib import Path
-import importlib
-import torch
-import re
-from datetime import datetime
-from torch.utils.tensorboard import SummaryWriter
-import abc
-from abc import ABC
-import logging
-from collections import deque
-
-import collections
 import numpy as np
-from torch import cat, FloatTensor, BoolTensor, IntTensor, unsqueeze
+import torch
+from matplotlib import colors
+from matplotlib.widgets import Button
+from torch import (BoolTensor, FloatTensor, IntTensor, cat, eye, nn, unsqueeze,
+                   zeros, zeros_like)
+from torch.distributions.multivariate_normal import MultivariateNormal
+from torch.optim import Adam
+from torch.utils.tensorboard import SummaryWriter
 
 from relab.agents.networks.DecoderNetworks import ContinuousDecoderNetwork
 from relab.agents.networks.EncoderNetworks import ContinuousEncoderNetwork

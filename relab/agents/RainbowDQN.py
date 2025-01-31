@@ -1,4 +1,4 @@
-from relab.agents.DQN import ReplayType, LossType, NetworkType, DQN
+from relab.agents.DQN import DQN, LossType, NetworkType, ReplayType
 
 
 class RainbowDQN(DQN):

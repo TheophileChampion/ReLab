@@ -1,8 +1,8 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-from torch import nn, Tensor
 import torch
 import torch.nn.functional as F
+from torch import Tensor, nn
 
 import relab
 

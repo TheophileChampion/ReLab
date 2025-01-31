@@ -1,5 +1,5 @@
-import time
 import logging
+import time
 from types import TracebackType
 from typing import Optional
 

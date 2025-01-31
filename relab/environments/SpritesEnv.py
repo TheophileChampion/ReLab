@@ -1,15 +1,15 @@
 from __future__ import annotations
-from typing import Any, Dict, Tuple, List, Optional
+
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from numpy import ndarray
-from gymnasium import spaces, Env
-
-from relab.helpers.SpritesDataset import DataSet
-import torch.nn.functional as func
 import torch
+import torch.nn.functional as func
+from gymnasium import Env, spaces
+from numpy import ndarray
 from torch import Tensor
 
+from relab.helpers.SpritesDataset import DataSet
 from relab.helpers.Typing import ActionType, Config, GymStepData
 
 

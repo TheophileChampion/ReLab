@@ -10,22 +10,21 @@ from collections import deque
 from enum import IntEnum
 from functools import partial
 from os.path import exists, isdir, isfile, join
-from typing import Dict, Any, Callable, SupportsFloat, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, SupportsFloat, Tuple
 
-import psutil
-
-import numpy as np
-import torch
-from torch.utils.tensorboard import SummaryWriter
 import imageio
-from PIL import Image
+import numpy as np
+import psutil
+import torch
 from gymnasium import Env
+from PIL import Image
+from torch.utils.tensorboard import SummaryWriter
 
 import relab
 from relab.agents.memory.ReplayBuffer import ReplayBuffer
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
 from relab.helpers.Serialization import safe_load
+from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
 
 
 class ReplayType(IntEnum):

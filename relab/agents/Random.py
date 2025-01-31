@@ -3,16 +3,15 @@ from datetime import datetime
 from os.path import join
 from typing import Tuple
 
+import numpy as np
 import torch
 from gymnasium import Env
 
 import relab
 from relab.agents.AgentInterface import AgentInterface
-import numpy as np
-
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
 from relab.helpers.Serialization import safe_load
+from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
 
 
 class Random(AgentInterface):

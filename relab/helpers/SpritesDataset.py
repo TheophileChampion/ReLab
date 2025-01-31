@@ -1,9 +1,9 @@
 import collections
-import numpy as np
 import os
-from os.path import join, exists
-import invoke
+from os.path import exists, join
 
+import invoke
+import numpy as np
 
 SpritesDataset = collections.namedtuple(
     "SpritesDataset", field_names=["images", "s_sizes", "s_dim", "s_bases"]

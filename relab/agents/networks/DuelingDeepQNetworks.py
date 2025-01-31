@@ -1,7 +1,7 @@
-from typing import Union, Tuple, Optional
+from typing import Optional, Tuple, Union
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 from torchrl.modules import NoisyLinear
 
 import relab

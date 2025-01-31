@@ -1,8 +1,9 @@
-import cpp_module
-from relab.relab import initialize as initialize
-from relab.relab import device as device
-from relab.relab import config as config
 import logging
+
+import relab.cpp_module
+from relab.relab import config as config
+from relab.relab import device as device
+from relab.relab import initialize as initialize
 
 # ReLab version.
 version = "1.0.0-b"

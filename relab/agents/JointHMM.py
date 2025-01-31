@@ -2,7 +2,7 @@ from typing import Any
 
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.HMM import HMM
-from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
+from relab.agents.VariationalModel import LatentSpaceType, LikelihoodType
 
 
 class JointHMM(HMM):

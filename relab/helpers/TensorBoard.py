@@ -1,11 +1,11 @@
+import logging
 from os.path import join
-from typing import Optional, List, Tuple
-
-from pandas import DataFrame
+from typing import List, Optional, Tuple
 
 import pandas as pd
-from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
-import logging
+from pandas import DataFrame
+from tensorboard.backend.event_processing.event_accumulator import \
+    EventAccumulator
 
 from relab.helpers.FileSystem import FileSystem
 

@@ -1,13 +1,12 @@
 import abc
-import os
-import subprocess
-import re
-import time
-from concurrent.futures import ProcessPoolExecutor, Future
-from concurrent.futures import wait
-from functools import partial
 import logging
-from typing import List, Callable
+import os
+import re
+import subprocess
+import time
+from concurrent.futures import Future, ProcessPoolExecutor, wait
+from functools import partial
+from typing import Callable, List
 
 from relab.helpers.Typing import Config
 from scripts.draw_graph import draw_graph

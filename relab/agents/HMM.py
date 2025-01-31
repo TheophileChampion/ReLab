@@ -1,29 +1,24 @@
 import logging
 from os.path import join
-from typing import Any, Dict, Tuple, Optional
-from gymnasium import Env
-from matplotlib.figure import Figure
+from typing import Any, Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
-
 import torch
+from gymnasium import Env
+from matplotlib.figure import Figure
 from torch import Tensor
 
 from relab.agents.AgentInterface import ReplayType
-from relab.agents.VariationalModel import (
-    VariationalModel,
-    LikelihoodType,
-    LatentSpaceType,
-)
-from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
-
+from relab.agents.VariationalModel import (LatentSpaceType, LikelihoodType,
+                                           VariationalModel)
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
 from relab.helpers.Typing import Checkpoint
-from relab.helpers.VariationalInference import (
-    gaussian_kl_divergence as kl_gauss,
-    sum_categorical_kl_divergences as sum_cat_kl,
-)
+from relab.helpers.VariationalInference import \
+    gaussian_kl_divergence as kl_gauss
+from relab.helpers.VariationalInference import \
+    sum_categorical_kl_divergences as sum_cat_kl
 
 
 class HMM(VariationalModel):

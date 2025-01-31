@@ -3,9 +3,9 @@ from typing import Optional
 
 import matplotlib.pyplot as plt
 import torch
-from torch import Tensor
-from numpy import ndarray
 from matplotlib.figure import Figure
+from numpy import ndarray
+from torch import Tensor
 
 
 class MatPlotLib:

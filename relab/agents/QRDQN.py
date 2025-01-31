@@ -1,4 +1,4 @@
-from relab.agents.DQN import DQN, LossType, ReplayType, NetworkType
+from relab.agents.DQN import DQN, LossType, NetworkType, ReplayType
 
 
 class QRDQN(DQN):
