@@ -853,6 +853,7 @@ class DQN(AgentInterface):
                 capacity=self.buffer_size,
                 batch_size=self.batch_size
             )  # TODO can this be added to the get_replay_buffer?
+            # TODO can self.replay be handled at the AgentInterface level?
             self.buffer.load(checkpoint_path, buffer_checkpoint_name)
             self.optimizer = get_optimizer(
                 [self.value_net],

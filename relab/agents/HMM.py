@@ -302,7 +302,6 @@ class HMM(VariationalModel):
             obs = torch.unsqueeze(obs, dim=0)
             parameters = self.encoder(obs)
             states = self.reparam(parameters, tau=tau)
-            # TODO below add param to __call__?
             reconstructed_obs = \
                 self.reconstructed_image_from(self.decoder(states))
 

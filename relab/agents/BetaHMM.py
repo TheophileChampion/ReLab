@@ -75,8 +75,8 @@ class BetaHMM(HMM):
         """
 
         # Create the beta schedule.
-        beta_schedule = \
-            [(0, 0.0001)] if beta_schedule is None else beta_schedule
+        if beta_schedule is None:
+            beta_schedule = [(0, 0.0001)]
 
         # Call the parent constructor.
         super().__init__(
@@ -97,5 +97,5 @@ class BetaHMM(HMM):
             learning_rate=learning_rate,
             adam_eps=adam_eps,
             beta_schedule=beta_schedule,
-            tau_schedule=tau_schedule,
+            tau_schedule=tau_schedule
         )
