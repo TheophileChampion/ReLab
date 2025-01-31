@@ -2,16 +2,16 @@ from setuptools import setup, find_packages
 
 # TODO Add support for C++ library
 setup(
-    name = "relab",
-    version = "1.0.0",
-    description = "ReLab is a user-friendly library to streamline reinforcement learning experiments, offering prebuilt RL agents, Gym integration, and performance visualization.",
-    keywords = "pytorch, reinforcement learning, deep learning",
-    author = "Théophile Champion",
-    author_email = "theoph.champion@gmail.com",
-    url = "https://github.com/TheophileChampion/ReLab/",
-    license = "MIT License",
-    packages = find_packages(),
-    scripts = [
+    name="relab",
+    version="1.0.0",
+    description="ReLab is a user-friendly library to streamline reinforcement learning experiments, offering prebuilt RL agents, Gym integration, and performance visualization.",
+    keywords="pytorch, reinforcement learning, deep learning",
+    author="Théophile Champion",
+    author_email="theoph.champion@gmail.com",
+    url="https://github.com/TheophileChampion/ReLab/",
+    license="MIT License",
+    packages=find_packages(),
+    scripts=[
         "scripts/run_experiment",
         "scripts/run_training",
         "scripts/run_demo",
@@ -19,7 +19,7 @@ setup(
         "scripts/describe_params",
         "scripts/display_checkpoint",
         "scripts/update_checkpoint",
-        "scripts/test_install"
+        "scripts/test_install",
     ],
     install_requires=[
         "gymnasium[atari, other]==1.0.0",
@@ -36,13 +36,13 @@ setup(
         "pybind11==2.13.6",
         "invoke==2.2.0",
         "psutil==6.1.1",
-        "numpy==2.2.1"
+        "numpy==2.2.1",
     ],
-    python_requires = "~=3.12",
-    classifiers = [
+    python_requires="~=3.12",
+    classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Artificial Intelligence"
-    ]
+    ],
 )
