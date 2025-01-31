@@ -37,7 +37,7 @@ class IQN(DQN):
         training: bool = True,
         replay_type: ReplayType = ReplayType.DEFAULT,
         loss_type: LossType = LossType.IMPLICIT_QUANTILE,
-        network_type: NetworkType = NetworkType.IMPLICIT_QUANTILE
+        network_type: NetworkType = NetworkType.IMPLICIT_QUANTILE,
     ) -> None:
         """!
         Create an IQN agent.
@@ -72,5 +72,5 @@ class IQN(DQN):
             training=training,
             replay_type=replay_type,
             loss_type=loss_type,
-            network_type=network_type
+            network_type=network_type,
         )

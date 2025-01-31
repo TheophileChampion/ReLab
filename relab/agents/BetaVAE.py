@@ -50,7 +50,7 @@ class BetaVAE(VAE):
         batch_size: int = 32,
         n_steps: int = 1,
         omega: float = 1.0,
-        omega_is: float = 1.0
+        omega_is: float = 1.0,
     ) -> None:
         """!
         Create a Variational Auto-Encoder agent taking random actions.

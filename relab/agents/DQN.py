@@ -14,14 +14,26 @@ from gymnasium import Env
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.cpp.agents.memory import Experience
-from relab.agents.networks.CategoricalDeepQNetworks import CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork
+from relab.agents.networks.CategoricalDeepQNetworks import (
+    CategoricalDeepQNetwork,
+    NoisyCategoricalDeepQNetwork
+)
 from relab.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
 import numpy as np
 
 from relab.helpers.Serialization import safe_load, get_optimizer, safe_load_state_dict
-from relab.agents.networks.DuelingDeepQNetworks import DuelingDeepQNetwork, NoisyDuelingDeepQNetwork
-from relab.agents.networks.QuantileDeepQNetworks import QuantileDeepQNetwork, ImplicitQuantileNetwork
-from relab.agents.networks.RainbowDeepQNetwork import RainbowDeepQNetwork, RainbowImplicitQuantileNetwork
+from relab.agents.networks.DuelingDeepQNetworks import (
+    DuelingDeepQNetwork,
+    NoisyDuelingDeepQNetwork
+)
+from relab.agents.networks.QuantileDeepQNetworks import (
+    QuantileDeepQNetwork,
+    ImplicitQuantileNetwork
+)
+from relab.agents.networks.RainbowDeepQNetwork import (
+    RainbowDeepQNetwork,
+    RainbowImplicitQuantileNetwork
+)
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.Typing import ActionType, Loss, Checkpoint, ObservationType
@@ -162,7 +174,7 @@ class DQN(AgentInterface):
         network_type: NetworkType = NetworkType.DEFAULT,
         omega: float = 1.0,
         omega_is: float = 1.0,
-        epsilon_schedule: Any = None
+        epsilon_schedule: Any = None,
     ) -> None:
         """!
         Create a DQN agent.
@@ -266,9 +278,11 @@ class DQN(AgentInterface):
 
         # @var epsilon_schedule
         # Schedule for the exploration parameter epsilon.
-        self.epsilon_schedule = [
-            (0, 1), (self.learning_starts, 1), (1e6, 0.1), (10e6, 0.01)
-        ] if epsilon_schedule is None else epsilon_schedule
+        self.epsilon_schedule = (
+            [(0, 1), (self.learning_starts, 1), (1e6, 0.1), (10e6, 0.01)]
+            if epsilon_schedule is None
+            else epsilon_schedule
+        )
 
         # @var epsilon
         # Scheduler for the exploration parameter epsilon.
@@ -295,22 +309,15 @@ class DQN(AgentInterface):
         self.optimizer = get_optimizer(
             [self.value_net],
             self.learning_rate,
-            self.adam_eps
+            self.adam_eps,
         )
 
         # @var buffer
         # Experience replay buffer for storing transitions.
         buffer = self.get_replay_buffer(
-            self.replay_type,
-            self.omega,
-            self.omega_is,
-            self.n_steps,
-            self.gamma
+            self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma
         )
-        self.buffer = buffer(
-            capacity=self.buffer_size,
-            batch_size=self.batch_size
-        )
+        self.buffer = buffer(capacity=self.buffer_size, batch_size=self.batch_size)
 
     def get_loss(self, loss_type: LossType) -> Callable:
         """!
@@ -320,37 +327,26 @@ class DQN(AgentInterface):
         """
         # @cond IGNORED_BY_DOXYGEN
         return {
+            LossType.KL_DIVERGENCE: self.categorical_kl_divergence,
+            LossType.QUANTILE: partial(self.quantile_loss, kappa=self.kappa),
+            LossType.RAINBOW: self.rainbow_loss,
+            LossType.RAINBOW_IQN: partial(self.rainbow_iqn_loss, kappa=self.kappa),
+            LossType.IMPLICIT_QUANTILE: partial(
+                self.implicit_quantile_loss, kappa=self.kappa
+            ),
             LossType.DQN_MSE: partial(
-                self.q_learning_loss,
-                loss_fc=MSELoss(reduction="none")
+                self.q_learning_loss, loss_fc=MSELoss(reduction="none")
             ),
             LossType.DQN_SL1: partial(
-                self.q_learning_loss,
-                loss_fc=SmoothL1Loss(reduction="none")
+                self.q_learning_loss, loss_fc=SmoothL1Loss(reduction="none")
             ),
             LossType.DDQN_MSE: partial(
-                self.q_learning_loss,
-                loss_fc=MSELoss(reduction="none"),
-                double_ql=True
+                self.q_learning_loss, loss_fc=MSELoss(reduction="none"), double_ql=True
             ),
             LossType.DDQN_SL1: partial(
                 self.q_learning_loss,
                 loss_fc=SmoothL1Loss(reduction="none"),
-                double_ql=True
-            ),
-            LossType.KL_DIVERGENCE: self.categorical_kl_divergence,
-            LossType.QUANTILE: partial(
-                self.quantile_loss,
-                kappa=self.kappa
-            ),
-            LossType.IMPLICIT_QUANTILE: partial(
-                self.implicit_quantile_loss,
-                kappa=self.kappa
-            ),
-            LossType.RAINBOW: self.rainbow_loss,
-            LossType.RAINBOW_IQN: partial(
-                self.rainbow_iqn_loss,
-                kappa=self.kappa
+                double_ql=True,
             ),
         }[loss_type]
         # @endcond
@@ -369,26 +365,35 @@ class DQN(AgentInterface):
             NetworkType.NOISY_DUELING: partial(
                 NoisyDuelingDeepQNetwork, self.n_actions
             ),
-            NetworkType.CATEGORICAL: partial(
-                CategoricalDeepQNetwork,
-                self.n_actions, self.n_atoms, self.v_min, self.v_max
-            ),
-            NetworkType.NOISY_CATEGORICAL: partial(
-                NoisyCategoricalDeepQNetwork,
-                self.n_actions, self.n_atoms, self.v_min, self.v_max
-            ),
             NetworkType.QUANTILE: partial(
                 QuantileDeepQNetwork, self.n_actions, self.n_atoms
             ),
             NetworkType.IMPLICIT_QUANTILE: partial(
                 ImplicitQuantileNetwork, self.n_actions
             ),
-            NetworkType.RAINBOW: partial(
-                RainbowDeepQNetwork,
-                self.n_actions, self.n_atoms, self.v_min, self.v_max
-            ),
             NetworkType.RAINBOW_IQN: partial(
                 RainbowImplicitQuantileNetwork, self.n_actions
+            ),
+            NetworkType.CATEGORICAL: partial(
+                CategoricalDeepQNetwork,
+                self.n_actions,
+                self.n_atoms,
+                self.v_min,
+                self.v_max
+            ),
+            NetworkType.NOISY_CATEGORICAL: partial(
+                NoisyCategoricalDeepQNetwork,
+                self.n_actions,
+                self.n_atoms,
+                self.v_min,
+                self.v_max
+            ),
+            NetworkType.RAINBOW: partial(
+                RainbowDeepQNetwork,
+                self.n_actions,
+                self.n_atoms,
+                self.v_min,
+                self.v_max
             ),
         }[network_type]()
         network.train(self.training)
@@ -502,7 +507,7 @@ class DQN(AgentInterface):
         done: Tensor,
         next_obs: Tensor,
         loss_fc: Loss,
-        double_ql: bool = False
+        double_ql: bool = False,
     ) -> Tensor:
         """!
         Compute the loss of the standard or double Q-learning algorithm.
@@ -520,8 +525,7 @@ class DQN(AgentInterface):
         if double_ql is True:
             # Chose the best actions according to the value network,
             # and evaluate them using the target network.
-            next_actions = \
-                torch.argmax(self.value_net.q_values(next_obs), dim=1)
+            next_actions = torch.argmax(self.value_net.q_values(next_obs), dim=1)
             next_actions = next_actions.detach().squeeze()
             next_values = next_values[range(self.batch_size), next_actions]
         else:
@@ -542,7 +546,7 @@ class DQN(AgentInterface):
         actions: Tensor,
         rewards: Tensor,
         done: Tensor,
-        next_obs: Tensor
+        next_obs: Tensor,
     ) -> Tensor:
         """!
         Compute the loss of the categorical algorithm.
@@ -561,13 +565,15 @@ class DQN(AgentInterface):
 
         # Retrieve the atoms and probabilities corresponding to the best
         # actions at time t + 1.
-        batch_indices = range(self.batch_size)
-        next_atoms = next_atoms[batch_indices, :, next_actions]
-        next_probs = next_probs[batch_indices, :, next_actions]
+        batch_ids = range(self.batch_size)
+        next_atoms = next_atoms[batch_ids, :, next_actions]
+        next_probs = next_probs[batch_ids, :, next_actions]
 
         # Compute the new atom positions using the Bellman update.
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) \
+        next_atoms = (
+            rewards.unsqueeze(dim=1).repeat(1, self.n_atoms)
             + math.pow(self.gamma, self.n_steps) * next_atoms
+        )
         next_atoms = torch.clamp(next_atoms, self.v_min, self.v_max)
 
         # Compute the projected distribution over returns.
@@ -576,15 +582,15 @@ class DQN(AgentInterface):
             atom = (next_atoms[:, j] - self.v_min) / self.target_net.delta_z
             lower = torch.floor(atom).int()
             upper = torch.ceil(atom).int()
-            target_probs[batch_indices, lower] += \
-                next_probs[batch_indices, j] * (upper - atom)
+            target_probs[batch_ids, lower] += next_probs[batch_ids, j] * (upper - atom)
             mask = torch.logical_not(torch.eq(lower, upper))
-            target_probs[batch_indices, upper] += \
-                mask * next_probs[batch_indices, j] * (atom - lower)
+            target_probs[batch_ids, upper] += (
+                mask * next_probs[batch_ids, j] * (atom - lower)
+            )
 
         # Compute the predicted return log-probabilities.
         _, _, log_probs = self.value_net(obs)
-        log_probs = log_probs[batch_indices, :, actions.squeeze()]
+        log_probs = log_probs[batch_ids, :, actions.squeeze()]
 
         # Compute the categorical loss.
         loss_fc = CrossEntropyLoss(reduction="none")
@@ -597,7 +603,7 @@ class DQN(AgentInterface):
         actions: Tensor,
         rewards: Tensor,
         done: Tensor,
-        next_obs: Tensor
+        next_obs: Tensor,
     ) -> Tensor:
         """!
         Compute the loss of the rainbow DQN.
@@ -610,21 +616,22 @@ class DQN(AgentInterface):
         """
 
         # Compute the best actions at time t + 1 using the value network.
-        next_actions = torch.argmax(
-            self.value_net.q_values(next_obs),
-            dim=1
-        ).detach().squeeze()
+        next_actions = (
+            torch.argmax(self.value_net.q_values(next_obs), dim=1).detach().squeeze()
+        )
 
         # Retrieve the atoms and probabilities corresponding to the best
         # actions at time t + 1.
-        batch_indices = range(self.batch_size)
+        batch_ids = range(self.batch_size)
         next_atoms, next_probs, _ = self.target_net(next_obs)
-        next_atoms = next_atoms[batch_indices, :, next_actions]
-        next_probs = next_probs[batch_indices, :, next_actions]
+        next_atoms = next_atoms[batch_ids, :, next_actions]
+        next_probs = next_probs[batch_ids, :, next_actions]
 
         # Compute the new atom positions using the Bellman update.
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) \
+        next_atoms = (
+            rewards.unsqueeze(dim=1).repeat(1, self.n_atoms)
             + math.pow(self.gamma, self.n_steps) * next_atoms
+        )
         next_atoms = torch.clamp(next_atoms, self.v_min, self.v_max)
 
         # Compute the projected distribution over returns.
@@ -633,11 +640,11 @@ class DQN(AgentInterface):
             atom = (next_atoms[:, j] - self.v_min) / self.target_net.delta_z
             lower = torch.floor(atom).int()
             upper = torch.ceil(atom).int()
-            target_probs[batch_indices, lower] += \
-                next_probs[batch_indices, j] * (upper - atom)
+            target_probs[batch_ids, lower] += next_probs[batch_ids, j] * (upper - atom)
             mask = torch.logical_not(torch.eq(lower, upper))
-            target_probs[batch_indices, upper] += \
-                mask * next_probs[batch_indices, j] * (atom - lower)
+            target_probs[batch_ids, upper] += (
+                mask * next_probs[batch_ids, j] * (atom - lower)
+            )
 
         # Compute the predicted return log-probabilities.
         _, _, log_probs = self.value_net(obs)
@@ -655,7 +662,7 @@ class DQN(AgentInterface):
         rewards: Tensor,
         done: Tensor,
         next_obs: Tensor,
-        kappa: float = 1.0
+        kappa: float = 1.0,
     ) -> Tensor:
         """!
         Compute the loss of the quantile regression algorithm.
@@ -675,14 +682,16 @@ class DQN(AgentInterface):
         next_actions = torch.argmax(next_q_values, dim=1)
 
         # Compute the new atom positions using the Bellman update.
-        batch_indices = range(self.batch_size)
-        next_atoms = next_atoms[batch_indices, :, next_actions.squeeze()]
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) \
+        batch_ids = range(self.batch_size)
+        next_atoms = next_atoms[batch_ids, :, next_actions.squeeze()]
+        next_atoms = (
+            rewards.unsqueeze(dim=1).repeat(1, self.n_atoms)
             + math.pow(self.gamma, self.n_steps) * next_atoms
+        )
 
         # Compute the predicted atoms (canonical return).
         atoms = self.value_net(obs)
-        atoms = atoms[batch_indices, :, actions.squeeze()]
+        atoms = atoms[batch_ids, :, actions.squeeze()]
 
         # Compute the quantile Huber loss.
         huber_loss = HuberLoss(reduction="none", delta=kappa)
@@ -693,8 +702,10 @@ class DQN(AgentInterface):
                 next_atom_j = next_atoms[:, j]
                 atom_i = atoms[:, i]
                 mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
-                loss += torch.abs(tau - mask).to(self.device) * \
-                    huber_loss(next_atom_j, atom_i) / kappa
+                loss += (
+                    torch.abs(tau - mask).to(self.device)
+                    * huber_loss(next_atom_j, atom_i) / kappa
+                )
         loss /= self.n_atoms
         return loss
         # @endcond
@@ -706,7 +717,7 @@ class DQN(AgentInterface):
         rewards: Tensor,
         done: Tensor,
         next_obs: Tensor,
-        kappa: float = 1.0
+        kappa: float = 1.0,
     ) -> Tensor:
         """!
         Compute the loss of the quantile regression algorithm.
@@ -725,15 +736,17 @@ class DQN(AgentInterface):
         next_actions = torch.argmax(next_q_values, dim=1)
 
         # Compute the new atom positions using the Bellman update.
-        batch_indices = range(self.batch_size)
+        batch_ids = range(self.batch_size)
         next_atoms, _ = self.target_net(next_obs, self.n_atoms, False)
-        next_atoms = next_atoms[batch_indices, :, next_actions.squeeze()]
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) \
+        next_atoms = next_atoms[batch_ids, :, next_actions.squeeze()]
+        next_atoms = (
+            rewards.unsqueeze(dim=1).repeat(1, self.n_atoms)
             + math.pow(self.gamma, self.n_steps) * next_atoms
+        )
 
         # Compute the predicted atoms (canonical return).
         atoms, taus = self.value_net(obs, n_samples=self.n_atoms)
-        atoms = atoms[batch_indices, :, actions.squeeze()]
+        atoms = atoms[batch_ids, :, actions.squeeze()]
 
         # Compute the quantile Huber loss.
         huber_loss = HuberLoss(reduction="none", delta=kappa)
@@ -743,8 +756,10 @@ class DQN(AgentInterface):
             for j in range(self.n_atoms):
                 next_atom_j = next_atoms[:, j]
                 mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
-                loss += torch.abs(taus[:, i] - mask).to(self.device) * \
-                    huber_loss(next_atom_j, atom_i) / kappa
+                loss += (
+                    torch.abs(taus[:, i] - mask).to(self.device)
+                    * huber_loss(next_atom_j, atom_i) / kappa
+                )
         loss /= self.n_atoms
         return loss
         # @endcond
@@ -756,7 +771,7 @@ class DQN(AgentInterface):
         rewards: Tensor,
         done: Tensor,
         next_obs: Tensor,
-        kappa: float = 1.0
+        kappa: float = 1.0,
     ) -> Tensor:
         """!
         Compute the loss of the rainbow IQN.
@@ -771,20 +786,20 @@ class DQN(AgentInterface):
         # @cond IGNORED_BY_DOXYGEN
 
         # Compute the best actions at time t + 1 using the value network.
-        next_actions = torch.argmax(
-            self.value_net.q_values(next_obs), dim=1
-        ).detach()
+        next_actions = torch.argmax(self.value_net.q_values(next_obs), dim=1).detach()
 
         # Compute the new atom positions using the Bellman update.
-        batch_indices = range(self.batch_size)
+        batch_ids = range(self.batch_size)
         next_atoms, _ = self.target_net(next_obs, n_samples=self.n_atoms)
-        next_atoms = next_atoms[batch_indices, :, next_actions.squeeze()]
-        next_atoms = rewards.unsqueeze(dim=1).repeat(1, self.n_atoms) \
+        next_atoms = next_atoms[batch_ids, :, next_actions.squeeze()]
+        next_atoms = (
+            rewards.unsqueeze(dim=1).repeat(1, self.n_atoms)
             + math.pow(self.gamma, self.n_steps) * next_atoms
+        )
 
         # Compute the predicted atoms (canonical return) at time t.
         atoms, taus = self.value_net(obs, n_samples=self.n_atoms)
-        atoms = atoms[batch_indices, :, actions.squeeze()]
+        atoms = atoms[batch_ids, :, actions.squeeze()]
 
         # Compute the quantile Huber loss.
         huber_loss = HuberLoss(reduction="none", delta=kappa)
@@ -794,16 +809,16 @@ class DQN(AgentInterface):
             for j in range(self.n_atoms):
                 next_atom_j = next_atoms[:, j]
                 mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
-                loss += torch.abs(taus[:, i] - mask).to(self.device) * \
-                    huber_loss(next_atom_j, atom_i) / kappa
+                loss += (
+                    torch.abs(taus[:, i] - mask).to(self.device)
+                    * huber_loss(next_atom_j, atom_i) / kappa
+                )
         loss /= self.n_atoms
         return loss
         # @endcond
 
     def load(
-        self,
-        checkpoint_name: str = "",
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -814,15 +829,31 @@ class DQN(AgentInterface):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = \
-                super().load(checkpoint_name, buffer_checkpoint_name)
+            checkpoint_path, checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name
+            )
 
             # Update the agent's parameters using the checkpoint.
             attributes_names = [  # TODO add new function + all other classes
-                "gamma", "learning_rate", "buffer_size", "batch_size", "kappa",
-                "target_update_rate", "learning_starts", "adam_eps", "n_steps",
-                "v_min", "v_max", "n_atoms", "n_actions", "omega", "omega_is",
-                "replay_type", "loss_type", "network_type", "epsilon_schedule"
+                "gamma",
+                "learning_rate",
+                "buffer_size",
+                "batch_size",
+                "kappa",
+                "target_update_rate",
+                "learning_starts",
+                "adam_eps",
+                "n_steps",
+                "v_min",
+                "v_max",
+                "n_atoms",
+                "n_actions",
+                "omega",
+                "omega_is",
+                "replay_type",
+                "loss_type",
+                "network_type",
+                "epsilon_schedule"
             ]
             for name in attributes_names:
                 setattr(self, name, safe_load(checkpoint, name))
@@ -843,23 +874,15 @@ class DQN(AgentInterface):
 
             # Update the optimizer and replay buffer.
             buffer = self.get_replay_buffer(
-                self.replay_type,
-                self.omega,
-                self.omega_is,
-                self.n_steps,
-                self.gamma
+                self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma
             )
             self.buffer = buffer(
-                capacity=self.buffer_size,
-                batch_size=self.batch_size
+                capacity=self.buffer_size, batch_size=self.batch_size
             )  # TODO can this be added to the get_replay_buffer?
             # TODO can self.replay be handled at the AgentInterface level?
             self.buffer.load(checkpoint_path, buffer_checkpoint_name)
             self.optimizer = get_optimizer(
-                [self.value_net],
-                self.learning_rate,
-                self.adam_eps,
-                checkpoint
+                [self.value_net], self.learning_rate, self.adam_eps, checkpoint
             )
             return checkpoint_path, checkpoint
 
@@ -869,7 +892,7 @@ class DQN(AgentInterface):
         # @endcond
 
     def as_dict(self):
-        """"
+        """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
@@ -896,13 +919,11 @@ class DQN(AgentInterface):
             "epsilon_schedule": self.epsilon_schedule,
             "value_net": self.value_net.state_dict(),
             "target_net": self.target_net.state_dict(),
-            "optimizer": self.optimizer.state_dict()
+            "optimizer": self.optimizer.state_dict(),
         } | super().as_dict()
 
     def save(
-        self,
-        checkpoint_name: str,
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str, buffer_checkpoint_name: str = ""
     ) -> None:
         """!
         Save the agent on the filesystem.

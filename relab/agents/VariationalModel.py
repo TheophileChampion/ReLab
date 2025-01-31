@@ -583,7 +583,7 @@ class VariationalModel(AgentInterface):
         return checkpoint_path, checkpoint
 
     def as_dict(self):
-        """"
+        """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """

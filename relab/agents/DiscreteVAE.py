@@ -44,7 +44,7 @@ class DiscreteVAE(VAE):
         batch_size: int = 32,
         n_steps: int = 1,
         omega: float = 1.0,
-        omega_is: float = 1.0
+        omega_is: float = 1.0,
     ) -> None:
         """!
         Create a Variational Auto-Encoder agent taking random actions.
@@ -88,5 +88,5 @@ class DiscreteVAE(VAE):
             batch_size=batch_size,
             n_steps=n_steps,
             omega=omega,
-            omega_is=omega_is
+            omega_is=omega_is,
         )

@@ -50,7 +50,7 @@ class RainbowDQN(DQN):
         omega: float = 0.5,
         replay_type: ReplayType = ReplayType.MULTISTEP_PRIORITIZED,
         loss_type: LossType = LossType.RAINBOW,
-        network_type: NetworkType = NetworkType.RAINBOW
+        network_type: NetworkType = NetworkType.RAINBOW,
     ) -> None:
         """!
         Create a rainbow DQN agent.
@@ -92,5 +92,5 @@ class RainbowDQN(DQN):
             replay_type=replay_type,
             loss_type=loss_type,
             network_type=network_type,
-            epsilon_schedule=[(0, 0)]
+            epsilon_schedule=[(0, 0)],
         )

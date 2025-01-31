@@ -98,10 +98,6 @@ class AgentInterface(ABC):
         # Object representing the current process, used to track memory usage.
         self.process = psutil.Process()
 
-        # @var virtual_memory
-        # Queue tracking virtual memory usage over time.
-        self.virtual_memory = deque(maxlen=self.max_queue_len)
-
         # @var residential_memory
         # Queue tracking residential memory usage over time.
         self.residential_mem = deque(maxlen=self.max_queue_len)
@@ -161,9 +157,7 @@ class AgentInterface(ABC):
         ...
 
     def load(
-        self,
-        checkpoint_name: str = "",
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -186,13 +180,9 @@ class AgentInterface(ABC):
             )
 
         # Load the checkpoint from the file system.
-        logging.info(
-            f"Loading agent from the following file: {checkpoint_path}"
-        )
+        logging.info(f"Loading agent from: {checkpoint_path}")
         checkpoint = torch.load(
-            checkpoint_path,
-            map_location=self.device,
-            weights_only=False
+            checkpoint_path, map_location=self.device, weights_only=False
         )
 
         # Load the class attributes from the checkpoint.
@@ -206,7 +196,6 @@ class AgentInterface(ABC):
         self.betas = safe_load(checkpoint, "betas")
         self.log_likelihoods = safe_load(checkpoint, "log_likelihoods")
         self.kl_divergences = safe_load(checkpoint, "kl_divergences")
-        self.virtual_memory = safe_load(checkpoint, "virtual_memory")
         self.residential_mem = safe_load(checkpoint, "residential_mem")
         self.episodic_rewards = safe_load(checkpoint, "episodic_rewards")
         self.time_elapsed = safe_load(checkpoint, "time_elapsed")
@@ -216,7 +205,7 @@ class AgentInterface(ABC):
         return checkpoint_path, checkpoint
 
     def as_dict(self):
-        """"
+        """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
@@ -230,21 +219,16 @@ class AgentInterface(ABC):
             "betas": self.betas,
             "log_likelihoods": self.log_likelihoods,
             "kl_divergences": self.kl_divergences,
-            "virtual_memory": self.virtual_memory,
             "residential_mem": self.residential_mem,
             "episodic_rewards": self.episodic_rewards,
             "time_elapsed": self.time_elapsed,
             "episode_lengths": self.episode_lengths,
             "checkpoint_dir": self.checkpoint_dir,
-            "tensorboard_dir": self.tensorboard_dir
+            "tensorboard_dir": self.tensorboard_dir,
         }
 
     @abc.abstractmethod
-    def save(
-        self,
-        checkpoint_name: str,
-        buffer_checkpoint_name: str = ""
-    ) -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
@@ -289,10 +273,7 @@ class AgentInterface(ABC):
         imageio.mimwrite(gif_path, frames, duration=16.66)
 
     def report(
-        self,
-        reward: SupportsFloat,
-        done: bool,
-        model_losses: Dict[str, Any] = None
+        self, reward: SupportsFloat, done: bool, model_losses: Dict[str, Any] = None
     ) -> None:
         """!
         Keep track of the last episodic rewards, episode length, and time elapse since last training iteration.
@@ -303,7 +284,6 @@ class AgentInterface(ABC):
 
         # Keep track of the memory usage of the program.
         info = self.process.memory_info()
-        self.virtual_memory.append(info.vms)
         self.residential_mem.append(info.rss)
 
         # Keep track of time elapsed since last training iteration.
@@ -339,13 +319,8 @@ class AgentInterface(ABC):
         """
 
         # Log the mean time elapsed between two training iterations.
-        if len(self.virtual_memory) >= 2:
-            self.log_mean_metric(
-                "mean_virtual_memory_gb", self.virtual_memory, 1e9
-            )
-            self.log_mean_metric(
-                "mean_residential_memory_gb", self.residential_mem, 1e9
-            )
+        if len(self.residential_mem) >= 2:
+            self.log_mean_metric("mean_memory_gb", self.residential_mem, 1e9)
 
         # Log the mean time elapsed between two training iterations.
         if len(self.time_elapsed) >= 2:
@@ -367,21 +342,14 @@ class AgentInterface(ABC):
             self.log_mean_metric("log_likelihood", self.log_likelihoods)
             self.log_mean_metric("kl_divergence", self.kl_divergences)
 
-    def log_mean_metric(
-        self,
-        name: str,
-        values: deque,
-        scale: float = 1
-    ) -> None:
+    def log_mean_metric(self, name: str, values: deque, scale: float = 1) -> None:
         """!
         Log the mean metric value in TensorBoard.
         :param name: the metric name
         :param values: the metric values
         :param scale: a coefficient by which all values must be divided
         """
-        self.writer.add_scalar(
-            name, np.mean(list(values)) / scale, self.current_step
-        )
+        self.writer.add_scalar(name, np.mean(list(values)) / scale, self.current_step)
 
     @staticmethod
     def get_latest_checkpoint(regex: str = r"model_\d+.pt") -> Optional[str]:
@@ -401,8 +369,7 @@ class AgentInterface(ABC):
         # If the directory does not contain any files,
         # return without trying to load the checkpoint.
         files = [
-            file
-            for file in os.listdir(directory) if isfile(join(directory, file))
+            file for file in os.listdir(directory) if isfile(join(directory, file))
         ]
         if len(files) == 0:
             logging.warning(f"No checkpoint found in directory: {directory}")
@@ -410,7 +377,7 @@ class AgentInterface(ABC):
 
         # Retrieve the file whose name contain the largest number.
         # This number must be the time step at which the agent was saved.
-        max_number = - math.inf
+        max_number = -math.inf
         file = None
         for current_file in files:
 
@@ -434,7 +401,7 @@ class AgentInterface(ABC):
         omega: float,
         omega_is: float,
         n_steps: int,
-        gamma: float = 1.0
+        gamma: float = 1.0,
     ) -> Callable:
         """!
         Retrieve the constructor of the replay buffer requested as parameters.
@@ -445,15 +412,8 @@ class AgentInterface(ABC):
         @param gamma: the discount factor
         @return the constructor of the replay buffer
         """
-        m_args = {
-            "n_steps": n_steps,
-            "gamma": gamma
-        }
-        p_args = {
-            "initial_priority": 1e9,
-            "omega": omega,
-            "omega_is": omega_is
-        }
+        m_args = {"n_steps": n_steps, "gamma": gamma}
+        p_args = {"initial_priority": 1e9, "omega": omega, "omega_is": omega_is}
         args = m_args | p_args
         return {
             ReplayType.DEFAULT: ReplayBuffer,

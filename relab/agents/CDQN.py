@@ -36,7 +36,7 @@ class CDQN(DQN):
         training: bool = True,
         replay_type: ReplayType = ReplayType.DEFAULT,
         loss_type: LossType = LossType.KL_DIVERGENCE,
-        network_type: NetworkType = NetworkType.CATEGORICAL
+        network_type: NetworkType = NetworkType.CATEGORICAL,
     ) -> None:
         """!
         Create a categorical DQN agent.
@@ -73,5 +73,5 @@ class CDQN(DQN):
             training=training,
             replay_type=replay_type,
             loss_type=loss_type,
-            network_type=network_type
+            network_type=network_type,
         )

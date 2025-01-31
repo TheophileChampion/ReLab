@@ -26,7 +26,7 @@ class PrioritizedMDQN(DQN):
         omega_is: float = 0.5,
         replay_type: ReplayType = ReplayType.MULTISTEP_PRIORITIZED,
         loss_type: LossType = LossType.DQN_SL1,
-        network_type: NetworkType = NetworkType.DEFAULT
+        network_type: NetworkType = NetworkType.DEFAULT,
     ) -> None:
         """!
         Create a DQN agent.
@@ -65,5 +65,5 @@ class PrioritizedMDQN(DQN):
             loss_type=loss_type,
             network_type=network_type,
             omega=omega,
-            omega_is=omega_is
+            omega_is=omega_is,
         )

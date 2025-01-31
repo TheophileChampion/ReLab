@@ -4,6 +4,7 @@ from torch import nn, Tensor
 import torch
 
 import relab
+from relab import config
 
 
 class CategoricalDeepQNetwork(nn.Module):
@@ -17,7 +18,7 @@ class CategoricalDeepQNetwork(nn.Module):
         n_atoms: int = 21,
         v_min: float = -10,
         v_max: float = 10,
-        stack_size: Optional[int] = None
+        stack_size: Optional[int] = None,
     ) -> None:
         """!
         Constructor.
@@ -59,8 +60,7 @@ class CategoricalDeepQNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = \
-            relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = config("stack_size") if stack_size is None else stack_size
 
         # @var net
         # Complete network that processes images and outputs atom logits.
@@ -74,7 +74,7 @@ class CategoricalDeepQNetwork(nn.Module):
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
-            nn.Linear(1024, n_atoms * n_actions)
+            nn.Linear(1024, n_atoms * n_actions),
         )
 
         # Initialize the weights.
@@ -125,7 +125,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
         n_atoms: int = 21,
         v_min: float = -10,
         v_max: float = 10,
-        stack_size: Optional[int] = None
+        stack_size: Optional[int] = None,
     ) -> None:
         """!
         Constructor.
@@ -167,8 +167,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config(
-            "stack_size") if stack_size is None else stack_size
+        self.stack_size = config("stack_size") if stack_size is None else stack_size
 
         # @var net
         # Complete network that processes images and outputs atom logits.
@@ -182,7 +181,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
-            nn.Linear(1024, n_atoms * n_actions)
+            nn.Linear(1024, n_atoms * n_actions),
         )
 
         # Initialize the weights.

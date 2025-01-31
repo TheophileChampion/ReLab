@@ -5,6 +5,7 @@ from relab.cpp.agents.memory import FastReplayBuffer, CompressorType, Experience
 from torch import Tensor
 
 from relab.helpers.Typing import Config, Batch
+from relab import config
 
 
 class ReplayBuffer:
@@ -37,7 +38,7 @@ class ReplayBuffer:
         frame_skip: Optional[int] = None,
         stack_size: Optional[int] = None,
         screen_size: Optional[int] = None,
-        args: Config = None
+        args: Config = None,
     ) -> None:
         """!
         Create a replay buffer.
@@ -60,10 +61,10 @@ class ReplayBuffer:
         self.buffer = FastReplayBuffer(
             capacity=capacity,
             batch_size=batch_size,
-            frame_skip=relab.config("frame_skip") if frame_skip is None else frame_skip,
-            stack_size=relab.config("stack_size") if stack_size is None else stack_size,
-            screen_size=relab.config("screen_size") if screen_size is None else screen_size,
-            type=CompressorType.ZLIB if relab.config("compress_images") else CompressorType.RAW,
+            frame_skip=config("frame_skip") if frame_skip is None else frame_skip,
+            stack_size=config("stack_size") if stack_size is None else stack_size,
+            screen_size=config("screen_size") if screen_size is None else screen_size,
+            type=CompressorType.ZLIB if config("compress_png") else CompressorType.RAW,
             args={} if args is None else args,
         )
 
@@ -98,9 +99,7 @@ class ReplayBuffer:
         @param checkpoint_name: the name of the checkpoint from which the replay buffer must be loaded ("" for default name)
         """
         self.buffer.load(
-            checkpoint_path,
-            checkpoint_name,
-            relab.config("save_all_replay_buffers")
+            checkpoint_path, checkpoint_name, relab.config("save_all_replay_buffers")
         )
 
     def save(self, checkpoint_path: str = "",
@@ -111,9 +110,7 @@ class ReplayBuffer:
         @param checkpoint_name: the name of the checkpoint in which the replay buffer must be saved ("" for default name)
         """
         self.buffer.save(
-            checkpoint_path,
-            checkpoint_name,
-            relab.config("save_all_replay_buffers")
+            checkpoint_path, checkpoint_name, relab.config("save_all_replay_buffers")
         )
 
     def report(self, loss: Tensor) -> Tensor:

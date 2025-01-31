@@ -23,7 +23,7 @@ class PrioritizedDDQN(DQN):
         network_type: NetworkType = NetworkType.DEFAULT,
         omega: float = 0.7,
         omega_is: float = 0.5,
-        training: bool = True
+        training: bool = True,
     ) -> None:
         """!
         Create a Double DQN agent.
@@ -56,5 +56,5 @@ class PrioritizedDDQN(DQN):
             network_type=network_type,
             training=training,
             omega=omega,
-            omega_is=omega_is
+            omega_is=omega_is,
         )

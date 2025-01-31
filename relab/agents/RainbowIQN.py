@@ -33,10 +33,11 @@ class RainbowIQN(DQN):
         n_actions: int = 18,
         n_atoms: int = 8,
         training: bool = True,
-        n_steps: int = 3, omega: float = 0.5,
+        n_steps: int = 3,
+        omega: float = 0.5,
         replay_type: ReplayType = ReplayType.MULTISTEP_PRIORITIZED,
         loss_type: LossType = LossType.RAINBOW_IQN,
-        network_type: NetworkType = NetworkType.RAINBOW_IQN
+        network_type: NetworkType = NetworkType.RAINBOW_IQN,
     ) -> None:
         """!
         Create a rainbow IQN agent.
@@ -76,5 +77,5 @@ class RainbowIQN(DQN):
             replay_type=replay_type,
             loss_type=loss_type,
             network_type=network_type,
-            epsilon_schedule=[(0, 0)]
+            epsilon_schedule=[(0, 0)],
         )

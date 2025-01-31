@@ -126,7 +126,7 @@ def config(key: Optional[str] = None) -> ConfigInfo:
         # Size of the images used by the agent to learn
         "screen_size": 84,
         # True, if in-memory compression must be performed, False otherwise
-        "compress_images": True,
+        "compress_png": True,
         # False, if only the last replay buffer must be saved, True otherwise
         "save_all_replay_buffers": False,
     }

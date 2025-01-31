@@ -21,7 +21,7 @@ class NoisyDDQN(DQN):
         replay_type: ReplayType = ReplayType.DEFAULT,
         loss_type: LossType = LossType.DDQN_SL1,
         network_type: NetworkType = NetworkType.NOISY,
-        training: bool = True
+        training: bool = True,
     ) -> None:
         """!
         Create a Double DQN agent.
@@ -50,5 +50,5 @@ class NoisyDDQN(DQN):
             replay_type=replay_type,
             loss_type=loss_type,
             network_type=network_type,
-            training=training
+            training=training,
         )

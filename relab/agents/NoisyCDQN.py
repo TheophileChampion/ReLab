@@ -25,7 +25,7 @@ class NoisyCDQN(DQN):
         training: bool = True,
         replay_type: ReplayType = ReplayType.DEFAULT,
         loss_type: LossType = LossType.KL_DIVERGENCE,
-        network_type: NetworkType = NetworkType.NOISY_CATEGORICAL
+        network_type: NetworkType = NetworkType.NOISY_CATEGORICAL,
     ) -> None:
         """!
         Create a categorical DQN agent.
@@ -62,5 +62,5 @@ class NoisyCDQN(DQN):
             training=training,
             replay_type=replay_type,
             loss_type=loss_type,
-            network_type=network_type
+            network_type=network_type,
         )

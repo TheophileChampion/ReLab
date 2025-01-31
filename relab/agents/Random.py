@@ -88,9 +88,7 @@ class Random(AgentInterface):
         # @endcond
 
     def load(
-        self,
-        checkpoint_name: str = "",
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -101,8 +99,9 @@ class Random(AgentInterface):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = \
-                super().load(checkpoint_name, buffer_checkpoint_name)
+            checkpoint_path, checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name
+            )
 
             # Load the class attributes from the checkpoint.
             self.n_actions = safe_load(checkpoint, "n_actions")
@@ -114,16 +113,14 @@ class Random(AgentInterface):
         # @endcond
 
     def as_dict(self):
-        """"
+        """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
         return {"n_actions": self.n_actions} | super().as_dict()
 
     def save(
-        self,
-        checkpoint_name: str,
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str, buffer_checkpoint_name: str = ""
     ) -> None:
         """!
         Save the agent on the filesystem.

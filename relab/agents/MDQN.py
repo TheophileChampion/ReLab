@@ -30,7 +30,7 @@ class MDQN(DQN):
         n_steps: int = 3,
         replay_type: ReplayType = ReplayType.MULTISTEP,
         loss_type: LossType = LossType.DQN_SL1,
-        network_type: NetworkType = NetworkType.DEFAULT
+        network_type: NetworkType = NetworkType.DEFAULT,
     ) -> None:
         """!
         Create a DQN agent.
@@ -65,5 +65,5 @@ class MDQN(DQN):
             n_steps=n_steps,
             replay_type=replay_type,
             loss_type=loss_type,
-            network_type=network_type
+            network_type=network_type,
         )

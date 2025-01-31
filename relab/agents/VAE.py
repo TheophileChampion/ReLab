@@ -10,14 +10,20 @@ import torch
 from torch import Tensor
 
 from relab.agents.AgentInterface import ReplayType
-from relab.agents.VariationalModel import VariationalModel, LikelihoodType, LatentSpaceType
+from relab.agents.VariationalModel import (
+    VariationalModel,
+    LikelihoodType,
+    LatentSpaceType,
+)
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
 
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Typing import Checkpoint
-from relab.helpers.VariationalInference import gaussian_kl_divergence as gauss_kl
-from relab.helpers.VariationalInference import sum_categorical_kl_divergences as sum_cat_kl
+from relab.helpers.VariationalInference import (
+    gaussian_kl_divergence as gauss_kl,
+    sum_categorical_kl_divergences as sum_cat_kl,
+)
 
 
 class VAE(VariationalModel):
@@ -58,7 +64,7 @@ class VAE(VariationalModel):
         batch_size: int = 32,
         n_steps: int = 1,
         omega: float = 1.0,
-        omega_is: float = 1.0
+        omega_is: float = 1.0,
     ) -> None:
         """!
         Create a Variational Auto-Encoder agent taking random actions.
@@ -118,9 +124,7 @@ class VAE(VariationalModel):
         # @var optimizer
         # Adam optimizer for training both the encoder and decoder networks.
         self.optimizer = get_optimizer(
-            [self.encoder, self.decoder],
-            self.learning_rate,
-            self.adam_eps
+            [self.encoder, self.decoder], self.learning_rate, self.adam_eps
         )
 
     def learn(self) -> Optional[Dict[str, Any]]:
@@ -159,10 +163,7 @@ class VAE(VariationalModel):
         # @endcond
 
     def continuous_vfe(
-        self,
-        obs: Tensor,
-        actions: Tensor,
-        next_obs: Tensor
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a continuous latent space.
@@ -186,10 +187,7 @@ class VAE(VariationalModel):
         # @endcond
 
     def discrete_vfe(
-        self,
-        obs: Tensor,
-        actions: Tensor,
-        next_obs: Tensor
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a discrete latent space.
@@ -214,10 +212,7 @@ class VAE(VariationalModel):
         # @endcond
 
     def mixed_vfe(
-        self,
-        obs: Tensor,
-        actions: Tensor,
-        next_obs: Tensor
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a mixed latent space.
@@ -242,10 +237,7 @@ class VAE(VariationalModel):
         # @endcond
 
     def draw_reconstructed_images(
-        self,
-        env: Env,
-        model_index: int,
-        grid_size: Tuple[int, int]
+        self, env: Env, model_index: int, grid_size: Tuple[int, int]
     ) -> Figure:
         """!
         Draw the ground truth and reconstructed images.
@@ -284,8 +276,7 @@ class VAE(VariationalModel):
                 obs = torch.unsqueeze(obs, dim=0).to(self.device)
                 parameters = self.encoder(obs)
                 states = self.reparam(parameters, tau=tau)
-                reconstructed_obs = \
-                    self.reconstructed_image_from(self.decoder(states))
+                reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
 
                 # Draw the ground truth image.
                 fig.add_subplot(gs[2 * h, w + n_cols])
@@ -304,9 +295,7 @@ class VAE(VariationalModel):
         # @endcond
 
     def load(
-        self,
-        checkpoint_name: str = "",
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -317,8 +306,9 @@ class VAE(VariationalModel):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = \
-                super().load(checkpoint_name, buffer_checkpoint_name)
+            checkpoint_path, checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name
+            )
 
             # Update the world model using the checkpoint.
             self.encoder = self.get_encoder_network(self.latent_type)
@@ -331,7 +321,7 @@ class VAE(VariationalModel):
                 [self.encoder, self.decoder],
                 self.learning_rate,
                 self.adam_eps,
-                checkpoint
+                checkpoint,
             )
             return checkpoint_path, checkpoint
 
@@ -341,20 +331,18 @@ class VAE(VariationalModel):
         # @endcond
 
     def as_dict(self):
-        """"
+        """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
         return {
             "encoder": self.encoder.state_dict(),
             "decoder": self.decoder.state_dict(),
-            "optimizer": self.optimizer.state_dict()
+            "optimizer": self.optimizer.state_dict(),
         } | super().as_dict()
 
     def save(
-        self,
-        checkpoint_name: str,
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str, buffer_checkpoint_name: str = ""
     ) -> None:
         """!
         Save the agent on the filesystem.

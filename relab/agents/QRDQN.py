@@ -36,7 +36,7 @@ class QRDQN(DQN):
         training: bool = True,
         replay_type: ReplayType = ReplayType.DEFAULT,
         loss_type: LossType = LossType.QUANTILE,
-        network_type: NetworkType = NetworkType.QUANTILE
+        network_type: NetworkType = NetworkType.QUANTILE,
     ) -> None:
         """!
         Create a quantile regression DQN agent.
@@ -71,5 +71,5 @@ class QRDQN(DQN):
             training=training,
             replay_type=replay_type,
             loss_type=loss_type,
-            network_type=network_type
+            network_type=network_type,
         )

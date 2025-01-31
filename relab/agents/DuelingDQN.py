@@ -35,7 +35,7 @@ class DuelingDQN(DQN):
         replay_type: ReplayType = ReplayType.DEFAULT,
         loss_type: LossType = LossType.DQN_SL1,
         network_type: NetworkType = NetworkType.DUELING,
-        training: bool = True
+        training: bool = True,
     ) -> None:
         """!
         Create a Dueling DQN agent.
@@ -64,5 +64,5 @@ class DuelingDQN(DQN):
             replay_type=replay_type,
             loss_type=loss_type,
             network_type=network_type,
-            training=training
+            training=training,
         )
