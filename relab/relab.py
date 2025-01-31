@@ -70,6 +70,7 @@ def initialize(
     random.seed(seed)
     torch.manual_seed(seed)
 
+
 def device() -> Device:
     """!
     Retrieves the device on which the computation should be performed.

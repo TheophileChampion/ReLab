@@ -1,7 +1,6 @@
 from typing import Optional
 
-from relab import relab
-from relab.cpp.agents.memory import FastReplayBuffer, CompressorType, Experience
+from relab.cpp.agents.memory import FastReplayBuffer, Experience
 from torch import Tensor
 
 from relab.helpers.Typing import Config, Batch
