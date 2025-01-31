@@ -22,10 +22,7 @@ class JobRunnerInterface(abc.ABC):
 
     @abc.abstractmethod
     def launch_job(
-        self,
-        task: str,
-        kwargs: Config,
-        dependencies: List[int] = None
+        self, task: str, kwargs: Config, dependencies: List[int] = None
     ) -> int:
         """!
         Launch a job.
@@ -49,10 +46,7 @@ class SlurmJobRunner(JobRunnerInterface):
     """
 
     def launch_job(
-        self,
-        task: str,
-        kwargs: Config,
-        dependencies: List[int] = None
+        self, task: str, kwargs: Config, dependencies: List[int] = None
     ) -> int:
         """!
         Launch a slurm job.
@@ -81,11 +75,7 @@ class SlurmJobRunner(JobRunnerInterface):
         command = f"sbatch {dependencies} {task} {args}"
 
         # Launch the slurm job.
-        process = subprocess.run(
-            command.split(),
-            capture_output=True,
-            text=True
-        )
+        process = subprocess.run(command.split(), capture_output=True, text=True)
 
         # Return the job index of the slurm job.
         return re.findall(r"\d+", process.stdout)[-1]
@@ -186,10 +176,9 @@ class LocalJobRunner(JobRunnerInterface):
             f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}"
         )
         future = self.pool.submit(task, **kwargs)
-        future.add_done_callback(partial(
-            self.check_jobs_to_submit,
-            job_index=job_index
-        ))
+        future.add_done_callback(
+            partial(self.check_jobs_to_submit, job_index=job_index)
+        )
         self.futures.append(future)
         # @endcond
 
@@ -220,10 +209,7 @@ class LocalJobRunner(JobRunnerInterface):
         self.unlock()
 
     def launch_job(
-        self,
-        task: str,
-        kwargs: Config,
-        dependencies: List[int] = None
+        self, task: str, kwargs: Config, dependencies: List[int] = None
     ) -> int:
         """!
         Launch a local job.

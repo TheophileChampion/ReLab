@@ -3,7 +3,7 @@ from typing import Optional
 from torch import nn, Tensor
 import torch
 
-from relab import config
+import relab
 
 
 class ContinuousDecoderNetwork(nn.Module):
@@ -36,7 +36,7 @@ class ContinuousDecoderNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation
-        self.stack_size = config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var up_conv_net
         # Transposed convolution layers predicting the reconstructed image.
@@ -91,13 +91,12 @@ class DiscreteDecoderNetwork(nn.Module):
             nn.Linear(256, 256),
             nn.ReLU(),
             nn.Linear(256, 11 * 11 * 64),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config(
-            "stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var up_conv_net
         # Transposed convolution layers predicting the reconstructed image.
@@ -108,7 +107,7 @@ class DiscreteDecoderNetwork(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(64, 32, 3, 2, 2, 1),
             nn.ReLU(),
-            nn.ConvTranspose2d(32, self.stack_size, 3, 2, 3, 0)
+            nn.ConvTranspose2d(32, self.stack_size, 3, 2, 3, 0),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -132,7 +131,7 @@ class MixedDecoderNetwork(nn.Module):
         n_continuous_vars: int = 10,
         n_discrete_vars: int = 20,
         n_discrete_vals: int = 10,
-        stack_size: Optional[int] = None
+        stack_size: Optional[int] = None,
     ):
         """!
         Constructor.
@@ -149,20 +148,17 @@ class MixedDecoderNetwork(nn.Module):
         # @var lin_net
         # Linear layers processing the continuous and discrete states.
         self.lin_net = nn.Sequential(
-            nn.Linear(
-                n_continuous_vars + n_discrete_vars * n_discrete_vals, 256
-            ),
+            nn.Linear(n_continuous_vars + n_discrete_vars * n_discrete_vals, 256),
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
             nn.Linear(256, 11 * 11 * 64),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config(
-            "stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var up_conv_net
         # Transposed convolution layers predicting the reconstructed image.
@@ -173,7 +169,7 @@ class MixedDecoderNetwork(nn.Module):
             nn.ReLU(),
             nn.ConvTranspose2d(64, 32, 3, 2, 2, 1),
             nn.ReLU(),
-            nn.ConvTranspose2d(32, self.stack_size, 3, 1, 3, 0)
+            nn.ConvTranspose2d(32, self.stack_size, 3, 1, 3, 0),
         )
 
     def forward(self, x: Tensor) -> Tensor:

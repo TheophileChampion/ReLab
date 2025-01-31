@@ -22,7 +22,7 @@ class ConvTranspose2d(nn.Module):
         dilation: ScalarOrTuple[int] = 1,
         padding_mode: str = "zeros",
         device: Device = None,
-        dtype: DataType = None
+        dtype: DataType = None,
     ) -> None:
         """!
         Create a convolutional transpose layer.
@@ -96,7 +96,7 @@ class ConvTranspose2d(nn.Module):
             dilation,
             padding_mode,
             device,
-            dtype
+            dtype,
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -115,7 +115,8 @@ class ConvTranspose2d(nn.Module):
         @return the output tensor after applying the padding same.
         """
         return tensor[
-            :, :,  # Select all batch elements and all channels.
-            self.p_left:tensor.shape[2] - self.p_right,
-            self.p_top:tensor.shape[3] - self.p_bottom
+            :,
+            :,  # Select all batch elements and all channels.
+            self.p_left : tensor.shape[2] - self.p_right,
+            self.p_top : tensor.shape[3] - self.p_bottom,
         ]

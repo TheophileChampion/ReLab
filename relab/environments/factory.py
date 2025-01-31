@@ -19,8 +19,12 @@ def make(env_name: str, **kwargs: Any) -> Env:
     env = gym.make(env_name, full_action_space=True, **kwargs)
     env = FireReset(env)
     env = AtariPreprocessing(
-        env=env, noop_max=0, frame_skip=config["frame_skip"],
-        screen_size=config["screen_size"], grayscale_obs=True, scale_obs=True
+        env=env,
+        noop_max=0,
+        frame_skip=config["frame_skip"],
+        screen_size=config["screen_size"],
+        grayscale_obs=True,
+        scale_obs=True,
     )
     env = FrameStackObservation(env, config["stack_size"])
     env = NumpyToTorch(env)

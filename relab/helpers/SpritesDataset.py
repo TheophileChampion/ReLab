@@ -6,8 +6,7 @@ import invoke
 
 
 SpritesDataset = collections.namedtuple(
-    "SpritesDataset",
-    field_names=["images", "s_sizes", "s_dim", "s_bases"]
+    "SpritesDataset", field_names=["images", "s_sizes", "s_dim", "s_bases"]
 )
 
 
@@ -43,19 +42,21 @@ class DataSet:
 
         # Load the d-sprites dataset.
         if DataSet.instance is None:
-            dataset = np.load(
-                images_archive,
-                allow_pickle=True,
-                encoding="latin1"
-            )
+            dataset = np.load(images_archive, allow_pickle=True, encoding="latin1")
             images = dataset["imgs"].reshape(-1, 64, 64, 1)
             metadata = dataset["metadata"][()]
             s_sizes = metadata["latents_sizes"]  # [1 3 6 40 32 32]
             s_dim = s_sizes.size
-            s_bases = np.concatenate((
-                metadata["latents_sizes"][::-1].cumprod()[::-1][1:],
-                np.array([1, ])
-            ))
+            s_bases = np.concatenate(
+                (
+                    metadata["latents_sizes"][::-1].cumprod()[::-1][1:],
+                    np.array(
+                        [
+                            1,
+                        ]
+                    ),
+                )
+            )
             s_bases = np.squeeze(s_bases)  # [737280 245760  40960 1024 32]
             DataSet.instance = SpritesDataset(images, s_sizes, s_dim, s_bases)
         return DataSet.instance

@@ -38,9 +38,7 @@ ObservationType = Union[torch.Tensor, numpy.ndarray]
 GymStepData = Tuple[ObservationType, SupportsFloat, bool, bool, Dict[str, Any]]
 
 # An alias representing a batch of experiences.
-Batch = Tuple[
-    torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
-]
+Batch = Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
 
 # An alias representing either a scalar or a tuple.
 T = TypeVar("T")

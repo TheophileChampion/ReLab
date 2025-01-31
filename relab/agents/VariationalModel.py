@@ -17,13 +17,31 @@ import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.cpp.agents.memory import Experience
 import numpy as np
-from relab.agents.networks.DecoderNetworks import ContinuousDecoderNetwork, DiscreteDecoderNetwork, MixedDecoderNetwork
-from relab.agents.networks.EncoderNetworks import ContinuousEncoderNetwork, DiscreteEncoderNetwork, MixedEncoderNetwork
-from relab.agents.networks.TransitionNetworks import ContinuousTransitionNetwork, DiscreteTransitionNetwork, MixedTransitionNetwork
+from relab.agents.networks.DecoderNetworks import (
+    ContinuousDecoderNetwork,
+    DiscreteDecoderNetwork,
+    MixedDecoderNetwork,
+)
+from relab.agents.networks.EncoderNetworks import (
+    ContinuousEncoderNetwork,
+    DiscreteEncoderNetwork,
+    MixedEncoderNetwork,
+)
+from relab.agents.networks.TransitionNetworks import (
+    ContinuousTransitionNetwork,
+    DiscreteTransitionNetwork,
+    MixedTransitionNetwork,
+)
 from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
 from relab.helpers.Serialization import safe_load
 
-from relab.helpers.VariationalInference import continuous_reparameterization, discrete_reparameterization, mixed_reparameterization, gaussian_log_likelihood, bernoulli_log_likelihood
+from relab.helpers.VariationalInference import (
+    continuous_reparameterization,
+    discrete_reparameterization,
+    mixed_reparameterization,
+    gaussian_log_likelihood,
+    bernoulli_log_likelihood,
+)
 
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
@@ -177,8 +195,7 @@ class VariationalModel(AgentInterface):
 
         # @var beta_schedule
         # Schedule for the KL-divergence weight in beta-VAE.
-        self.beta_schedule = \
-            [(0, 1.0)] if beta_schedule is None else beta_schedule
+        self.beta_schedule = [(0, 1.0)] if beta_schedule is None else beta_schedule
 
         # @var beta
         # Scheduler for the KL-divergence weight in beta-VAE.
@@ -186,8 +203,7 @@ class VariationalModel(AgentInterface):
 
         # @var tau_schedule
         # Schedule for the Gumbel-Softmax temperature.
-        self.tau_schedule = \
-            (0.5, -3e-5) if tau_schedule is None else tau_schedule
+        self.tau_schedule = (0.5, -3e-5) if tau_schedule is None else tau_schedule
 
         # @var tau
         # Scheduler for the Gumbel-Softmax temperature.
@@ -210,9 +226,9 @@ class VariationalModel(AgentInterface):
         replay_buffer = self.get_replay_buffer(
             self.replay_type, self.omega, self.omega_is, self.n_steps
         )
-        self.buffer = replay_buffer(
-            self.buffer_size, self.batch_size
-        ) if self.training else None
+        self.buffer = (
+            replay_buffer(self.buffer_size, self.batch_size) if self.training else None
+        )
 
     @abc.abstractmethod
     def learn(self) -> Optional[Dict[str, Any]]:
@@ -224,10 +240,7 @@ class VariationalModel(AgentInterface):
 
     @abc.abstractmethod
     def continuous_vfe(
-        self,
-        obs: Tensor,
-        actions: Tensor,
-        next_obs: Tensor
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a continuous latent space.
@@ -240,10 +253,7 @@ class VariationalModel(AgentInterface):
 
     @abc.abstractmethod
     def discrete_vfe(
-        self,
-        obs: Tensor,
-        actions: Tensor,
-        next_obs: Tensor
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a discrete latent space.
@@ -256,10 +266,7 @@ class VariationalModel(AgentInterface):
 
     @abc.abstractmethod
     def mixed_vfe(
-        self,
-        obs: Tensor,
-        actions: Tensor,
-        next_obs: Tensor
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a mixed latent space.
@@ -272,10 +279,7 @@ class VariationalModel(AgentInterface):
 
     @abc.abstractmethod
     def draw_reconstructed_images(
-        self,
-        env: Env,
-        model_index: int,
-        grid_size: Tuple[int, int]
+        self, env: Env, model_index: int, grid_size: Tuple[int, int]
     ) -> Figure:
         """!
         Draw the ground truth and reconstructed images.
@@ -329,10 +333,7 @@ class VariationalModel(AgentInterface):
         }[likelihood_type]
         # @endcond
 
-    def get_encoder_network(
-        self,
-        latent_space_type: LatentSpaceType
-    ) -> nn.Module:
+    def get_encoder_network(self, latent_space_type: LatentSpaceType) -> nn.Module:
         """!
         Retrieve the encoder network requested as parameters.
         @param latent_space_type: the type of latent spaces to use for the encoder network
@@ -341,30 +342,26 @@ class VariationalModel(AgentInterface):
         # @cond IGNORED_BY_DOXYGEN
         encoder = {
             LatentSpaceType.CONTINUOUS: partial(
-                ContinuousEncoderNetwork,
-                n_continuous_vars=self.n_cont_vars
+                ContinuousEncoderNetwork, n_continuous_vars=self.n_cont_vars
             ),
             LatentSpaceType.DISCRETE: partial(
                 DiscreteEncoderNetwork,
                 n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals
+                n_discrete_vals=self.n_discrete_vals,
             ),
             LatentSpaceType.MIXED: partial(
                 MixedEncoderNetwork,
                 n_continuous_vars=self.n_cont_vars,
                 n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals
-            )
+                n_discrete_vals=self.n_discrete_vals,
+            ),
         }[latent_space_type]()
         encoder.train(self.training)
         encoder.to(self.device)
         return encoder
         # @endcond
 
-    def get_decoder_network(
-        self,
-        latent_space_type: LatentSpaceType
-    ) -> nn.Module:
+    def get_decoder_network(self, latent_space_type: LatentSpaceType) -> nn.Module:
         """!
         Retrieve the decoder network requested as parameters.
         @param latent_space_type: the type of latent spaces to use for the decoder network
@@ -373,30 +370,26 @@ class VariationalModel(AgentInterface):
         # @cond IGNORED_BY_DOXYGEN
         decoder = {
             LatentSpaceType.CONTINUOUS: partial(
-                ContinuousDecoderNetwork,
-                n_continuous_vars=self.n_cont_vars
+                ContinuousDecoderNetwork, n_continuous_vars=self.n_cont_vars
             ),
             LatentSpaceType.DISCRETE: partial(
                 DiscreteDecoderNetwork,
                 n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals
+                n_discrete_vals=self.n_discrete_vals,
             ),
             LatentSpaceType.MIXED: partial(
                 MixedDecoderNetwork,
                 n_continuous_vars=self.n_cont_vars,
                 n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals
-            )
+                n_discrete_vals=self.n_discrete_vals,
+            ),
         }[latent_space_type]()
         decoder.train(self.training)
         decoder.to(self.device)
         return decoder
         # @endcond
 
-    def get_transition_network(
-        self,
-        latent_space_type: LatentSpaceType
-    ) -> nn.Module:
+    def get_transition_network(self, latent_space_type: LatentSpaceType) -> nn.Module:
         """!
         Retrieve the transition network requested as parameters.
         @param latent_space_type: the type of latent spaces to use for the transition network
@@ -407,21 +400,21 @@ class VariationalModel(AgentInterface):
             LatentSpaceType.CONTINUOUS: partial(
                 ContinuousTransitionNetwork,
                 n_actions=self.n_actions,
-                n_continuous_vars=self.n_cont_vars
+                n_continuous_vars=self.n_cont_vars,
             ),
             LatentSpaceType.DISCRETE: partial(
                 DiscreteTransitionNetwork,
                 n_actions=self.n_actions,
                 n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals
+                n_discrete_vals=self.n_discrete_vals,
             ),
             LatentSpaceType.MIXED: partial(
                 MixedTransitionNetwork,
                 n_actions=self.n_actions,
                 n_continuous_vars=self.n_cont_vars,
                 n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals
-            )
+                n_discrete_vals=self.n_discrete_vals,
+            ),
         }[latent_space_type]()
         transition.train(self.training)
         transition.to(self.device)
@@ -461,9 +454,7 @@ class VariationalModel(AgentInterface):
 
             # Add the experience to the replay buffer.
             if self.training is True:
-                self.buffer.append(
-                    Experience(old_obs, action, reward, done, obs)
-                )
+                self.buffer.append(Experience(old_obs, action, reward, done, obs))
 
             # Perform one iteration of training (if needed).
             losses = None
@@ -506,9 +497,7 @@ class VariationalModel(AgentInterface):
 
         # Create a graph containing images generated by the world model.
         model_index = int(re.findall(r"\d+", gif_name)[0])
-        fig = self.draw_reconstructed_images(
-            env, model_index, grid_size=(6, 6)
-        )
+        fig = self.draw_reconstructed_images(env, model_index, grid_size=(6, 6))
 
         # Save the figure containing the ground truth and reconstructed images.
         file_name = gif_name.replace(".gif", "") + "_reconstructed_images.pdf"
@@ -528,9 +517,7 @@ class VariationalModel(AgentInterface):
         return function(decoder_output)
 
     def load(
-        self,
-        checkpoint_name: str = "",
-        buffer_checkpoint_name: str = ""
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -571,15 +558,15 @@ class VariationalModel(AgentInterface):
         replay_buffer = self.get_replay_buffer(
             self.replay_type, self.omega, self.omega_is, self.n_steps
         )
-        self.buffer = replay_buffer(
-            capacity=self.buffer_size,
-            batch_size=self.batch_size
-        ) if self.training else None
+        self.buffer = (
+            replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
+            if self.training
+            else None
+        )
         self.buffer.load(checkpoint_path, buffer_checkpoint_name)
 
         # Get the reparameterization function to use with the world model.
-        self.reparam = \
-            self.get_reparameterization(self.latent_type)
+        self.reparam = self.get_reparameterization(self.latent_type)
         return checkpoint_path, checkpoint
 
     def as_dict(self):
@@ -604,5 +591,5 @@ class VariationalModel(AgentInterface):
             "tau_schedule": self.tau_schedule,
             "n_cont_vars": self.n_cont_vars,
             "n_discrete_vars": self.n_discrete_vars,
-            "n_discrete_vals": self.n_discrete_vals
+            "n_discrete_vals": self.n_discrete_vals,
         } | super().as_dict()

@@ -28,10 +28,7 @@ class MatPlotLib:
 
     @staticmethod
     def save_figure(
-        figure_path: str,
-        dpi: int = 300,
-        tight: bool = True,
-        close: bool = True
+        figure_path: str, dpi: int = 300, tight: bool = True, close: bool = True
     ) -> None:
         """!
         Save a matplotlib figure.

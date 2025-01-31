@@ -73,10 +73,7 @@ class SpritesEnv(Env):
     metadata = {"render_modes": ["rgb_array"], "render_fps": 30}
 
     def __init__(
-        self,
-        max_episode_length: int = 1000,
-        difficulty: str = "hard",
-        **kwargs: Any
+        self, max_episode_length: int = 1000, difficulty: str = "hard", **kwargs: Any
     ) -> None:
         """!
         Constructor (compatible with OpenAI gym environment)
@@ -131,7 +128,12 @@ class SpritesEnv(Env):
         # @var actions_fn
         # List of action functions that can be performed in the environment.
         self.actions_fn = [
-            self.idle, self.idle, self.down, self.up, self.left, self.right
+            self.idle,
+            self.idle,
+            self.down,
+            self.up,
+            self.left,
+            self.right,
         ] + [self.idle] * 12
 
         # @var ale
@@ -144,7 +146,8 @@ class SpritesEnv(Env):
         self.difficulty = difficulty
         if self.difficulty != "hard" and self.difficulty != "easy":
             raise Exception(
-                "Invalid difficulty level, must be either 'easy' or 'hard'.")
+                "Invalid difficulty level, must be either 'easy' or 'hard'."
+            )
 
         # Reset the environment.
         self.reset()
@@ -161,9 +164,9 @@ class SpritesEnv(Env):
         orientation = func.one_hot(state[3], 40)
         pos_x = func.one_hot(state[4], 32)
         pos_y = func.one_hot(state[5], 32)
-        return torch.cat(
-            tensors=[shape, scale, orientation, pos_x, pos_y], dim=0
-        ).to(torch.float32)
+        return torch.cat(tensors=[shape, scale, orientation, pos_x, pos_y], dim=0).to(
+            torch.float32
+        )
 
     def get_state(self, one_hot: bool = True) -> Tensor:
         """!
@@ -175,8 +178,9 @@ class SpritesEnv(Env):
         state = torch.from_numpy(self.state).to(torch.int64)
         return self.state_to_one_hot(state) if one_hot else self.state
 
-    def reset(self, seed: Optional[int] = None,
-              options: Config = None) -> Tuple[ndarray, Dict]:
+    def reset(
+        self, seed: Optional[int] = None, options: Config = None
+    ) -> Tuple[ndarray, Dict]:
         """!
         Reset the state of the environment to an initial state.
         @param seed: the seed used to initialize the pseudo random number generator of the environment's (unused)

@@ -13,10 +13,7 @@ class QuantileDeepQNetwork(nn.Module):
     """
 
     def __init__(
-        self,
-        n_atoms: int = 21,
-        n_actions: int = 18,
-        stack_size: Optional[int] = None
+        self, n_atoms: int = 21, n_actions: int = 18, stack_size: Optional[int] = None
     ) -> None:
         """!
         Constructor.
@@ -38,8 +35,7 @@ class QuantileDeepQNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = \
-            relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var net
         # Complete network that processes images and outputs quantile values.
@@ -53,7 +49,7 @@ class QuantileDeepQNetwork(nn.Module):
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
-            nn.Linear(1024, n_atoms * n_actions)
+            nn.Linear(1024, n_atoms * n_actions),
         )
 
         # Initialize the weights.
@@ -91,10 +87,7 @@ class ImplicitQuantileNetwork(nn.Module):
     """
 
     def __init__(
-        self,
-        n_actions: int = 18,
-        n_tau: int = 64,
-        stack_size: Optional[int] = None
+        self, n_actions: int = 18, n_tau: int = 64, stack_size: Optional[int] = None
     ) -> None:
         """!
         Constructor.
@@ -124,8 +117,7 @@ class ImplicitQuantileNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = \
-            relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var conv_net
         # Convolutional network that processes the input images.
@@ -136,16 +128,14 @@ class ImplicitQuantileNetwork(nn.Module):
             nn.LeakyReLU(0.01),
             nn.Conv2d(64, 64, 3, stride=1),
             nn.LeakyReLU(0.01),
-            nn.Flatten(start_dim=1)
+            nn.Flatten(start_dim=1),
         )
 
         # @var fc_net
         # Fully connected network that processes the combined features and tau
         # embeddings.
         self.fc_net = nn.Sequential(
-            nn.Linear(3136, 1024),
-            nn.LeakyReLU(0.01),
-            nn.Linear(1024, n_actions)
+            nn.Linear(3136, 1024), nn.LeakyReLU(0.01), nn.Linear(1024, n_actions)
         )
 
         # @var tau_fc1
@@ -157,11 +147,7 @@ class ImplicitQuantileNetwork(nn.Module):
             if "weight" in name:
                 torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def compute_conv_output(
-        self,
-        x: Tensor,
-        invalidate_cache: bool = False
-    ) -> Tensor:
+    def compute_conv_output(self, x: Tensor, invalidate_cache: bool = False) -> Tensor:
         """!
         Compute the output of the convolutional layers.
         @param x: the observation
@@ -178,10 +164,7 @@ class ImplicitQuantileNetwork(nn.Module):
         return self.conv_output
 
     def forward(
-        self,
-        x: Tensor,
-        n_samples: int = 8,
-        invalidate_cache: bool = True
+        self, x: Tensor, n_samples: int = 8, invalidate_cache: bool = True
     ) -> Tuple[Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
@@ -207,9 +190,9 @@ class ImplicitQuantileNetwork(nn.Module):
             # Compute tau embeddings.
             tau = torch.rand([batch_size]).unsqueeze(dim=1).to(self.device)
             taus.append(tau)
-            tau = torch.concat([
-                torch.cos(torch.pi * i * tau) for i in range(self.n_tau)
-            ], dim=1)
+            tau = torch.concat(
+                [torch.cos(torch.pi * i * tau) for i in range(self.n_tau)], dim=1
+            )
             tau = F.leaky_relu(self.tau_fc1(tau), 0.01)
 
             # Compute the output
@@ -219,8 +202,9 @@ class ImplicitQuantileNetwork(nn.Module):
         # Concatenate all atoms and taus along the atoms dimension.
         return torch.concat(atoms, dim=1), torch.concat(taus, dim=1)
 
-    def q_values(self, x: Tensor, n_samples: int = 32,
-                 invalidate_cache: bool = True) -> Tensor:
+    def q_values(
+        self, x: Tensor, n_samples: int = 32, invalidate_cache: bool = True
+    ) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation

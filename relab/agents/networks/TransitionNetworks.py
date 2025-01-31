@@ -12,11 +12,7 @@ class ContinuousTransitionNetwork(nn.Module):
     Class implementing a transition network with continuous latent variables.
     """
 
-    def __init__(
-        self,
-        n_actions: int = 18,
-        n_continuous_vars: int = 10
-    ) -> None:
+    def __init__(self, n_actions: int = 18, n_continuous_vars: int = 10) -> None:
         """!
         Constructor.
         @param n_actions: the number of allowable actions
@@ -35,7 +31,7 @@ class ContinuousTransitionNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
-            DiagonalGaussian(512, n_continuous_vars)
+            DiagonalGaussian(512, n_continuous_vars),
         )
 
         # @var n_actions
@@ -60,10 +56,7 @@ class DiscreteTransitionNetwork(nn.Module):
     """
 
     def __init__(
-        self,
-        n_actions: int = 18,
-        n_discrete_vars: int = 20,
-        n_discrete_vals: int = 10
+        self, n_actions: int = 18, n_discrete_vars: int = 20, n_discrete_vals: int = 10
     ) -> None:
         """!
         Constructor.
@@ -85,7 +78,7 @@ class DiscreteTransitionNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
-            Categorical(512, n_discrete_vars, n_discrete_vals)
+            Categorical(512, n_discrete_vars, n_discrete_vals),
         )
 
         # @var n_actions
@@ -114,7 +107,7 @@ class MixedTransitionNetwork(nn.Module):
         n_actions: int = 18,
         n_continuous_vars: int = 10,
         n_discrete_vars: int = 20,
-        n_discrete_vals: int = 10
+        n_discrete_vals: int = 10,
     ) -> None:
         """!
         Constructor.
@@ -137,7 +130,7 @@ class MixedTransitionNetwork(nn.Module):
             nn.Linear(512, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
         # @var gaussian_head
@@ -148,19 +141,13 @@ class MixedTransitionNetwork(nn.Module):
         # @var categorical_head
         # Network head that outputs the log-probabilities of the discrete
         # latent variables.
-        self.categorical_head = Categorical(
-            512, n_discrete_vars, n_discrete_vals
-        )
+        self.categorical_head = Categorical(512, n_discrete_vars, n_discrete_vals)
 
         # @var n_actions
         # Number of allowable actions in the environment.
         self.n_actions = n_actions
 
-    def forward(
-        self,
-        states: Tensor,
-        actions: Tensor
-    ) -> Tuple[Tensor, Tensor]:
+    def forward(self, states: Tensor, actions: Tensor) -> Tuple[Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param states: the input states

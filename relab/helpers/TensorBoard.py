@@ -16,10 +16,7 @@ class TensorBoard:
     """
 
     @staticmethod
-    def load_log_file(
-        file: str,
-        metric_name: str
-    ) -> Tuple[List[int], List[float]]:
+    def load_log_file(file: str, metric_name: str) -> Tuple[List[int], List[float]]:
         """!
         Load all the data present in the log file.
         @param file: path to tensorflow log file
@@ -48,11 +45,7 @@ class TensorBoard:
             return [], []
 
     @classmethod
-    def load_log_directory(
-        cls,
-        directory: str,
-        metric: str
-    ) -> Optional[DataFrame]:
+    def load_log_directory(cls, directory: str, metric: str) -> Optional[DataFrame]:
         """!
         Load all the event files present in the directory.
         @param directory: the target directory

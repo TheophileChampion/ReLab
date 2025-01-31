@@ -5,7 +5,7 @@ from relab.cpp.agents.memory import FastReplayBuffer, CompressorType, Experience
 from torch import Tensor
 
 from relab.helpers.Typing import Config, Batch
-from relab import config
+import relab
 
 
 class ReplayBuffer:
@@ -61,10 +61,10 @@ class ReplayBuffer:
         self.buffer = FastReplayBuffer(
             capacity=capacity,
             batch_size=batch_size,
-            frame_skip=config("frame_skip") if frame_skip is None else frame_skip,
-            stack_size=config("stack_size") if stack_size is None else stack_size,
-            screen_size=config("screen_size") if screen_size is None else screen_size,
-            type=CompressorType.ZLIB if config("compress_png") else CompressorType.RAW,
+            frame_skip=relab.config("frame_skip", frame_skip),
+            stack_size=relab.config("stack_size", stack_size),
+            screen_size=relab.config("screen_size", screen_size),
+            type=relab.config("compression_type"),
             args={} if args is None else args,
         )
 
@@ -88,11 +88,7 @@ class ReplayBuffer:
         """
         return self.buffer.sample()
 
-    def load(
-        self,
-        checkpoint_path: str = "",
-        checkpoint_name: str = ""
-    ) -> None:
+    def load(self, checkpoint_path: str = "", checkpoint_name: str = "") -> None:
         """!
         Load a replay buffer from the filesystem.
         @param checkpoint_path: the full checkpoint path from which the agent has been loaded
@@ -102,8 +98,7 @@ class ReplayBuffer:
             checkpoint_path, checkpoint_name, relab.config("save_all_replay_buffers")
         )
 
-    def save(self, checkpoint_path: str = "",
-             checkpoint_name: str = "") -> None:
+    def save(self, checkpoint_path: str = "", checkpoint_name: str = "") -> None:
         """!
         Save the replay buffer on the filesystem.
         @param checkpoint_path: the full checkpoint path in which the agent has been saved

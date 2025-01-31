@@ -7,8 +7,7 @@ class PiecewiseLinearSchedule:
     """
 
     def __init__(
-        self,
-        schedule: Union[List[Tuple[int, float]], Tuple[int, float]]
+        self, schedule: Union[List[Tuple[int, float]], Tuple[int, float]]
     ) -> None:
         """!
         Create the piecewise linear schedule.

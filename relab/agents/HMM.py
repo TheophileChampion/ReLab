@@ -13,7 +13,7 @@ from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import (
     VariationalModel,
     LikelihoodType,
-    LatentSpaceType
+    LatentSpaceType,
 )
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
 
@@ -22,7 +22,7 @@ from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Typing import Checkpoint
 from relab.helpers.VariationalInference import (
     gaussian_kl_divergence as kl_gauss,
-    sum_categorical_kl_divergences as sum_cat_kl
+    sum_categorical_kl_divergences as sum_cat_kl,
 )
 
 
@@ -385,14 +385,10 @@ class HMM(VariationalModel):
             "encoder": self.encoder.state_dict(),
             "decoder": self.decoder.state_dict(),
             "transition": self.transition.state_dict(),
-            "optimizer": self.optimizer.state_dict()
+            "optimizer": self.optimizer.state_dict(),
         } | super().as_dict()
 
-    def save(
-        self,
-        checkpoint_name: str,
-        buffer_checkpoint_name: str = ""
-    ) -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

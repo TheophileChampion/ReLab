@@ -19,7 +19,7 @@ class RainbowDeepQNetwork(nn.Module):
         n_atoms: int = 51,
         v_min: float = -10,
         v_max: float = 10,
-        stack_size: Optional[int] = None
+        stack_size: Optional[int] = None,
     ) -> None:
         """!
         Constructor.
@@ -59,16 +59,15 @@ class RainbowDeepQNetwork(nn.Module):
 
         # @var atoms
         # Support of the returns distribution.
-        self.atoms = torch.tensor([
-            v_min + i * self.delta_z for i in range(self.n_atoms)
-        ])
+        self.atoms = torch.tensor(
+            [v_min + i * self.delta_z for i in range(self.n_atoms)]
+        )
         self.atoms = self.atoms.unsqueeze(1).repeat(1, n_actions)
         self.atoms = self.atoms.to(relab.device())
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = \
-            relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var net
         # Complete network that processes images and outputs shared features.
@@ -83,7 +82,7 @@ class RainbowDeepQNetwork(nn.Module):
             NoisyLinear(3136, 1024),
             nn.LeakyReLU(0.01),
             NoisyLinear(1024, 512),
-            nn.LeakyReLU(0.01)
+            nn.LeakyReLU(0.01),
         )
 
         # @var value
@@ -112,12 +111,15 @@ class RainbowDeepQNetwork(nn.Module):
         x = self.net(x)
 
         # Compute the Q-values.
-        value = self.value(x) \
-            .view(batch_size, self.n_atoms, 1).repeat(1, 1, self.n_actions)
-        advantages = self.advantage(x) \
-            .view(batch_size, self.n_atoms, self.n_actions)
-        log_probs = value + advantages - \
-            advantages.mean(dim=2).unsqueeze(dim=2).repeat(1, 1, self.n_actions)
+        value = (
+            self.value(x).view(batch_size, self.n_atoms, 1).repeat(1, 1, self.n_actions)
+        )
+        advantages = self.advantage(x).view(batch_size, self.n_atoms, self.n_actions)
+        log_probs = (
+            value
+            + advantages
+            - advantages.mean(dim=2).unsqueeze(dim=2).repeat(1, 1, self.n_actions)
+        )
         probs = log_probs.softmax(dim=1)
 
         # Compute all atoms.
@@ -142,10 +144,7 @@ class RainbowImplicitQuantileNetwork(nn.Module):
     """
 
     def __init__(
-        self,
-        n_actions: int = 18,
-        n_tau: int = 64,
-        stack_size: Optional[int] = None
+        self, n_actions: int = 18, n_tau: int = 64, stack_size: Optional[int] = None
     ) -> None:
         """!
         Constructor.
@@ -175,8 +174,7 @@ class RainbowImplicitQuantileNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = \
-            relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var conv_net
         # Convolutional network that processes the input images.
@@ -187,7 +185,7 @@ class RainbowImplicitQuantileNetwork(nn.Module):
             nn.LeakyReLU(0.01),
             nn.Conv2d(64, 64, 3, stride=1),
             nn.LeakyReLU(0.01),
-            nn.Flatten(start_dim=1)
+            nn.Flatten(start_dim=1),
         )
 
         # @var fc_net
@@ -197,7 +195,7 @@ class RainbowImplicitQuantileNetwork(nn.Module):
             NoisyLinear(3136, 1024),
             nn.LeakyReLU(0.01),
             NoisyLinear(1024, 1024),
-            nn.LeakyReLU(0.01)
+            nn.LeakyReLU(0.01),
         )
 
         # @var value
@@ -212,11 +210,7 @@ class RainbowImplicitQuantileNetwork(nn.Module):
         # Noisy linear layer that processes the tau embeddings.
         self.tau_fc1 = NoisyLinear(self.n_tau, 3136)
 
-    def compute_conv_output(
-        self,
-        x: Tensor,
-        invalidate_cache: bool = False
-    ) -> Tensor:
+    def compute_conv_output(self, x: Tensor, invalidate_cache: bool = False) -> Tensor:
         """!
         Compute the output of the convolutional layers.
         @param x: the observation
@@ -233,10 +227,7 @@ class RainbowImplicitQuantileNetwork(nn.Module):
         return self.conv_output
 
     def forward(
-        self,
-        x: Tensor,
-        n_samples: int = 8,
-        invalidate_cache: bool = True
+        self, x: Tensor, n_samples: int = 8, invalidate_cache: bool = True
     ) -> Tuple[Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
@@ -262,29 +253,27 @@ class RainbowImplicitQuantileNetwork(nn.Module):
             # Compute tau embeddings.
             tau = torch.rand([batch_size]).unsqueeze(dim=1).to(self.device)
             taus.append(tau)
-            tau = torch.concat([
-                torch.cos(torch.pi * i * tau) for i in range(self.n_tau)
-            ], dim=1)
+            tau = torch.concat(
+                [torch.cos(torch.pi * i * tau) for i in range(self.n_tau)], dim=1
+            )
             tau = F.leaky_relu(self.tau_fc1(tau), 0.01)
 
             # Compute the Q-values.
             x_tau = self.fc_net(x * tau)
-            value = self.value(x_tau) \
-                .view(batch_size, 1).repeat(1, self.n_actions)
-            advantages = self.advantage(x_tau) \
-                .view(batch_size, self.n_actions)
-            q_values = value + advantages - \
-                advantages.mean(dim=1).unsqueeze(dim=1).repeat(1, self.n_actions)
+            value = self.value(x_tau).view(batch_size, 1).repeat(1, self.n_actions)
+            advantages = self.advantage(x_tau).view(batch_size, self.n_actions)
+            q_values = (
+                value
+                + advantages
+                - advantages.mean(dim=1).unsqueeze(dim=1).repeat(1, self.n_actions)
+            )
             atoms.append(q_values.unsqueeze(dim=1))
 
         # Concatenate all atoms and all taus along the atoms dimension.
         return torch.concat(atoms, dim=1), torch.concat(taus, dim=1)
 
     def q_values(
-        self,
-        x: Tensor,
-        n_samples: int = 32,
-        invalidate_cache: bool = True
+        self, x: Tensor, n_samples: int = 32, invalidate_cache: bool = True
     ) -> Tensor:
         """!
         Compute the Q-values for each action.

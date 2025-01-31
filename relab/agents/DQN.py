@@ -16,7 +16,7 @@ from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.cpp.agents.memory import Experience
 from relab.agents.networks.CategoricalDeepQNetworks import (
     CategoricalDeepQNetwork,
-    NoisyCategoricalDeepQNetwork
+    NoisyCategoricalDeepQNetwork,
 )
 from relab.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
 import numpy as np
@@ -24,15 +24,15 @@ import numpy as np
 from relab.helpers.Serialization import safe_load, get_optimizer, safe_load_state_dict
 from relab.agents.networks.DuelingDeepQNetworks import (
     DuelingDeepQNetwork,
-    NoisyDuelingDeepQNetwork
+    NoisyDuelingDeepQNetwork,
 )
 from relab.agents.networks.QuantileDeepQNetworks import (
     QuantileDeepQNetwork,
-    ImplicitQuantileNetwork
+    ImplicitQuantileNetwork,
 )
 from relab.agents.networks.RainbowDeepQNetwork import (
     RainbowDeepQNetwork,
-    RainbowImplicitQuantileNetwork
+    RainbowImplicitQuantileNetwork,
 )
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.helpers.FileSystem import FileSystem
@@ -379,21 +379,21 @@ class DQN(AgentInterface):
                 self.n_actions,
                 self.n_atoms,
                 self.v_min,
-                self.v_max
+                self.v_max,
             ),
             NetworkType.NOISY_CATEGORICAL: partial(
                 NoisyCategoricalDeepQNetwork,
                 self.n_actions,
                 self.n_atoms,
                 self.v_min,
-                self.v_max
+                self.v_max,
             ),
             NetworkType.RAINBOW: partial(
                 RainbowDeepQNetwork,
                 self.n_actions,
                 self.n_atoms,
                 self.v_min,
-                self.v_max
+                self.v_max,
             ),
         }[network_type]()
         network.train(self.training)
@@ -704,7 +704,8 @@ class DQN(AgentInterface):
                 mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
                 loss += (
                     torch.abs(tau - mask).to(self.device)
-                    * huber_loss(next_atom_j, atom_i) / kappa
+                    * huber_loss(next_atom_j, atom_i)
+                    / kappa
                 )
         loss /= self.n_atoms
         return loss
@@ -758,7 +759,8 @@ class DQN(AgentInterface):
                 mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
                 loss += (
                     torch.abs(taus[:, i] - mask).to(self.device)
-                    * huber_loss(next_atom_j, atom_i) / kappa
+                    * huber_loss(next_atom_j, atom_i)
+                    / kappa
                 )
         loss /= self.n_atoms
         return loss
@@ -811,7 +813,8 @@ class DQN(AgentInterface):
                 mask = torch.where(next_atom_j - atom_i < 0, 1.0, 0.0)
                 loss += (
                     torch.abs(taus[:, i] - mask).to(self.device)
-                    * huber_loss(next_atom_j, atom_i) / kappa
+                    * huber_loss(next_atom_j, atom_i)
+                    / kappa
                 )
         loss /= self.n_atoms
         return loss
@@ -853,7 +856,7 @@ class DQN(AgentInterface):
                 "replay_type",
                 "loss_type",
                 "network_type",
-                "epsilon_schedule"
+                "epsilon_schedule",
             ]
             for name in attributes_names:
                 setattr(self, name, safe_load(checkpoint, name))
@@ -922,9 +925,7 @@ class DQN(AgentInterface):
             "optimizer": self.optimizer.state_dict(),
         } | super().as_dict()
 
-    def save(
-        self, checkpoint_name: str, buffer_checkpoint_name: str = ""
-    ) -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

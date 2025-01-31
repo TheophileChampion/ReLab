@@ -33,7 +33,7 @@ class Timer:
         self,
         exc_type: Optional[type[BaseException]],
         exc_instance: Optional[BaseException],
-        traceback: Optional[TracebackType]
+        traceback: Optional[TracebackType],
     ) -> Optional[bool]:
         """!
         Stop the timer and display the time elapsed.
@@ -42,6 +42,8 @@ class Timer:
         @param traceback: traceback object (unused)
         """
         if self.name:
-            logging.info("[%s]" % self.name,)
+            logging.info(
+                "[%s]" % self.name,
+            )
         logging.info("Elapsed: %s" % ((time.time() - self.start_time) * 1000))
         return None

@@ -4,7 +4,6 @@ from torch import nn, Tensor
 import torch
 
 import relab
-from relab import config
 
 
 class CategoricalDeepQNetwork(nn.Module):
@@ -60,7 +59,7 @@ class CategoricalDeepQNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var net
         # Complete network that processes images and outputs atom logits.
@@ -167,7 +166,7 @@ class NoisyCategoricalDeepQNetwork(nn.Module):
 
         # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
         # @var net
         # Complete network that processes images and outputs atom logits.

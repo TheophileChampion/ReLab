@@ -17,8 +17,7 @@ class FireReset(gym.Wrapper):
         @param env: environment to wrap
         """
         super().__init__(env)
-        actions = \
-            env.unwrapped.get_action_meanings()  # type: ignore[attr-defined]
+        actions = env.unwrapped.get_action_meanings()  # type: ignore[attr-defined]
         assert actions[1] == "FIRE"
         assert len(actions) >= 3
 

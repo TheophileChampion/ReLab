@@ -36,7 +36,7 @@ def get_optimizer(
     modules: List[Module],
     learning_rate: float,
     adam_eps: float,
-    checkpoint: Checkpoint = None
+    checkpoint: Checkpoint = None,
 ) -> Optimizer:
     """!
     Load the Adam optimizer from the checkpoint safely.

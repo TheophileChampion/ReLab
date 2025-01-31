@@ -7,10 +7,7 @@ class Categorical(nn.Module):
     """
 
     def __init__(
-        self,
-        input_size: int,
-        n_discrete_vars: int,
-        n_discrete_vals: int
+        self, input_size: int, n_discrete_vars: int, n_discrete_vals: int
     ) -> None:
         """!
         Constructor.
@@ -33,9 +30,7 @@ class Categorical(nn.Module):
 
         # @var log_alpha
         # Layer predicting the log-probabilities of all discrete distributions.
-        self.log_alpha = nn.Sequential(
-            nn.Linear(input_size, sum(self.n_discrete_vals))
-        )
+        self.log_alpha = nn.Sequential(nn.Linear(input_size, sum(self.n_discrete_vals)))
 
     def forward(self, x: Tensor) -> Tensor:
         """!
@@ -47,6 +42,6 @@ class Categorical(nn.Module):
         xs = []
         shift = 0
         for n_discrete_val in self.n_discrete_vals:
-            xs.append(x[:, shift:shift + n_discrete_val])
+            xs.append(x[:, shift : shift + n_discrete_val])
             shift += n_discrete_val
         return xs  # TODO invalid return type

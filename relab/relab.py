@@ -2,7 +2,7 @@ import os
 from os import getcwd
 import random
 from os.path import join, isfile, abspath
-from typing import Optional
+from typing import Optional, Any
 
 import invoke
 import logging
@@ -15,6 +15,7 @@ import torch
 from relab.helpers.FileSystem import FileSystem
 from relab.environments.SpritesEnv import SpritesEnv
 from relab.helpers.Typing import Device, ConfigInfo
+from relab.cpp.agents.memory import CompressorType as Compressor
 
 
 def initialize(
@@ -22,7 +23,7 @@ def initialize(
     env_name: str,
     seed: int = None,
     data_directory: str = None,
-    paths_only: bool = False
+    paths_only: bool = False,
 ) -> None:
     """!
     Initialize the 'relab' package.
@@ -73,8 +74,7 @@ def initialize(
 
 
 def build_cpp_library_and_wrapper(
-    cpp_library_name: str = "relab",
-    python_module_name: str = "cpp"
+    cpp_library_name: str = "relab", python_module_name: str = "cpp"
 ) -> None:
     """!
     Build the C++ shared library and the python module wrapping the library.
@@ -86,7 +86,7 @@ def build_cpp_library_and_wrapper(
     build_directory = os.environ["BUILD_DIRECTORY"]
     shared_library = join(build_directory, f"lib{cpp_library_name}.so")
     module_directory = os.environ["CPP_MODULE_DIRECTORY"]
-    files = FileSystem.files_in(module_directory, fr"^{python_module_name}.*")
+    files = FileSystem.files_in(module_directory, rf"^{python_module_name}.*")
     if isfile(shared_library) and len(files) != 0:
         return
 
@@ -106,12 +106,19 @@ def device() -> Device:
     return torch.device("cuda" if cuda is True else "cpu")
 
 
-def config(key: Optional[str] = None) -> ConfigInfo:
+def config(key: Optional[str] = None, value: Any = None) -> ConfigInfo:
     """!
     Retrieves the benchmark configuration.
     @param key: the key whose value in the configuration must be returned, None if the entire configure is requested
+    @param value: an optional value to overwrite the configuration
     @return the configuration or the entry in the configuration corresponding to the key passed as parameters
     """
+
+    # Check for configuration overwrite.
+    if value is not None:
+        return value
+
+    # The ReLab configuration.
     conf = {
         # Maximum number of training iterations
         "max_n_steps": 50000000,
@@ -130,4 +137,10 @@ def config(key: Optional[str] = None) -> ConfigInfo:
         # False, if only the last replay buffer must be saved, True otherwise
         "save_all_replay_buffers": False,
     }
+
+    # Check if the user requested the compression type.
+    if key == "compression_type":
+        return Compressor.ZLIB if conf["compress_png"] else Compressor.RAW
+
+    # Return the entire configure or the requested value.
     return conf if key is None else conf[key]
