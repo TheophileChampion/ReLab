@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import Iterator
 
 import torch
+from torch import nn
 import logging
 
 import relab
@@ -10,14 +13,14 @@ from relab.helpers.Typing import Parameter
 
 
 def describe(
+    network_name : str,
     parameters : Iterator[Parameter],
-    n_copies : int = 1,
     memory_unit : str = "GB"
 ) -> None:
     """
     Describe the parameters passed as arguments.
+    :param network_name: the name of the neural network whose parameters are passed as arguments
     :param parameters: the parameters to describe
-    :param n_copies: the number of copies the agent has
     :param memory_unit: the unit to use describe the model size (B, KB, MB or GB)
     """
 
@@ -42,16 +45,17 @@ def describe(
     for params in parameters:
         dtype = params.dtype
         dtypes.append(dtype)
-        n_params = n_copies * params.numel()
+        n_params = params.numel()
         total_n_params += n_params
         memory_usage += n_params * dtype_sizes[dtype] / (8 * memory_units[memory_unit])
 
     # Display the parameter summary on the standard output.
     if all([dtype == dtypes[0] for dtype in dtypes]) is True:
         dtypes = dtypes[0]
-    logging.info(f"Parameter type: {dtypes}.")
-    logging.info(f"Number of parameters: {total_n_params}.")
-    logging.info(f"Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
+    logging.info(f"- Network: {network_name}")
+    logging.info(f"  Parameter type: {dtypes}.")
+    logging.info(f"  Number of parameters: {total_n_params}.")
+    logging.info(f"  Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
 
 
 def describe_params(agent : str, env : str, seed : int) -> None:
@@ -66,10 +70,14 @@ def describe_params(agent : str, env : str, seed : int) -> None:
     relab.initialize(agent, env, seed)
 
     # Create the requested agent.
+    logging.info(f"Describing the {agent} parameters:")
     agent = agents.make(agent, training=True)
 
     # Describe the agent parameters.
-    describe(agent.value_net.parameters(), n_copies=2)  # TODO make is compatible with variational models
+    for i, attribute_name in enumerate(dir(agent)):
+        attribute = getattr(agent, attribute_name)
+        if isinstance(attribute, nn.Module):
+            describe(attribute_name, attribute.parameters())
 
 
 if __name__ == "__main__":

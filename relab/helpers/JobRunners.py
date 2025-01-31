@@ -1,13 +1,12 @@
 import abc
-import os
-import subprocess
-import re
-import time
-from concurrent.futures import ProcessPoolExecutor, Future
-from concurrent.futures import wait
-from functools import partial
 import logging
-from typing import List, Callable
+import os
+import re
+import subprocess
+import time
+from concurrent.futures import Future, ProcessPoolExecutor, wait
+from functools import partial
+from typing import Callable, List
 
 from relab.helpers.Typing import Config
 from scripts.draw_graph import draw_graph
@@ -21,7 +20,9 @@ class JobRunnerInterface(abc.ABC):
     """
 
     @abc.abstractmethod
-    def launch_job(self, task : str, kwargs : Config, dependencies : List[int] = None) -> int:
+    def launch_job(
+        self, task: str, kwargs: Config, dependencies: List[int] = None
+    ) -> int:
         """!
         Launch a job.
         @param task: the task to run, e.g., "run_training" or "run_demo"
@@ -43,7 +44,9 @@ class SlurmJobRunner(JobRunnerInterface):
     Class launching slurm jobs.
     """
 
-    def launch_job(self, task : str, kwargs : Config, dependencies : List[int] = None) -> int:
+    def launch_job(
+        self, task: str, kwargs: Config, dependencies: List[int] = None
+    ) -> int:
         """!
         Launch a slurm job.
         @param task: the task to run, e.g., "run_training" or "run_demo"
@@ -52,15 +55,22 @@ class SlurmJobRunner(JobRunnerInterface):
         @return the index of the slurm job launched
         """
 
-        # Create the job's command line.
+        # Create the job's arguments.
         args = []
         for key, value in kwargs.items():
             if isinstance(value, list):
                 value = " ".join([str(v) for v in value])
             args.append(f"--{key} {value}")
         args = " ".join(args)
+
+        # Create the job's dependencies.
         dependencies = [str(dependency) for dependency in dependencies]
-        dependencies = "" if dependencies is None else f"-d afterok:{':'.join(dependencies)}"
+        if dependencies is None:
+            dependencies = ""
+        else:
+            dependencies = f"-d afterok:{':'.join(dependencies)}"
+
+        # Create the job's command line.
         command = f"sbatch {dependencies} {task} {args}"
 
         # Launch the slurm job.
@@ -75,41 +85,41 @@ class LocalJobRunner(JobRunnerInterface):
     Class launching local jobs.
     """
 
-    def __init__(self, max_worker : int = 1) -> None:
+    def __init__(self, max_worker: int = 1) -> None:
         """!
         Create a local job runner.
         @param max_worker: the maximum number of worker
         """
 
-        ## @var pool
+        # @var pool
         # The pool of workers for executing tasks concurrently.
         self.pool = ProcessPoolExecutor(max_workers=max_worker)
 
-        ## @var max_worker
+        # @var max_worker
         # The maximum number of concurrent workers allowed in the process pool
         self.max_worker = max_worker
 
-        ## @var futures
+        # @var futures
         # List of future objects returned when submitting tasks.
         self.futures = []
 
-        ## @var job_index
+        # @var job_index
         # Counter for assigning unique job IDs, incremented with each new job.
         self.job_index = -1
 
-        ## @var lock_index
-        # Counter for synchronization mechanisms, used to coordinate access to shared resources
+        # @var lock_index
+        # Counter used to synchronize access to shared resources.
         self.lock_index = -1
 
-        ## @var jobs_not_done
-        # List tracking jobs that are currently in progress or pending execution
+        # @var jobs_not_done
+        # List of jobs that are currently in progress or pending execution.
         self.jobs_not_done = []
 
-        ## @var jobs_to_submit
-        # Dictionary of jobs waiting for their dependencies to complete before submission.
+        # @var jobs_to_submit
+        # Dictionary of jobs waiting for their dependencies to complete.
         self.jobs_to_submit = {}
 
-    def set_lock_index(self, job_index : int = None) -> bool:
+    def set_lock_index(self, job_index: int = None) -> bool:
         """!
         Set the lock index, if the object is not currently locked.
         @param job_index: the new value of the lock index
@@ -120,7 +130,7 @@ class LocalJobRunner(JobRunnerInterface):
             return True
         return False
 
-    def lock(self, job_index : int = None) -> None:
+    def lock(self, job_index: int = None) -> None:
         """!
         Lock the object for a specific job index.
         @param job_index: the job index requesting the lock
@@ -136,7 +146,7 @@ class LocalJobRunner(JobRunnerInterface):
         """
         self.lock_index = -1
 
-    def satisfied(self, dependencies : List[int]) -> bool:
+    def satisfied(self, dependencies: List[int]) -> bool:
         """!
         Check whether all the dependencies have finished their execution.
         @param dependencies: the job indices whose execution needs to be checked
@@ -153,7 +163,7 @@ class LocalJobRunner(JobRunnerInterface):
                 return False
         return True
 
-    def submit(self, task : Callable, kwargs : Config, job_index : int) -> None:
+    def submit(self, task: Callable, kwargs: Config, job_index: int) -> None:
         """!
         Submit a job to the pool (for internal use only).
         @param task: the task to run
@@ -161,27 +171,31 @@ class LocalJobRunner(JobRunnerInterface):
         @param job_index: the index of the job to run
         """
         # @cond IGNORED_BY_DOXYGEN
-        logging.info(f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}")
+        logging.info(
+            f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}"
+        )
         future = self.pool.submit(task, **kwargs)
-        future.add_done_callback(partial(self.check_jobs_to_submit, job_index=job_index))
+        future.add_done_callback(
+            partial(self.check_jobs_to_submit, job_index=job_index)
+        )
         self.futures.append(future)
         # @endcond
 
-    def check_jobs_to_submit(self, future : Future, job_index : int) -> None:
+    def check_jobs_to_submit(self, future: Future, job_index: int) -> None:
         """!
         Check if new jobs can be submitted.
         @param future: the future corresponding to the job that just finished (unused)
         @param job_index: the index of the job that just finished
         """
 
-        # Lock the object to avoid simultaneously access to the class attributes.
+        # Lock the object to avoid simultaneous access to the class attributes.
         logging.info(f"Job {job_index} just finished.")
         self.lock(job_index)
 
-        # Remove the index of job that terminated from the list of jobs not done.
+        # Remove the index of completed job from the list of jobs not done.
         self.jobs_not_done.remove(job_index)
 
-        # Iterate over the list of jobs to submit, looking for jobs whose dependencies are now satisfied.
+        # Submit jobs whose dependencies are now satisfied.
         jobs_to_submit = {}
         for index, (task, kwargs, dependencies) in self.jobs_to_submit.items():
             if self.satisfied(dependencies):
@@ -193,7 +207,9 @@ class LocalJobRunner(JobRunnerInterface):
         # Unlock the object to avoid deadlock.
         self.unlock()
 
-    def launch_job(self, task : str, kwargs : Config, dependencies : List[int] = None) -> int:
+    def launch_job(
+        self, task: str, kwargs: Config, dependencies: List[int] = None
+    ) -> int:
         """!
         Launch a local job.
         @param task: the task to run, e.g., "run_training" or "run_demo"
@@ -202,7 +218,7 @@ class LocalJobRunner(JobRunnerInterface):
         @return the index of the slurm job launched
         """
 
-        # Lock the object to avoid simultaneously access to the class attributes.
+        # Lock the object to avoid simultaneous access to the class attributes.
         self.lock()
 
         # Increase the job index, and add it to the list of jobs not done.

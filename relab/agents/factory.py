@@ -4,12 +4,12 @@ from relab.agents.AgentInterface import AgentInterface
 from relab.agents.BetaHMM import BetaHMM
 from relab.agents.BetaVAE import BetaVAE
 from relab.agents.CDQN import CDQN
+from relab.agents.DDQN import DDQN
 from relab.agents.DiscreteHMM import DiscreteHMM
 from relab.agents.DiscreteVAE import DiscreteVAE
-from relab.agents.DuelingDQN import DuelingDQN
-from relab.agents.DDQN import DDQN
 from relab.agents.DQN import DQN
 from relab.agents.DuelingDDQN import DuelingDDQN
+from relab.agents.DuelingDQN import DuelingDQN
 from relab.agents.HMM import HMM
 from relab.agents.IQN import IQN
 from relab.agents.JointHMM import JointHMM
@@ -18,6 +18,7 @@ from relab.agents.MDQN import MDQN
 from relab.agents.NoisyCDQN import NoisyCDQN
 from relab.agents.NoisyDDQN import NoisyDDQN
 from relab.agents.NoisyDQN import NoisyDQN
+from relab.agents.OldVAE import VAE as OldVAE  # TODO
 from relab.agents.PrioritizedDDQN import PrioritizedDDQN
 from relab.agents.PrioritizedDQN import PrioritizedDQN
 from relab.agents.PrioritizedMDQN import PrioritizedMDQN
@@ -28,7 +29,7 @@ from relab.agents.Random import Random
 from relab.agents.VAE import VAE
 
 
-def make(agent_name : str, **kwargs : Any) -> AgentInterface:
+def make(agent_name: str, **kwargs: Any) -> AgentInterface:
     """!
     Create the agent whose name is passed as parameters.
     @param agent_name: the name of the agent to instantiate
@@ -63,6 +64,7 @@ def make(agent_name : str, **kwargs : Any) -> AgentInterface:
         "JointHMM": JointHMM,
         "BetaHMM": BetaHMM,
         "HMM": HMM,
+        "OldVAE": OldVAE,  # TODO
     }
 
     # Check if the agent is supported, raise an error if it isn't.

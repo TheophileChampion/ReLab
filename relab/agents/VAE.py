@@ -1,22 +1,24 @@
 import logging
-import os
 from os.path import join
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
+import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
-
-import torch
-from torch import optim, Tensor
+from torch import Tensor
 
 from relab.agents.AgentInterface import ReplayType
-from relab.agents.VariationalModel import VariationalModel, LikelihoodType, LatentSpaceType
-
+from relab.agents.VariationalModel import (LatentSpaceType, LikelihoodType,
+                                           VariationalModel)
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
 from relab.helpers.Typing import Checkpoint
-from relab.helpers.VariationalInference import VariationalInference
+from relab.helpers.VariationalInference import \
+    gaussian_kl_divergence as gauss_kl
+from relab.helpers.VariationalInference import \
+    sum_categorical_kl_divergences as sum_cat_kl
 
 
 class VAE(VariationalModel):
@@ -40,24 +42,24 @@ class VAE(VariationalModel):
 
     def __init__(
         self,
-        learning_starts : int = 200000,
-        n_actions : int = 18,
-        training : bool = True,
-        likelihood_type : LikelihoodType = LikelihoodType.BERNOULLI,
-        latent_space_type : LatentSpaceType = LatentSpaceType.CONTINUOUS,
-        n_continuous_vars : int = 15,
-        n_discrete_vars : int = 20,
-        n_discrete_vals : int = 10,
-        learning_rate : float = 0.0001,
-        adam_eps : float = 1e-8,
-        beta_schedule : Any = None,
-        tau_schedule : Any = None,
-        replay_type : ReplayType = ReplayType.PRIORITIZED,
-        buffer_size : int = 1000000,
-        batch_size : int = 32,
-        n_steps : int = 1,
-        omega : float = 1.0,
-        omega_is : float = 1.0
+        learning_starts: int = 200000,
+        n_actions: int = 18,
+        training: bool = True,
+        likelihood_type: LikelihoodType = LikelihoodType.BERNOULLI,
+        latent_space_type: LatentSpaceType = LatentSpaceType.CONTINUOUS,
+        n_continuous_vars: int = 15,
+        n_discrete_vars: int = 20,
+        n_discrete_vals: int = 10,
+        learning_rate: float = 0.0001,
+        adam_eps: float = 1e-8,
+        beta_schedule: Any = None,
+        tau_schedule: Any = None,
+        replay_type: ReplayType = ReplayType.PRIORITIZED,
+        buffer_size: int = 1000000,
+        batch_size: int = 32,
+        n_steps: int = 1,
+        omega: float = 1.0,
+        omega_is: float = 1.0,
     ) -> None:
         """!
         Create a Variational Auto-Encoder agent taking random actions.
@@ -84,26 +86,40 @@ class VAE(VariationalModel):
 
         # Call the parent constructor.
         super().__init__(
-            learning_starts=learning_starts, n_actions=n_actions, training=training,  replay_type=replay_type,
-            likelihood_type=likelihood_type, latent_space_type=latent_space_type,
-            buffer_size=buffer_size, batch_size=batch_size, n_steps=n_steps, omega=omega, omega_is=omega_is,
-            n_continuous_vars=n_continuous_vars, n_discrete_vars=n_discrete_vars, n_discrete_vals=n_discrete_vals,
-            learning_rate=learning_rate, adam_eps=adam_eps, beta_schedule=beta_schedule, tau_schedule=tau_schedule,
+            learning_starts=learning_starts,
+            n_actions=n_actions,
+            training=training,
+            replay_type=replay_type,
+            likelihood_type=likelihood_type,
+            latent_space_type=latent_space_type,
+            buffer_size=buffer_size,
+            batch_size=batch_size,
+            n_steps=n_steps,
+            omega=omega,
+            omega_is=omega_is,
+            n_continuous_vars=n_continuous_vars,
+            n_discrete_vars=n_discrete_vars,
+            n_discrete_vals=n_discrete_vals,
+            learning_rate=learning_rate,
+            adam_eps=adam_eps,
+            beta_schedule=beta_schedule,
+            tau_schedule=tau_schedule,
         )
 
-        ## @var encoder
-        # Neural network that encodes observations into a distribution over latent states.
-        self.encoder = self.get_encoder_network(self.latent_space_type)
+        # @var encoder
+        # Neural network that encodes observations into a distribution over
+        # latent states.
+        self.encoder = self.get_encoder_network(self.latent_type)
 
-        ## @var decoder
-        # Neural network that decodes latent states into reconstructed observations.
-        self.decoder = self.get_decoder_network(self.latent_space_type)
+        # @var decoder
+        # Neural network that decodes latent states into reconstructed
+        # observations.
+        self.decoder = self.get_decoder_network(self.latent_type)
 
-        ## @var optimizer
+        # @var optimizer
         # Adam optimizer for training both the encoder and decoder networks.
-        self.optimizer = optim.Adam(
-            list(self.encoder.parameters()) + list(self.decoder.parameters()),
-            lr=self.learning_rate, eps=self.adam_eps
+        self.optimizer = get_optimizer(
+            [self.encoder, self.decoder], self.learning_rate, self.adam_eps
         )
 
     def learn(self) -> Optional[Dict[str, Any]]:
@@ -117,13 +133,15 @@ class VAE(VariationalModel):
         obs, actions, _, _, next_obs = self.buffer.sample()
 
         # Compute the model loss.
-        loss, log_likelihood, kl_divergence = self.model_loss(obs, actions, next_obs)
+        loss, log_likelihood, kl_div = self.model_loss(obs, actions, next_obs)
 
-        # Report the loss obtained for each sampled transition for potential prioritization.
+        # Report the loss obtained for each sampled transition for potential
+        # prioritization.
         loss = self.buffer.report(loss)
         loss = loss.mean()
 
-        # Perform one step of gradient descent on the encoder and decoder networks with gradient clipping.
+        # Perform one step of gradient descent on the encoder and decoder
+        # networks with gradient clipping.
         self.optimizer.zero_grad()
         loss.backward()
         for param in self.encoder.parameters():
@@ -135,11 +153,13 @@ class VAE(VariationalModel):
             "vfe": loss,
             "beta": self.beta(self.current_step),
             "log_likelihood": log_likelihood.mean(),
-            "kl_divergence": kl_divergence.mean(),
+            "kl_divergence": kl_div.mean(),
         }
         # @endcond
 
-    def continuous_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    def continuous_vfe(
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a continuous latent space.
         @param obs: the observations at time t
@@ -149,21 +169,21 @@ class VAE(VariationalModel):
         """
         # @cond IGNORED_BY_DOXYGEN
 
-        obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
-
         # Compute required tensors.
         mean_hat, log_var_hat = self.encoder(obs)
-        state = self.reparameterize((mean_hat, log_var_hat))
+        state = self.reparam((mean_hat, log_var_hat))
         reconstructed_obs = self.decoder(state)
 
         # Compute the variational free energy.
-        kl_div_hs = VariationalInference.gaussian_kl_divergence(mean_hat, log_var_hat)
+        kl_div_hs = gauss_kl(mean_hat, log_var_hat)
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
         # @endcond
 
-    def discrete_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    def discrete_vfe(
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a discrete latent space.
         @param obs: the observations at time t
@@ -175,20 +195,20 @@ class VAE(VariationalModel):
 
         # Compute required tensors.
         tau = self.tau(self.current_step)
-        log_alpha_hats = self.encoder(obs)
-        states = self.reparameterize(log_alpha_hats, tau)
+        logit_hats = self.encoder(obs)
+        states = self.reparam(logit_hats, tau)
         reconstructed_obs = self.decoder(states)
 
         # Compute the variational free energy.
-        kl_div_hs = 0
-        for log_alpha_hat in log_alpha_hats:
-            kl_div_hs += VariationalInference.categorical_kl_divergence(log_alpha_hat)
+        kl_div = sum_cat_kl(logit_hats)
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
-        vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
-        return vfe_loss, log_likelihood, kl_div_hs
+        vfe_loss = self.beta(self.current_step) * kl_div - log_likelihood
+        return vfe_loss, log_likelihood, kl_div
         # @endcond
 
-    def mixed_vfe(self, obs : Tensor, actions : Tensor, next_obs : Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    def mixed_vfe(
+        self, obs: Tensor, actions: Tensor, next_obs: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a mixed latent space.
         @param obs: the observations at time t
@@ -200,20 +220,20 @@ class VAE(VariationalModel):
 
         # Compute required tensors.
         tau = self.tau(self.current_step)
-        (mean_hat, log_var_hat), log_alpha_hats = self.encoder(obs)
-        states = self.reparameterize((mean_hat, log_var_hat), log_alpha_hats, tau)
+        (mean_hat, log_var_hat), logit_hats = self.encoder(obs)
+        states = self.reparam((mean_hat, log_var_hat), logit_hats, tau)
         reconstructed_obs = self.decoder(states)
 
         # Compute the variational free energy.
-        kl_div_hs = VariationalInference.gaussian_kl_divergence(mean_hat, log_var_hat)
-        for log_alpha_hat in log_alpha_hats:
-            kl_div_hs += VariationalInference.categorical_kl_divergence(log_alpha_hat)
+        kl_div_hs = gauss_kl(mean_hat, log_var_hat) + sum_cat_kl(logit_hats)
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
         # @endcond
 
-    def draw_reconstructed_images(self, env : Env, model_index : int, grid_size : Tuple[int, int]) -> Figure:
+    def draw_reconstructed_images(
+        self, env: Env, model_index: int, grid_size: Tuple[int, int]
+    ) -> Figure:
         """!
         Draw the ground truth and reconstructed images.
         @param env: the gym environment
@@ -249,12 +269,9 @@ class VAE(VariationalModel):
                 # Retrieve the ground truth and reconstructed images.
                 obs, _ = env.reset()
                 obs = torch.unsqueeze(obs, dim=0).to(self.device)
-                obs = obs[:, -1, :, :].unsqueeze(dim=1)  # TODO
                 parameters = self.encoder(obs)
-                state = self.reparameterize(parameters, tau=tau)
-                reconstructed_obs = self.reconstructed_image_from(self.decoder(state))
-                obs = obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
-                reconstructed_obs = reconstructed_obs[:, -1, :, :].repeat(1, 3, 1, 1)  # TODO
+                states = self.reparam(parameters, tau=tau)
+                reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
 
                 # Draw the ground truth image.
                 fig.add_subplot(gs[2 * h, w + n_cols])
@@ -273,9 +290,7 @@ class VAE(VariationalModel):
         # @endcond
 
     def load(
-        self,
-        checkpoint_name : Optional[str] = None,
-        buffer_checkpoint_name : Optional[str] = None
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -286,26 +301,23 @@ class VAE(VariationalModel):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = super().load(checkpoint_name, buffer_checkpoint_name)
+            checkpoint_path, checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name
+            )
 
             # Update the world model using the checkpoint.
-            self.encoder = self.get_encoder_network(self.latent_space_type)
-            self.encoder.load_state_dict(self.safe_load(checkpoint, "encoder"))
-            self.decoder = self.get_decoder_network(self.latent_space_type)
-            self.decoder.load_state_dict(self.safe_load(checkpoint, "decoder"))
-
-            # Update the replay buffer.
-            # TODO move to VariationalModel.load?
-            replay_buffer = self.get_replay_buffer(self.replay_type, self.omega, self.omega_is, self.n_steps)
-            self.buffer = replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size) if self.training else None
-            self.buffer.load(checkpoint_path, buffer_checkpoint_name)
-
-            # Get the reparameterization function to use with the world model.
-            self.reparameterize = self.get_reparameterization(self.latent_space_type)
+            self.encoder = self.get_encoder_network(self.latent_type)
+            safe_load_state_dict(self.encoder, checkpoint, "encoder")
+            self.decoder = self.get_decoder_network(self.latent_type)
+            safe_load_state_dict(self.decoder, checkpoint, "decoder")
 
             # Update the optimizer.
-            params = list(self.encoder.parameters()) + list(self.decoder.parameters())
-            self.optimizer = self.safe_load_optimizer(checkpoint, params, self.learning_rate, self.adam_eps)
+            self.optimizer = get_optimizer(
+                [self.encoder, self.decoder],
+                self.learning_rate,
+                self.adam_eps,
+                checkpoint,
+            )
             return checkpoint_path, checkpoint
 
         # Catch the exception raise if the checkpoint could not be located.
@@ -314,17 +326,17 @@ class VAE(VariationalModel):
         # @endcond
 
     def as_dict(self):
-        """"
+        """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
         return {
             "encoder": self.encoder.state_dict(),
             "decoder": self.decoder.state_dict(),
-            "optimizer": self.optimizer.state_dict()
+            "optimizer": self.optimizer.state_dict(),
         } | super().as_dict()
 
-    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
@@ -332,11 +344,11 @@ class VAE(VariationalModel):
         """
         # @cond IGNORED_BY_DOXYGEN
         # Create the checkpoint directory and file, if they do not exist.
-        checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+        checkpoint_path = join(self.checkpoint_dir, checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)
 
         # Save the model.
-        logging.info("Saving agent to the following file: " + checkpoint_path)
+        logging.info(f"Saving agent to the following file: {checkpoint_path}")
         torch.save(self.as_dict(), checkpoint_path)
 
         # Save the replay buffer.

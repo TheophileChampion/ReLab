@@ -1,10 +1,10 @@
-from typing import Union, Tuple, Optional
+from typing import Optional, Tuple, Union
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 from torchrl.modules import NoisyLinear
 
-from relab import relab
+import relab
 
 
 class DuelingDeepQNetwork(nn.Module):
@@ -12,7 +12,7 @@ class DuelingDeepQNetwork(nn.Module):
     @brief Implement the value network of a dueling DQN.
     """
 
-    def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
+    def __init__(self, n_actions: int = 18, stack_size: Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -22,11 +22,11 @@ class DuelingDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        ## @var stack_size
+        # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
-        ## @var conv_net
+        # @var conv_net
         # Convolutional network that processes the input images.
         self.conv_net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, 8, stride=4),
@@ -34,24 +34,25 @@ class DuelingDeepQNetwork(nn.Module):
             nn.Conv2d(32, 64, 4, stride=2),
             nn.LeakyReLU(0.01),
             nn.Conv2d(64, 64, 3, stride=1),
-            nn.LeakyReLU(0.01)
+            nn.LeakyReLU(0.01),
         )
 
-        ## @var fc_net
-        # Fully connected network that processes flattened convolutional features.
+        # @var fc_net
+        # Fully connected network that processes flattened convolutional
+        # features.
         self.fc_net = nn.Sequential(
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
             nn.Linear(1024, 512),
-            nn.LeakyReLU(0.01)
+            nn.LeakyReLU(0.01),
         )
 
-        ## @var value
+        # @var value
         # Linear layer that outputs the state value.
         self.value = nn.Linear(512, 1)
 
-        ## @var advantage
+        # @var advantage
         # Linear layer that outputs the action advantages.
         self.advantage = nn.Linear(512, n_actions)
 
@@ -60,7 +61,7 @@ class DuelingDeepQNetwork(nn.Module):
             if "weight" in name:
                 torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x : Tensor, return_all : bool = False) -> Tensor:
+    def forward(self, x: Tensor, return_all: bool = False) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observations
@@ -80,7 +81,7 @@ class DuelingDeepQNetwork(nn.Module):
         q_values = value + advantages - advantages.mean()
         return (q_values, value, advantages) if return_all is True else q_values
 
-    def q_values(self, x : Tensor) -> Tensor:
+    def q_values(self, x: Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation
@@ -94,7 +95,7 @@ class NoisyDuelingDeepQNetwork(nn.Module):
     @brief Implement the value network of a dueling DQN with noisy linear layers.
     """
 
-    def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
+    def __init__(self, n_actions: int = 18, stack_size: Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -104,11 +105,11 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        ## @var stack_size
+        # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
-        ## @var conv_net
+        # @var conv_net
         # Convolutional network that processes the input images.
         self.conv_net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, 8, stride=4),
@@ -116,24 +117,25 @@ class NoisyDuelingDeepQNetwork(nn.Module):
             nn.Conv2d(32, 64, 4, stride=2),
             nn.LeakyReLU(0.01),
             nn.Conv2d(64, 64, 3, stride=1),
-            nn.LeakyReLU(0.01)
+            nn.LeakyReLU(0.01),
         )
 
-        ## @var fc_net
-        # Fully connected network that processes flattened convolutional features.
+        # @var fc_net
+        # Fully connected network that processes flattened convolutional
+        # features.
         self.fc_net = nn.Sequential(
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
             nn.Linear(1024, 512),
-            nn.LeakyReLU(0.01)
+            nn.LeakyReLU(0.01),
         )
 
-        ## @var value
+        # @var value
         # Noisy linear layer that outputs the state value.
         self.value = NoisyLinear(512, 1)
 
-        ## @var advantage
+        # @var advantage
         # Noisy linear layer that outputs the action advantages.
         self.advantage = NoisyLinear(512, n_actions)
 
@@ -142,7 +144,9 @@ class NoisyDuelingDeepQNetwork(nn.Module):
             if "weight" in name:
                 torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x : Tensor, return_all : bool = False) -> Union[Tuple[Tensor, Tensor, Tensor], Tensor]:
+    def forward(
+        self, x: Tensor, return_all: bool = False
+    ) -> Union[Tuple[Tensor, Tensor, Tensor], Tensor]:
         """!
         Perform the forward pass through the network.
         @param x: the observations
@@ -160,10 +164,14 @@ class NoisyDuelingDeepQNetwork(nn.Module):
         # Compute the Q-values.
         value = self.value(x)
         advantages = self.advantage(x)
-        q_values = value + advantages - advantages.mean(dim=1).unsqueeze(dim=1).repeat(1, self.n_actions)
+        q_values = (
+            value
+            + advantages
+            - advantages.mean(dim=1).unsqueeze(dim=1).repeat(1, self.n_actions)
+        )
         return (q_values, value, advantages) if return_all is True else q_values
 
-    def q_values(self, x : Tensor) -> Tensor:
+    def q_values(self, x: Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation

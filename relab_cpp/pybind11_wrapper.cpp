@@ -7,7 +7,7 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 using namespace relab::agents::memory;
 
-PYBIND11_MODULE(librelab, m) {
+PYBIND11_MODULE(cpp, m) {
 
     m.doc() = "A module providing C++ acceleration for ReLab.";
 

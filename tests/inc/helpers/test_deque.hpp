@@ -8,19 +8,19 @@
 
 namespace relab::test::helpers::impl {
 
-    using namespace relab::helpers;
+using namespace relab::helpers;
 
-    /**
-     * A class storing the parameters of the deque tests.
-     */
-    class DequeParameters {
+/**
+ * A class storing the parameters of the deque tests.
+ */
+class DequeParameters {
 
-    public:
+public:
 
-        std::vector<int> elements;
-        int max_size;
-        int n_pops;
-        int length;
+    std::vector<int> elements;
+    int max_size;
+    int n_pops;
+    int length;
 
     public:
 

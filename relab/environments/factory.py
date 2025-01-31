@@ -2,13 +2,14 @@ from typing import Any, List
 
 import gymnasium as gym
 from gymnasium import Env
-from gymnasium.wrappers import FrameStackObservation, NumpyToTorch, AtariPreprocessing
+from gymnasium.wrappers import (AtariPreprocessing, FrameStackObservation,
+                                NumpyToTorch)
 
 import relab
 from relab.environments.wrapper.FireReset import FireReset
 
 
-def make(env_name : str, **kwargs : Any) -> Env:
+def make(env_name: str, **kwargs: Any) -> Env:
     """!
     Create the environment whose name is passed as parameters.
     @param env_name: the name of the environment to instantiate
@@ -19,8 +20,12 @@ def make(env_name : str, **kwargs : Any) -> Env:
     env = gym.make(env_name, full_action_space=True, **kwargs)
     env = FireReset(env)
     env = AtariPreprocessing(
-        env=env, noop_max=0, frame_skip=config["frame_skip"],
-        screen_size=config["screen_size"], grayscale_obs=True, scale_obs=True
+        env=env,
+        noop_max=0,
+        frame_skip=config["frame_skip"],
+        screen_size=config["screen_size"],
+        grayscale_obs=True,
+        scale_obs=True,
     )
     env = FrameStackObservation(env, config["stack_size"])
     env = NumpyToTorch(env)

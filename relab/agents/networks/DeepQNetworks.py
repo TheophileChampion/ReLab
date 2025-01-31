@@ -1,9 +1,9 @@
 from typing import Optional
 
-from torch import nn, Tensor
 import torch
+from torch import Tensor, nn
 
-from relab import relab
+import relab
 
 
 class DeepQNetwork(nn.Module):
@@ -11,7 +11,7 @@ class DeepQNetwork(nn.Module):
     @brief Implement the value network of a DQN.
     """
 
-    def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
+    def __init__(self, n_actions: int = 18, stack_size: Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -21,11 +21,11 @@ class DeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        ## @var stack_size
+        # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
-        ## @var net
+        # @var net
         # Complete network that processes images and outputs Q-values.
         self.net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, 8, stride=4),
@@ -37,7 +37,7 @@ class DeepQNetwork(nn.Module):
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
-            nn.Linear(1024, n_actions)
+            nn.Linear(1024, n_actions),
         )
 
         # Initialize the weights.
@@ -45,7 +45,7 @@ class DeepQNetwork(nn.Module):
             if "weight" in name:
                 torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x : Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -55,7 +55,7 @@ class DeepQNetwork(nn.Module):
             x = x.unsqueeze(dim=0)
         return self.net(x)
 
-    def q_values(self, x : Tensor) -> Tensor:
+    def q_values(self, x: Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation
@@ -69,7 +69,7 @@ class NoisyDeepQNetwork(nn.Module):
     @brief Implement the value network of a DQN with noisy linear layers.
     """
 
-    def __init__(self, n_actions : int = 18, stack_size : Optional[int] = None) -> None:
+    def __init__(self, n_actions: int = 18, stack_size: Optional[int] = None) -> None:
         """!
         Constructor.
         @param n_actions: the number of actions available to the agent
@@ -79,11 +79,11 @@ class NoisyDeepQNetwork(nn.Module):
         # Call the parent constructor.
         super().__init__()
 
-        ## @var stack_size
+        # @var stack_size
         # Number of stacked frames in each observation.
-        self.stack_size = relab.config("stack_size") if stack_size is None else stack_size
+        self.stack_size = relab.config("stack_size", stack_size)
 
-        ## @var net
+        # @var net
         # Complete network that processes images and outputs Q-values.
         self.net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, 8, stride=4),
@@ -95,7 +95,7 @@ class NoisyDeepQNetwork(nn.Module):
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
-            nn.Linear(1024, n_actions)
+            nn.Linear(1024, n_actions),
         )
 
         # Initialize the weights.
@@ -103,7 +103,7 @@ class NoisyDeepQNetwork(nn.Module):
             if "weight" in name:
                 torch.nn.init.kaiming_normal_(param, nonlinearity="leaky_relu")
 
-    def forward(self, x : Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """!
         Perform the forward pass through the network.
         @param x: the observation
@@ -113,7 +113,7 @@ class NoisyDeepQNetwork(nn.Module):
             x = x.unsqueeze(dim=0)
         return self.net(x)
 
-    def q_values(self, x : Tensor) -> Tensor:
+    def q_values(self, x: Tensor) -> Tensor:
         """!
         Compute the Q-values for each action.
         @param x: the observation

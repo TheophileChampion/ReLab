@@ -1,7 +1,6 @@
 from typing import Tuple
-from torch import Tensor
 
-from torch import nn
+from torch import Tensor, nn
 
 
 class DiagonalGaussian(nn.Module):
@@ -9,7 +8,7 @@ class DiagonalGaussian(nn.Module):
     @brief Layer predicting the mean and variance of a Gaussian with diagonal covariance matrix.
     """
 
-    def __init__(self, input_size : int, nb_components : int) -> None:
+    def __init__(self, input_size: int, nb_components: int) -> None:
         """!
         Constructor.
         @param input_size: size of the vector send as input of the layer
@@ -17,19 +16,15 @@ class DiagonalGaussian(nn.Module):
         """
         super().__init__()
 
-        ## @var mean
-        # Layer that outputs the mean of the diagonal Gaussian distribution.
-        self.mean = nn.Sequential(
-            nn.Linear(input_size, nb_components)
-        )
+        # @var mean
+        # Layer predicting the mean of the Gaussian distributions.
+        self.mean = nn.Linear(input_size, nb_components)
 
-        ## @var log_var
-        # Layer that outputs the log-variance of the diagonal Gaussian distribution.
-        self.log_var = nn.Sequential(
-            nn.Linear(input_size, nb_components),
-        )
+        # @var log_var
+        # Layer predicting the log-variance of the Gaussian distributions.
+        self.log_var = nn.Linear(input_size, nb_components)
 
-    def forward(self, x : Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
         """!
         Compute the mean and the variance of the diagonal Gaussian.
         @param x: the input vector

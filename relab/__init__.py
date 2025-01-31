@@ -1,18 +1,15 @@
-from relab.relab import initialize, device, config
-from os.path import join, dirname
 import logging
-import os
+
+import relab.cpp_module
+from relab.relab import config as config
+from relab.relab import device as device
+from relab.relab import initialize as initialize
 
 # ReLab version.
-version="1.0.0-b"
+version = "1.0.0-b"
 
 # Initialize the root logger.
 logging.basicConfig(level=logging.INFO)
 
-# Set the environment variable: "ROOT_DIRECTORY", "BUILD_DIRECTORY", and "CPP_MODULE_DIRECTORY".
-os.environ["ROOT_DIRECTORY"] = join(dirname(__file__), "..")
-os.environ["BUILD_DIRECTORY"] = join(os.environ["ROOT_DIRECTORY"], "build")
-os.environ["CPP_MODULE_DIRECTORY"] = os.environ["ROOT_DIRECTORY"]
-
-# Build the C++ library and the python module wrapping the library.
-relab.build_cpp_library_and_wrapper()
+# Build the ReLab C++ library.
+cpp_module.build_cpp_library_and_wrapper()

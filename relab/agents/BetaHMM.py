@@ -2,7 +2,7 @@ from typing import Any
 
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.HMM import HMM
-from relab.agents.VariationalModel import LikelihoodType, LatentSpaceType
+from relab.agents.VariationalModel import LatentSpaceType, LikelihoodType
 
 
 class BetaHMM(HMM):
@@ -11,7 +11,7 @@ class BetaHMM(HMM):
 
     @details
     This implementation extends upon the paper:
-    
+
     <b>beta-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework</b>,
     published in ICLR, 2017.
 
@@ -32,24 +32,24 @@ class BetaHMM(HMM):
 
     def __init__(
         self,
-        learning_starts : int = 200000,
-        n_actions : int = 18,
-        training : bool = True,
-        likelihood_type : LikelihoodType = LikelihoodType.BERNOULLI,
-        latent_space_type : LatentSpaceType = LatentSpaceType.CONTINUOUS,
-        n_continuous_vars : int = 10,
-        n_discrete_vars : int = 20,
-        n_discrete_vals : int =10,
-        learning_rate : float = 0.00001,
-        adam_eps : float = 1.5e-4,
-        beta_schedule : Any = None,
-        tau_schedule : Any = None,
-        replay_type : ReplayType = ReplayType.DEFAULT,
-        buffer_size : int = 1000000,
-        batch_size : int = 32,
-        n_steps : int = 1,
-        omega : float = 1.0,
-        omega_is : float = 1.0
+        learning_starts: int = 200000,
+        n_actions: int = 18,
+        training: bool = True,
+        likelihood_type: LikelihoodType = LikelihoodType.BERNOULLI,
+        latent_space_type: LatentSpaceType = LatentSpaceType.CONTINUOUS,
+        n_continuous_vars: int = 10,
+        n_discrete_vars: int = 20,
+        n_discrete_vals: int = 10,
+        learning_rate: float = 0.00001,
+        adam_eps: float = 1.5e-4,
+        beta_schedule: Any = None,
+        tau_schedule: Any = None,
+        replay_type: ReplayType = ReplayType.DEFAULT,
+        buffer_size: int = 1000000,
+        batch_size: int = 32,
+        n_steps: int = 1,
+        omega: float = 1.0,
+        omega_is: float = 1.0,
     ) -> None:
         """!
         Create a Hidden Markov Model agent taking random actions.
@@ -75,13 +75,27 @@ class BetaHMM(HMM):
         """
 
         # Create the beta schedule.
-        beta_schedule = [(0, 0.0001)] if beta_schedule is None else beta_schedule
+        if beta_schedule is None:
+            beta_schedule = [(0, 0.0001)]
 
         # Call the parent constructor.
         super().__init__(
-            learning_starts=learning_starts, n_actions=n_actions, training=training,  replay_type=replay_type,
-            likelihood_type=likelihood_type, latent_space_type=latent_space_type,
-            buffer_size=buffer_size, batch_size=batch_size, n_steps=n_steps, omega=omega, omega_is=omega_is,
-            n_continuous_vars=n_continuous_vars, n_discrete_vars=n_discrete_vars, n_discrete_vals=n_discrete_vals,
-            learning_rate=learning_rate, adam_eps=adam_eps, beta_schedule=beta_schedule, tau_schedule=tau_schedule,
+            learning_starts=learning_starts,
+            n_actions=n_actions,
+            training=training,
+            replay_type=replay_type,
+            likelihood_type=likelihood_type,
+            latent_space_type=latent_space_type,
+            buffer_size=buffer_size,
+            batch_size=batch_size,
+            n_steps=n_steps,
+            omega=omega,
+            omega_is=omega_is,
+            n_continuous_vars=n_continuous_vars,
+            n_discrete_vars=n_discrete_vars,
+            n_discrete_vals=n_discrete_vals,
+            learning_rate=learning_rate,
+            adam_eps=adam_eps,
+            beta_schedule=beta_schedule,
+            tau_schedule=tau_schedule,
         )

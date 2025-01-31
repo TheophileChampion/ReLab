@@ -1,15 +1,15 @@
 from __future__ import annotations
-from typing import Any, Dict, Tuple, List, SupportsFloat, Optional
+
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from numpy import ndarray
-from gymnasium import spaces, Env
-
-from relab.helpers.SpritesDataset import DataSet
-import torch.nn.functional as func
 import torch
+import torch.nn.functional as func
+from gymnasium import Env, spaces
+from numpy import ndarray
 from torch import Tensor
 
+from relab.helpers.SpritesDataset import DataSet
 from relab.helpers.Typing import ActionType, Config, GymStepData
 
 
@@ -18,17 +18,17 @@ class SpritesALE:
     A class imitating the ALE to make the d-sprites environment compatible with the Atari wrappers.
     """
 
-    def __init__(self, env : SpritesEnv) -> None:
+    def __init__(self, env: SpritesEnv) -> None:
         """!
         Constructor.
         @param env: the d-sprites environment for which the ALE is created
         """
-        
-        ## @var env
+
+        # @var env
         # Reference to the d-sprites environment being wrapped.
         self.env = env
 
-    def getScreenGrayscale(self, obs : ndarray) -> None:
+    def getScreenGrayscale(self, obs: ndarray) -> None:
         """!
         Copy the gray scale screen corresponding to the current environment state into the observation buffer.
         @param obs: the observation buffer
@@ -38,7 +38,7 @@ class SpritesALE:
             for y in range(obs.shape[1]):
                 obs[x][y] = frame[x][y][0]
 
-    def getScreenRGB(self, obs : ndarray) -> None:
+    def getScreenRGB(self, obs: ndarray) -> None:
         """!
         Copy the RGB screen corresponding to the current environment state into the observation buffer.
         @param obs: the observation buffer
@@ -63,15 +63,18 @@ class SpritesEnv(Env):
 
     @details Adapted from:
     https://github.com/zfountas/deep-active-inference-mc/blob/master/src/game_environment.py
+    TODO cite paper
     """
 
-    ## @var metadata
+    # @var metadata
     # Dictionary specifying the environment's rendering capabilities:
     # - render_modes: List of supported rendering modes (rgb_array only)
     # - render_fps: Frame rate for rendering (30 FPS)
     metadata = {"render_modes": ["rgb_array"], "render_fps": 30}
 
-    def __init__(self, max_episode_length : int = 1000, difficulty : str = "hard", **kwargs: Any) -> None:
+    def __init__(
+        self, max_episode_length: int = 1000, difficulty: str = "hard", **kwargs: Any
+    ) -> None:
         """!
         Constructor (compatible with OpenAI gym environment)
         @param max_episode_length: the maximum length of an episode
@@ -82,63 +85,75 @@ class SpritesEnv(Env):
         # Call the parent constructor.
         super(SpritesEnv, self).__init__()
 
-        ## @var np_precision
+        # @var np_precision
         # The numpy data type used for observations.
-        self.np_precision = np.uint8
+        self.dtype = np.uint8
 
-        ## @var action_space
+        # @var action_space
         # The space of possible actions.
         self.action_space = spaces.Discrete(18)
 
-        ## @var observation_space
+        # @var observation_space
         # The space of possible observations.
-        self.observation_space = spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=self.np_precision)
+        self.observation_space = spaces.Box(
+            low=0, high=255, shape=(64, 64, 3), dtype=self.dtype
+        )
 
-        ## @var images
+        # @var images
         # The images of the d-sprites dataset.
-        ## @var s_sizes
+        # @var s_sizes
         # The number of values per latent variable.
-        ## @var s_dim
+        # @var s_dim
         # The number of latent variables.
-        ## @var s_bases
+        # @var s_bases
         # The base values used for state indexing.
         self.images, self.s_sizes, self.s_dim, self.s_bases = DataSet.get()
 
-        ## @var state
+        # @var state
         # The current state vector of the environment.
-        self.state = np.zeros(self.s_dim, dtype=self.np_precision)
+        self.state = np.zeros(self.s_dim, dtype=self.dtype)
 
-        ## @var last_r
+        # @var last_r
         # The last reward received.
         self.last_r = 0.0
 
-        ## @var frame_id
+        # @var frame_id
         # Counter for the current frame in the episode.
         self.frame_id = 0
 
-        ## @var max_episode_length
+        # @var max_episode_length
         # Maximum number of frames in an episode.
         self.max_episode_length = max_episode_length
 
-        ## @var actions_fn
+        # @var actions_fn
         # List of action functions that can be performed in the environment.
-        self.actions_fn = [self.idle, self.idle, self.down, self.up, self.left, self.right] + [self.idle] * 12
+        self.actions_fn = [
+            self.idle,
+            self.idle,
+            self.down,
+            self.up,
+            self.left,
+            self.right,
+        ] + [self.idle] * 12
 
-        ## @var ale
-        # Mock of the Arcade Learning Environment interface for compatibility with Atari wrappers.
+        # @var ale
+        # Mock of the Arcade Learning Environment interface for compatibility
+        # with Atari wrappers.
         self.ale = SpritesALE(self)
 
-        ## @var difficulty
+        # @var difficulty
         # The difficulty level of the environment ('easy' or 'hard').
         self.difficulty = difficulty
         if self.difficulty != "hard" and self.difficulty != "easy":
-            raise Exception("Invalid difficulty level, must be either 'easy' or 'hard'.")
+            raise Exception(
+                "Invalid difficulty level, must be either 'easy' or 'hard'."
+            )
 
         # Reset the environment.
         self.reset()
 
     @staticmethod
-    def state_to_one_hot(state : Tensor) -> Tensor:
+    def state_to_one_hot(state: Tensor) -> Tensor:
         """!
         Transform a state into its one hot representation.
         @param state: the state to transform
@@ -149,9 +164,11 @@ class SpritesEnv(Env):
         orientation = func.one_hot(state[3], 40)
         pos_x = func.one_hot(state[4], 32)
         pos_y = func.one_hot(state[5], 32)
-        return torch.cat([shape, scale, orientation, pos_x, pos_y], dim=0).to(torch.float32)
+        return torch.cat(tensors=[shape, scale, orientation, pos_x, pos_y], dim=0).to(
+            torch.float32
+        )
 
-    def get_state(self, one_hot : bool = True) -> Tensor:
+    def get_state(self, one_hot: bool = True) -> Tensor:
         """!
         Getter on the current state of the system.
         @param one_hot: True if the outputs must be a concatenation of one hot encoding,
@@ -161,20 +178,22 @@ class SpritesEnv(Env):
         state = torch.from_numpy(self.state).to(torch.int64)
         return self.state_to_one_hot(state) if one_hot else self.state
 
-    def reset(self, seed : Optional[int] = None, options : Config = None) -> Tuple[ndarray, Dict]:
+    def reset(
+        self, seed: Optional[int] = None, options: Config = None
+    ) -> Tuple[ndarray, Dict]:
         """!
         Reset the state of the environment to an initial state.
         @param seed: the seed used to initialize the pseudo random number generator of the environment's (unused)
         @param options: additional information to specify how the environment is reset (unused)
         @return the first observation
         """
-        self.state = np.zeros(self.s_dim, dtype=self.np_precision)
+        self.state = np.zeros(self.s_dim, dtype=self.dtype)
         self.last_r = 0.0
         self.frame_id = 0
         self.reset_hidden_state()
         return self.current_frame(), {}
 
-    def step(self, action : ActionType) -> GymStepData:
+    def step(self, action: ActionType) -> GymStepData:
         """!
         Execute one time step within the environment.
         @param action: the action to perform
@@ -203,7 +222,7 @@ class SpritesEnv(Env):
         else:
             return self.current_frame(), self.last_r, False, False, {}
 
-    def s_to_index(self, s : ndarray) -> ndarray:
+    def s_to_index(self, s: ndarray) -> ndarray:
         """!
         Compute the index of the image corresponding to the state sent as parameter.
         @param s: the state whose index must be computed
@@ -216,7 +235,7 @@ class SpritesEnv(Env):
         Return the current frame (i.e. the current observation).
         @return the current observation
         """
-        image = self.images[self.s_to_index(self.state)].astype(self.np_precision)
+        image = self.images[self.s_to_index(self.state)].astype(self.dtype)
         image = np.repeat(image, 3, 2)
         return (image * 255).astype(np.uint8)
 
@@ -239,7 +258,7 @@ class SpritesEnv(Env):
          - a position in Y, i.e. 32 values in [0, 1]
         @return the state sampled
         """
-        self.state = np.zeros(self.s_dim, dtype=self.np_precision)
+        self.state = np.zeros(self.s_dim, dtype=self.dtype)
         for s_i, s_size in enumerate(self.s_sizes):
             self.state[s_i] = np.random.randint(s_size)
 
@@ -277,7 +296,8 @@ class SpritesEnv(Env):
         if self.y_pos < 32:
             return False
 
-        # If the object did cross the bottom line, compute the reward and return true.
+        # If the object did cross the bottom line, compute the reward and
+        # return true.
         if self.difficulty == "hard":
             self.last_r = self.compute_hard_reward()
         self.y_pos -= 1.0
@@ -380,7 +400,7 @@ class SpritesEnv(Env):
         return int(self.state[5].item())
 
     @y_pos.setter
-    def y_pos(self, new_value : int) -> None:
+    def y_pos(self, new_value: int) -> None:
         """!
         Set the current position of the object on the y-axis.
         @param new_value: the new position of the object on the y-axis
@@ -396,7 +416,7 @@ class SpritesEnv(Env):
         return int(self.state[4].item())
 
     @x_pos.setter
-    def x_pos(self, new_value : int) -> None:
+    def x_pos(self, new_value: int) -> None:
         """!
         Set the current position of the object on the x-axis.
         @param new_value: the new position of the object on the x-axis

@@ -1,11 +1,11 @@
+import logging
 from os.path import join
-from typing import Optional, List, Tuple
-
-from pandas import DataFrame
+from typing import List, Optional, Tuple
 
 import pandas as pd
-from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
-import logging
+from pandas import DataFrame
+from tensorboard.backend.event_processing.event_accumulator import \
+    EventAccumulator
 
 from relab.helpers.FileSystem import FileSystem
 
@@ -16,7 +16,7 @@ class TensorBoard:
     """
 
     @staticmethod
-    def load_log_file(file : str, metric_name : str) -> Tuple[List[int], List[float]]:
+    def load_log_file(file: str, metric_name: str) -> Tuple[List[int], List[float]]:
         """!
         Load all the data present in the log file.
         @param file: path to tensorflow log file
@@ -44,8 +44,8 @@ class TensorBoard:
             logging.error(f"Could not process '{file}': {e}.")
             return [], []
 
-    @staticmethod
-    def load_log_directory(directory : str, metric : str) -> Optional[DataFrame]:
+    @classmethod
+    def load_log_directory(cls, directory: str, metric: str) -> Optional[DataFrame]:
         """!
         Load all the event files present in the directory.
         @param directory: the target directory
@@ -58,7 +58,7 @@ class TensorBoard:
         for file in FileSystem.files_in(directory):
 
             # Extract the steps and metric values from the current file.
-            steps, values = TensorBoard.load_log_file(join(directory, file), metric)
+            steps, values = cls.load_log_file(join(directory, file), metric)
             all_steps += steps
             all_values += values
 

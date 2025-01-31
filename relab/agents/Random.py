@@ -1,17 +1,16 @@
 import logging
-import os
 from datetime import datetime
 from os.path import join
-from typing import Optional, Tuple
+from typing import Tuple
 
+import numpy as np
 import torch
 from gymnasium import Env
 
 import relab
 from relab.agents.AgentInterface import AgentInterface
-import numpy as np
-
 from relab.helpers.FileSystem import FileSystem
+from relab.helpers.Serialization import safe_load
 from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
 
 
@@ -20,7 +19,7 @@ class Random(AgentInterface):
     @brief Implements an agent taking random actions.
     """
 
-    def __init__(self, n_actions : int = 18, training : bool = True) -> None:
+    def __init__(self, n_actions: int = 18, training: bool = True) -> None:
         """!
         Create an agent taking random actions.
         @param n_actions: the number of actions available to the agent
@@ -30,11 +29,11 @@ class Random(AgentInterface):
         # Call the parent constructor.
         super().__init__(training=training)
 
-        ## @var n_actions
+        # @var n_actions
         # Number of possible actions available to the agent.
         self.n_actions = n_actions
 
-    def step(self, obs : ObservationType) -> ActionType:
+    def step(self, obs: ObservationType) -> ActionType:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
@@ -42,7 +41,7 @@ class Random(AgentInterface):
         """
         return np.random.choice(self.n_actions)
 
-    def train(self, env : Env) -> None:
+    def train(self, env: Env) -> None:
         """!
         Train the agent in the gym environment passed as parameters
         @param env: the gym environment
@@ -88,9 +87,7 @@ class Random(AgentInterface):
         # @endcond
 
     def load(
-        self,
-        checkpoint_name : Optional[str] = None,
-        buffer_checkpoint_name : Optional[str] = None
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
     ) -> Tuple[str, Checkpoint]:
         """!
         Load an agent from the filesystem.
@@ -101,10 +98,12 @@ class Random(AgentInterface):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = super().load(checkpoint_name, buffer_checkpoint_name)
+            checkpoint_path, checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name
+            )
 
             # Load the class attributes from the checkpoint.
-            self.n_actions = self.safe_load(checkpoint, "n_actions")
+            self.n_actions = safe_load(checkpoint, "n_actions")
             return checkpoint_path, checkpoint
 
         # Catch the exception raise if the checkpoint could not be located.
@@ -113,13 +112,13 @@ class Random(AgentInterface):
         # @endcond
 
     def as_dict(self):
-        """"
+        """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
         return {"n_actions": self.n_actions} | super().as_dict()
 
-    def save(self, checkpoint_name : str, buffer_checkpoint_name : Optional[str] = None) -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
@@ -127,10 +126,10 @@ class Random(AgentInterface):
         """
         # @cond IGNORED_BY_DOXYGEN
         # Create the checkpoint directory and file, if they do not exist.
-        checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], checkpoint_name)
+        checkpoint_path = join(self.checkpoint_dir, checkpoint_name)
         FileSystem.create_directory_and_file(checkpoint_path)
 
         # Save the model.
-        logging.info("Saving agent to the following file: " + checkpoint_path)
+        logging.info(f"Saving agent to the following file: {checkpoint_path}")
         torch.save(self.as_dict(), checkpoint_path)
         # @endcond
