@@ -34,8 +34,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Check env var
-        run: echo $FILTER_REGEX_EXCLUDE
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.2.1
         env:
