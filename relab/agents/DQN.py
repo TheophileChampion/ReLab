@@ -7,12 +7,10 @@ from os.path import join
 from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
+import relab
 import torch
 from gymnasium import Env
-from torch import Tensor, nn
-from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
-import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.agents.networks.CategoricalDeepQNetworks import (
     CategoricalDeepQNetwork,
@@ -34,12 +32,10 @@ from relab.agents.networks.RainbowDeepQNetwork import (
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Serialization import (
-    get_optimizer,
-    safe_load,
-    safe_load_state_dict,
-)
+from relab.helpers.Serialization import get_optimizer, safe_load, safe_load_state_dict
 from relab.helpers.Typing import ActionType, Checkpoint, Loss, ObservationType
+from torch import Tensor, nn
+from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
 
 class LossType(IntEnum):

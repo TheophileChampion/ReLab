@@ -21,6 +21,8 @@ import numpy as np
 import torch
 from matplotlib import colors
 from matplotlib.widgets import Button
+from relab.agents.networks.DecoderNetworks import ContinuousDecoderNetwork
+from relab.agents.networks.EncoderNetworks import ContinuousEncoderNetwork
 from torch import (
     BoolTensor,
     FloatTensor,
@@ -35,9 +37,6 @@ from torch import (
 from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
-
-from relab.agents.networks.DecoderNetworks import ContinuousDecoderNetwork
-from relab.agents.networks.EncoderNetworks import ContinuousEncoderNetwork
 
 
 class SelectRandomAction:

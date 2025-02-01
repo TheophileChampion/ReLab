@@ -7,10 +7,10 @@ import torch
 import torch.nn.functional as func
 from gymnasium import Env, spaces
 from numpy import ndarray
-from torch import Tensor
 
 from relab.helpers.SpritesDataset import DataSet
 from relab.helpers.Typing import ActionType, Config, GymStepData
+from torch import Tensor
 
 
 class SpritesALE:

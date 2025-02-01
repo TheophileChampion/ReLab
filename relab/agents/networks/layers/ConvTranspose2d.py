@@ -1,8 +1,7 @@
 import math
 
-from torch import Tensor, nn
-
 from relab.helpers.Typing import DataType, Device, ScalarOrTuple
+from torch import Tensor, nn
 
 
 class ConvTranspose2d(nn.Module):

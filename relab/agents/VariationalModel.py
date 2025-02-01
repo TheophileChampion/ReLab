@@ -9,12 +9,11 @@ from os.path import join
 from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
+import relab
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
-from torch import Tensor, nn
 
-import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.agents.networks.DecoderNetworks import (
     ContinuousDecoderNetwork,
@@ -44,6 +43,7 @@ from relab.helpers.VariationalInference import (
     gaussian_log_likelihood,
     mixed_reparameterization,
 )
+from torch import Tensor, nn
 
 
 class LatentSpaceType(IntEnum):

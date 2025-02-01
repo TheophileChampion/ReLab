@@ -1,14 +1,9 @@
 from typing import Any, List
 
 import gymnasium as gym
-from gymnasium import Env
-from gymnasium.wrappers import (
-    AtariPreprocessing,
-    FrameStackObservation,
-    NumpyToTorch,
-)
-
 import relab
+from gymnasium import Env
+from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation, NumpyToTorch
 from relab.environments.wrapper.FireReset import FireReset
 
 

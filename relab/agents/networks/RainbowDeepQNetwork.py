@@ -1,11 +1,10 @@
 from typing import Optional, Tuple
 
+import relab
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
 from torchrl.modules import NoisyLinear
-
-import relab
 
 
 class RainbowDeepQNetwork(nn.Module):

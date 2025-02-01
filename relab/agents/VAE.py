@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
-from torch import Tensor
 
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import (
@@ -18,10 +17,11 @@ from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
 from relab.helpers.Typing import Checkpoint
+from relab.helpers.VariationalInference import gaussian_kl_divergence as gauss_kl
 from relab.helpers.VariationalInference import (
-    gaussian_kl_divergence as gauss_kl,
     sum_categorical_kl_divergences as sum_cat_kl,
 )
+from torch import Tensor
 
 
 class VAE(VariationalModel):

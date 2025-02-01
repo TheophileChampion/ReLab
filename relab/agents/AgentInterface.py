@@ -5,11 +5,6 @@ import math
 import os
 import re
 import time
-import imageio
-import numpy as np
-import psutil
-import relab
-import torch
 
 from abc import ABC
 from collections import deque
@@ -17,6 +12,12 @@ from enum import IntEnum
 from functools import partial
 from os.path import exists, isdir, isfile, join
 from typing import Any, Callable, Dict, Optional, SupportsFloat, Tuple
+
+import imageio
+import numpy as np
+import psutil
+import relab
+import torch
 from gymnasium import Env
 from PIL import Image
 from relab.agents.memory.ReplayBuffer import ReplayBuffer

@@ -1,10 +1,9 @@
 from typing import Optional
 
-from torch import Tensor
-
 import relab
 from relab.cpp.agents.memory import Experience, FastReplayBuffer
 from relab.helpers.Typing import Batch, Config
+from torch import Tensor
 
 
 class ReplayBuffer:

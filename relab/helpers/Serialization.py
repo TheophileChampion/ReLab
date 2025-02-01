@@ -1,10 +1,9 @@
 import logging
-from typing import Any, List
 
+from typing import Any, List
+from relab.helpers.Typing import Checkpoint, Optimizer
 from torch import optim
 from torch.nn import Module
-
-from relab.helpers.Typing import Checkpoint, Optimizer
 
 
 def safe_load(checkpoint: Checkpoint, key: str) -> Any:

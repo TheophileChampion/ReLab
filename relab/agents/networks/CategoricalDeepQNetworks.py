@@ -1,9 +1,8 @@
 from typing import Optional, Tuple
 
+import relab
 import torch
 from torch import Tensor, nn
-
-import relab
 
 
 class CategoricalDeepQNetwork(nn.Module):
