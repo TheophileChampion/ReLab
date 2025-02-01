@@ -69,7 +69,10 @@ def run_experiment(agent_names : List[str], env_names : List[str], seeds : List[
     job_runner.wait()
 
 
-if __name__ == "__main__":
+def main():
+    """
+    Entry point of the run_experiments script.
+    """
 
     # Parse the script arguments.
     parser = ArgumentParser(prog="run_experiments", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -81,3 +84,7 @@ if __name__ == "__main__":
 
     # Train a reinforcement learning agent on a gym environment.
     run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=args.local)
+
+
+if __name__ == "__main__":
+    main()

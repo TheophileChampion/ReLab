@@ -80,7 +80,10 @@ def describe_params(agent : str, env : str, seed : int) -> None:
             describe(attribute_name, attribute.parameters())
 
 
-if __name__ == "__main__":
+def main():
+    """
+    Entry point of the describe_params script.
+    """
 
     # Parse the script arguments.
     parser = ArgumentParser(prog="describe_params", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -91,3 +94,7 @@ if __name__ == "__main__":
 
     # Describe the agent's parameters.
     describe_params(agent=args.agent, env=args.env, seed=args.seed)
+
+
+if __name__ == "__main__":
+    main()

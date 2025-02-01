@@ -14,21 +14,19 @@ from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.agents.networks.CategoricalDeepQNetworks import (
-    CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork)
+from relab.agents.networks.CategoricalDeepQNetworks import (CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork)
 from relab.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
-from relab.agents.networks.DuelingDeepQNetworks import (
-    DuelingDeepQNetwork, NoisyDuelingDeepQNetwork)
-from relab.agents.networks.QuantileDeepQNetworks import (
-    ImplicitQuantileNetwork, QuantileDeepQNetwork)
-from relab.agents.networks.RainbowDeepQNetwork import (
-    RainbowDeepQNetwork, RainbowImplicitQuantileNetwork)
-from relab.agents.schedule.PiecewiseLinearSchedule import \
-    PiecewiseLinearSchedule
+from relab.agents.networks.DuelingDeepQNetworks import (DuelingDeepQNetwork, NoisyDuelingDeepQNetwork)
+from relab.agents.networks.QuantileDeepQNetworks import (ImplicitQuantileNetwork, QuantileDeepQNetwork)
+from relab.agents.networks.RainbowDeepQNetwork import (RainbowDeepQNetwork, RainbowImplicitQuantileNetwork)
+from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Serialization import (get_optimizer, safe_load,
-                                         safe_load_state_dict)
+from relab.helpers.Serialization import (
+    get_optimizer,
+    safe_load,
+    safe_load_state_dict,
+)
 from relab.helpers.Typing import ActionType, Checkpoint, Loss, ObservationType
 
 

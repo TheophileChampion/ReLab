@@ -243,12 +243,11 @@ and manage saved data and benchmarks. Let’s bring it all together with a compl
 demonstrate how these components work in practice:
 
 ```python
-from relab import agents
+from relab import agents, environments
 import relab
-from relab import environments
 
 
-def run_training(agent : str, env : str, seed : int) -> None:
+def run_training(agent: str, env: str, seed: int) -> None:
     """
     Train a reinforcement learning agent on a gym environment.
     :param agent: the agent name
@@ -269,7 +268,6 @@ def run_training(agent : str, env : str, seed : int) -> None:
 
 
 if __name__ == "__main__":
-
     # Train a reinforcement learning agent on a gym environment.
     run_training(agent="DDQN", env="ALE/Pong-v5", seed=0)
 ```

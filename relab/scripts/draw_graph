@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import relab
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
-from relab.helpers.TensorBoard import TensorBoard
+from relab.helpers import TensorBoard
 from pandas import DataFrame
 
 
@@ -122,7 +122,10 @@ def draw_graph(agents : List[str], env : str, seeds : List[int], metric : str, o
     MatPlotLib.save_figure(figure_path=join(os.environ["GRAPH_DIRECTORY"], f"{metric}.pdf"))
 
 
-if __name__ == "__main__":
+def main():
+    """
+    Entry point of the draw_graph script.
+    """
 
     # Parse the script arguments.
     parser = ArgumentParser(prog="draw_graph", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -135,3 +138,7 @@ if __name__ == "__main__":
 
     # Generate a graph representing the agents performance in an environment according to the specified metric.
     draw_graph(agents=args.agents, env=args.env, seeds=args.seeds, metric=args.metric, overwrite=args.overwrite)
+
+
+if __name__ == "__main__":
+    main()

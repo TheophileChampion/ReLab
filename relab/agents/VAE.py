@@ -10,7 +10,7 @@ from torch import Tensor
 
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import (LatentSpaceType, LikelihoodType,
-                                           VariationalModel)
+                                                VariationalModel)
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict

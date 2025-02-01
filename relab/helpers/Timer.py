@@ -6,17 +6,17 @@ from typing import Optional
 
 class Timer:
     """!
-    A class used for tracking the execution time of a block of code.
+    A class used for tracking the execution time of a block of relab.
     """
 
     def __init__(self, name: Optional[str] = None) -> None:
         """!
         Create a timer.
-        @param name: the name of the block of code whose time is being tracked
+        @param name: the name of the block of relab whose time is being tracked
         """
 
         # @var name
-        # The name of the block of code whose time is being tracked.
+        # The name of the block of relab whose time is being tracked.
         self.name = name
 
         # @var start_time

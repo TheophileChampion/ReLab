@@ -1047,9 +1047,11 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = ./venv-relab/ \
+EXCLUDE                = ./.venv/ \
                          ./build/ \
                          ./data/ \
+                         ./_skbuild/ \
+                         ./dist/ \
                          ./README.md \
                          ./doxygen-1.9.6
 
@@ -1069,8 +1071,11 @@ EXCLUDE_SYMLINKS       = NO
 
 EXCLUDE_PATTERNS       = */tests/* \
                          */build/* \
+                         */build.py \
                          */data/* \
-                         */venv-relab/* \
+                         */_skbuild/* \
+                         */dist/* \
+                         */.venv/* \
                          */__pycache__* \
                          */.idea/* \
                          */.github/* \

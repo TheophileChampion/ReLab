@@ -28,7 +28,10 @@ def run_demo(agent : str, env : str, seed : int, index : int):
     agent.demo(env, f"demo_{index}.gif")
 
 
-if __name__ == "__main__":
+def main():
+    """
+    Entry point of the run_demo script.
+    """
 
     # Parse the script arguments.
     parser = ArgumentParser(prog="run_demo", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -40,3 +43,7 @@ if __name__ == "__main__":
 
     # Demonstrate the policy learned by a reinforcement learning agent on a gym environment.
     run_demo(agent=args.agent, env=args.env, seed=args.seed, index=args.index)
+
+
+if __name__ == "__main__":
+    main()

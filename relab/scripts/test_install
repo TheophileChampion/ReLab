@@ -3,7 +3,14 @@
 from relab import version
 
 
-if __name__ == "__main__":
+def main():
+    """
+    Entry point of the test_install script.
+    """
 
     # Display current ReLab version.
     print(f"ReLab {version} was successfully installed.")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,4 @@
-# ![ReLab Logo](relab-logo.png)
+# ![ReLab Logo](https://github.com/TheophileChampion/ReLab/blob/main/relab-logo.png)
 
 ---
 
@@ -54,7 +54,7 @@ python ./scripts/test_install
 
 Note, when running the above command for the first time, ReLab will compile its C++ library.
 
-## Getting Started
+## ReLab Fundamentals
 
 ReLab provides a collection of well-known reinforcement learning agents and enables you to train them on any [Gym](https://gymnasium.farama.org/) environment.
 You can then visualize the learned policies and compare the performance of various agents.
@@ -159,4 +159,4 @@ ReLab is still in beta. The latest version of ReLab is version 1.0.0-b.
 
 ## License
 
-ReLab has a MIT license, as found in the [LICENSE](https://github.com/TheophileChampion/ReLab/blob/main/LICENSE) file.
+ReLab has a MIT license, as found in the [license](https://github.com/TheophileChampion/ReLab/blob/main/LICENSE.md) file.

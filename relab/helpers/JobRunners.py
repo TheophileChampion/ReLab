@@ -9,9 +9,9 @@ from functools import partial
 from typing import Callable, List
 
 from relab.helpers.Typing import Config
-from scripts.draw_graph import draw_graph
-from scripts.run_demo import run_demo
-from scripts.run_training import run_training
+from relab.scripts.draw_graph import draw_graph
+from relab.scripts.run_demo import run_demo
+from relab.scripts.run_training import run_training
 
 
 class JobRunnerInterface(abc.ABC):

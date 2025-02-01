@@ -15,13 +15,13 @@ cmake_minimum_required(VERSION 3.10)
 project(relab VERSION 1.0)
 
 # The name of the virtual environment.
-SET(VENV_DIR "venv-relab")
+SET(VENV_DIR ".venv")
 
 # Add include directories required by shared libraries.
 execute_process(COMMAND python3.12 -m pybind11 --includes OUTPUT_VARIABLE ADDITIONAL_INCLUDES)
 string(REPLACE "-I" "" ADDITIONAL_INCLUDES ${ADDITIONAL_INCLUDES})
 string(REPLACE " " ";" ADDITIONAL_INCLUDES ${ADDITIONAL_INCLUDES})
-include_directories(${PROJECT_SOURCE_DIR}/relab_cpp/inc/ ${ADDITIONAL_INCLUDES})
+include_directories(${PROJECT_SOURCE_DIR}/relab/cpp/inc/ ${ADDITIONAL_INCLUDES})
 include_directories(${PROJECT_SOURCE_DIR}/tests/inc/)
 
 # Add link directories required by shared libraries.
@@ -41,6 +41,9 @@ find_package(ZLIB REQUIRED)
 # Add python library.
 find_package(Python 3.12 EXACT REQUIRED COMPONENTS Interpreter Development)
 
+# Add python extension package.
+find_package(PythonExtensions REQUIRED)
+
 # Create a list containing all libraries shared by all executables and shared libraries of the project.
 list(APPEND ALL_LIBRARIES
     ${TORCH_LIBRARIES} ${TORCH_PYTHON_LIBRARY}
@@ -59,27 +62,42 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
+# Setup CMake install path.
+include(GNUInstallDirs)
+if (APPLE)
+  set(rbase "@loader_path")
+else ()
+  set(rbase "$ORIGIN")
+endif ()
+file(RELATIVE_PATH lib_dir
+     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}"
+     "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_INSTALL_RPATH "${rbase};${rbase}/${libdir}" CACHE STRING "Install RPATH")
+
 # Add the shared library: librelab.so
 add_library(relab SHARED
-    relab_cpp/src/agents/memory/frame_storage.cpp
-    relab_cpp/src/agents/memory/replay_buffer.cpp
-    relab_cpp/src/agents/memory/priority_tree.cpp
-    relab_cpp/src/agents/memory/frame_buffer.cpp
-    relab_cpp/src/agents/memory/compressors.cpp
-    relab_cpp/src/agents/memory/data_buffer.cpp
-    relab_cpp/src/agents/memory/experience.cpp
-    relab_cpp/src/helpers/thread_pool.cpp
-    relab_cpp/src/helpers/serialize.cpp
-    relab_cpp/src/helpers/debug.cpp
-    relab_cpp/src/helpers/deque.cpp
-    relab_cpp/src/helpers/timer.cpp
-    relab_cpp/src/helpers/torch.cpp
+    relab/cpp/src/agents/memory/frame_storage.cpp
+    relab/cpp/src/agents/memory/replay_buffer.cpp
+    relab/cpp/src/agents/memory/priority_tree.cpp
+    relab/cpp/src/agents/memory/frame_buffer.cpp
+    relab/cpp/src/agents/memory/compressors.cpp
+    relab/cpp/src/agents/memory/data_buffer.cpp
+    relab/cpp/src/agents/memory/experience.cpp
+    relab/cpp/src/helpers/thread_pool.cpp
+    relab/cpp/src/helpers/serialize.cpp
+    relab/cpp/src/helpers/debug.cpp
+    relab/cpp/src/helpers/deque.cpp
+    relab/cpp/src/helpers/timer.cpp
+    relab/cpp/src/helpers/torch.cpp
 )
 target_link_libraries(relab PRIVATE ${ALL_LIBRARIES})
+install(TARGETS relab LIBRARY DESTINATION relab)
 
 # Add the wrapper shared library: librelab_wrapper.so
-add_library(relab_wrapper SHARED relab_cpp/pybind11_wrapper.cpp)
-target_link_libraries(relab_wrapper PRIVATE relab ${ALL_LIBRARIES})
+add_library(cpp MODULE relab/cpp/pybind11_wrapper.cpp)
+target_link_libraries(cpp relab ${ALL_LIBRARIES})
+python_extension_module(cpp)
+install(TARGETS cpp LIBRARY DESTINATION relab)
 
 # Create an executable running unit tests.
 add_executable(all_tests
@@ -96,4 +114,4 @@ gtest_discover_tests(all_tests)
 
 # Add the testing executable with access to the project's shared libraries.
 add_executable(main_test tests/main.cpp)
-target_link_libraries(main_test PRIVATE ${ALL_LIBRARIES} relab_wrapper relab)
+target_link_libraries(main_test PRIVATE ${ALL_LIBRARIES} relab)

@@ -16,27 +16,34 @@ from torch import Tensor, nn
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.agents.networks.DecoderNetworks import (ContinuousDecoderNetwork,
-                                                   DiscreteDecoderNetwork,
-                                                   MixedDecoderNetwork)
-from relab.agents.networks.EncoderNetworks import (ContinuousEncoderNetwork,
-                                                   DiscreteEncoderNetwork,
-                                                   MixedEncoderNetwork)
+from relab.agents.networks.DecoderNetworks import (
+    ContinuousDecoderNetwork,
+    DiscreteDecoderNetwork,
+    MixedDecoderNetwork
+)
+from relab.agents.networks.EncoderNetworks import (
+    ContinuousEncoderNetwork,
+    DiscreteEncoderNetwork,
+    MixedEncoderNetwork,
+)
 from relab.agents.networks.TransitionNetworks import (
-    ContinuousTransitionNetwork, DiscreteTransitionNetwork,
-    MixedTransitionNetwork)
+    ContinuousTransitionNetwork,
+    DiscreteTransitionNetwork,
+    MixedTransitionNetwork,
+)
 from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
-from relab.agents.schedule.PiecewiseLinearSchedule import \
-    PiecewiseLinearSchedule
+from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import safe_load
 from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
-from relab.helpers.VariationalInference import (bernoulli_log_likelihood,
-                                                continuous_reparameterization,
-                                                discrete_reparameterization,
-                                                gaussian_log_likelihood,
-                                                mixed_reparameterization)
+from relab.helpers.VariationalInference import (
+    bernoulli_log_likelihood,
+    continuous_reparameterization,
+    discrete_reparameterization,
+    gaussian_log_likelihood,
+    mixed_reparameterization
+)
 
 
 class LatentSpaceType(IntEnum):

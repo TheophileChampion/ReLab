@@ -1,0 +1,60 @@
+[project]
+name="relab"
+version="0.5.1"
+description="Reinforcement learning made easy with prebuilt agents, Gym integration, and performance visualization."
+license= { file="LICENSE.md" }
+authors=[{ name="Théophile Champion", email="theoph.champion@gmail.com" }]
+readme="README.md"
+keywords=["pytorch", "reinforcement learning", "deep learning"]
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[tool.poetry]
+documentation="https://theophilechampion.github.io/ReLab/"
+repository="https://github.com/TheophileChampion/ReLab/"
+include = [
+    { path = "CMakeLists.txt", format = "sdist" },
+    { path = "relab/**/*.cpp", format = "sdist" },
+    { path = "relab/**/*.pyd", format = "wheel" },
+    { path = "relab/**/*.so", format = "wheel" },
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "invoke"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.build]
+generate-setup-file = false
+script = "build.py"
+
+[tool.setuptools]
+py-modules = []
+
+[tool.poetry.dependencies]
+python = "~=3.12"
+torchrl = "==0.6.0"
+tensorboard = "==2.18.0"
+imageio = "==2.36.0"
+pillow = "==10.4.0"
+pandas = "==2.2.3"
+seaborn = "==0.13.2"
+matplotlib = "==3.9.2"
+torchvision = "==0.20.1"
+invoke = "==2.2.0"
+psutil = "==6.1.1"
+numpy = "==2.2.1"
+gymnasium = {version = "1.0.0", extras = ["atari", "other"]}
+
+[tool.poetry.scripts]
+run_experiment="relab.scripts.run_experiment:main"
+run_training="relab.scripts.run_training:main"
+run_demo="relab.scripts.run_demo:main"
+draw_graph="relab.scripts.draw_graph:main"
+describe_params="relab.scripts.describe_params:main"
+display_checkpoint="relab.scripts.display_checkpoint:main"
+update_checkpoint="relab.scripts.update_checkpoint:main"
+test_install="relab.scripts.test_install:main"

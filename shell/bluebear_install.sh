@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script is only useful for running the code on BlueBear.
+# This script is only useful for running the relab on BlueBear.
 # After executing this script, activate the virtual environment using:
 #     source ./venv-relab/bin/activate
 # Launch a dummy script such as:
