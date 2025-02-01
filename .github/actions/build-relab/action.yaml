@@ -17,5 +17,5 @@ runs:
       run:  poetry install
       shell: bash
     - name: Check that the installation was succeed
-      run: source ./.venv/bin/activate && python3 ./scripts/test_install
+      run: source ./.venv/bin/activate && python3 ./relab/scripts/test_install
       shell: bash
