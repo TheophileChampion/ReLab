@@ -1,1 +1,1 @@
-from relab.agents.factory import make as make
+from relab.agents.factory import make

@@ -21,8 +21,17 @@ import numpy as np
 import torch
 from matplotlib import colors
 from matplotlib.widgets import Button
-from torch import (BoolTensor, FloatTensor, IntTensor, cat, eye, nn, unsqueeze,
-                   zeros, zeros_like)
+from torch import (
+    BoolTensor,
+    FloatTensor,
+    IntTensor,
+    cat,
+    eye,
+    nn,
+    unsqueeze,
+    zeros,
+    zeros_like,
+)
 from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter

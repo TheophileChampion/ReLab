@@ -14,11 +14,23 @@ from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
 import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.agents.networks.CategoricalDeepQNetworks import (CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork)
+from relab.agents.networks.CategoricalDeepQNetworks import (
+    CategoricalDeepQNetwork,
+    NoisyCategoricalDeepQNetwork,
+)
 from relab.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
-from relab.agents.networks.DuelingDeepQNetworks import (DuelingDeepQNetwork, NoisyDuelingDeepQNetwork)
-from relab.agents.networks.QuantileDeepQNetworks import (ImplicitQuantileNetwork, QuantileDeepQNetwork)
-from relab.agents.networks.RainbowDeepQNetwork import (RainbowDeepQNetwork, RainbowImplicitQuantileNetwork)
+from relab.agents.networks.DuelingDeepQNetworks import (
+    DuelingDeepQNetwork,
+    NoisyDuelingDeepQNetwork,
+)
+from relab.agents.networks.QuantileDeepQNetworks import (
+    ImplicitQuantileNetwork,
+    QuantileDeepQNetwork,
+)
+from relab.agents.networks.RainbowDeepQNetwork import (
+    RainbowDeepQNetwork,
+    RainbowImplicitQuantileNetwork,
+)
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.FileSystem import FileSystem
@@ -828,7 +840,8 @@ class DQN(AgentInterface):
             )
 
             # Update the agent's parameters using the checkpoint.
-            attributes_names = [  # TODO add new function + all other classes 
+            # TODO add new function + all other classes
+            attributes_names = [
                 "gamma",
                 "learning_rate",
                 "buffer_size",

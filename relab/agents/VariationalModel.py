@@ -19,7 +19,7 @@ from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.agents.networks.DecoderNetworks import (
     ContinuousDecoderNetwork,
     DiscreteDecoderNetwork,
-    MixedDecoderNetwork
+    MixedDecoderNetwork,
 )
 from relab.agents.networks.EncoderNetworks import (
     ContinuousEncoderNetwork,
@@ -42,7 +42,7 @@ from relab.helpers.VariationalInference import (
     continuous_reparameterization,
     discrete_reparameterization,
     gaussian_log_likelihood,
-    mixed_reparameterization
+    mixed_reparameterization,
 )
 
 

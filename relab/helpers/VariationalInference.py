@@ -3,8 +3,7 @@ from typing import List, Optional, Tuple
 
 import torch
 from torch import Tensor
-from torch.nn.functional import (binary_cross_entropy_with_logits,
-                                 gumbel_softmax)
+from torch.nn.functional import binary_cross_entropy_with_logits, gumbel_softmax
 
 
 def gaussian_kl_divergence(
