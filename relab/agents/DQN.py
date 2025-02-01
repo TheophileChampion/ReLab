@@ -828,7 +828,7 @@ class DQN(AgentInterface):
             )
 
             # Update the agent's parameters using the checkpoint.
-            attributes_names = [  # TODO add new function + all other classes
+            attributes_names = [  # TODO add new function + all other classes 
                 "gamma",
                 "learning_rate",
                 "buffer_size",
