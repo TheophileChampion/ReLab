@@ -20,7 +20,7 @@ jobs:
       - name: Build ReLab library
         uses: ./.github/actions/build-relab
       - name: Run unit tests
-        run: cd build && ctest --output-on-failure
+        run: cd _skbuild/linux-x86_64-3.12/cmake-build/ && ctest --output-on-failure
   run_super_linter:
     runs-on: ubuntu-latest
     env:
