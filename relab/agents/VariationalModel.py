@@ -13,7 +13,6 @@ import relab
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
-
 from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.agents.networks.DecoderNetworks import (
     ContinuousDecoderNetwork,
