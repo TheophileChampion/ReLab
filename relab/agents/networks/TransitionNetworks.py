@@ -1,7 +1,6 @@
 from typing import Tuple
 
 import torch
-
 from relab.agents.networks.layers.Categorical import Categorical
 from relab.agents.networks.layers.DiagonalGaussian import DiagonalGaussian
 from torch import Tensor, nn

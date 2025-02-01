@@ -10,7 +10,6 @@ import numpy as np
 import relab
 import torch
 from gymnasium import Env
-
 from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.agents.networks.CategoricalDeepQNetworks import (
     CategoricalDeepQNetwork,

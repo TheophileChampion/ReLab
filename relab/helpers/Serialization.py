@@ -1,6 +1,6 @@
 import logging
-
 from typing import Any, List
+
 from relab.helpers.Typing import Checkpoint, Optimizer
 from torch import optim
 from torch.nn import Module

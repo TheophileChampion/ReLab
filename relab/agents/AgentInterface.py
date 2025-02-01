@@ -5,7 +5,6 @@ import math
 import os
 import re
 import time
-
 from abc import ABC
 from collections import deque
 from enum import IntEnum

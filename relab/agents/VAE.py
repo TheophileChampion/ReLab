@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
-
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import (
     LatentSpaceType,
