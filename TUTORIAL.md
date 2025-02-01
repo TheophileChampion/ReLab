@@ -232,7 +232,7 @@ ReLab provides three predefined Atari benchmarks to simplify this process:
 from relab import environments
 
 # Retrieve the list of Atari benchmark games.
-benchmark_games = environments.benchmark_atari_games()
+benchmark_games = environments.atari_benchmark()
 print(f"Total Atari Benchmark Games: {len(benchmark_games)}")
 ```
 

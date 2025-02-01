@@ -35,7 +35,7 @@ def make(env_name: str, **kwargs: Any) -> Env:
     return env
 
 
-def small_benchmark_atari_games() -> List[str]:
+def small_atari_benchmark() -> List[str]:
     """!
     Retrieve a list of five Atari game names part of a small Atari benchmark.
     @return the list of Atari game names
@@ -49,12 +49,12 @@ def small_benchmark_atari_games() -> List[str]:
     ]
 
 
-def benchmark_atari_games() -> List[str]:
+def atari_benchmark() -> List[str]:
     """!
     Retrieve the list of the names of the 57 Atari games part of the Atari benchmark.
     @return the list of Atari game names
     """
-    return small_benchmark_atari_games() + [
+    return small_atari_benchmark() + [
         "ALE/Alien-v5",
         "ALE/Amidar-v5",
         "ALE/Assault-v5",
@@ -110,12 +110,12 @@ def benchmark_atari_games() -> List[str]:
     ]
 
 
-def all_atari_games() -> List[str]:
+def full_atari_benchmark() -> List[str]:
     """!
     Retrieve the list of all Atari game names.
     @return the list of all Atari game names
     """
-    return benchmark_atari_games() + [
+    return atari_benchmark() + [
         "ALE/Adventure-v5",
         "ALE/AirRaid-v5",
         "ALE/Carnival-v5",
