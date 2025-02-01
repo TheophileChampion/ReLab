@@ -275,74 +275,54 @@ namespace relab::agents::memory::impl {
     }
 
     std::string PriorityTree::maxTreeToStr(int max_n_elements) {
-
-        int n = static_cast<int>(this->max_tree.size());
-        std::string tree_str = "[";
-
-        // Iterate over all sub-lists.
-        for (auto i = 0; i < n; i++) {
-
-            // Open the bracket in the string.
-            tree_str += ((i != 0) ? ", [" : "[");
-
-            // Iterate over all elements.
-            int m = this->max_tree[i].numel();
-            int max_j = (max_n_elements == -1) ? m : std::min(m, max_n_elements);
-            for (auto j = 0; j < max_j; j++) {
-
-                // Add all elements to the string.
-                if (j != 0)
-                    tree_str += ", ";
-                tree_str += this->toString(this->max_tree[i].index({j}).item<float>());
-            }
-
-            // Close the bracket in the string, adding an ellipse if only part of inner tensor was displayed.
-            if (max_j != m) {
-                tree_str += ((max_n_elements != 0) ? " ..." : "...");
-            }
-            tree_str += "]";
-        }
-        return tree_str + "]";
+        float (*get)(MaxTree, int, int) = [](MaxTree tree, int i, int j) {
+            return tree[i].index({j}).item<float>();
+        };
+        return this->treeToStr(this->max_tree, get, max_n_elements);
     }
 
     std::string PriorityTree::sumTreeToStr(int max_n_elements) {
+        double (*get)(SumTree, int, int) = [](SumTree tree, int i, int j) {
+            return tree[i][j];
+        };
+        return this->treeToStr(this->sum_tree, get, max_n_elements);
+    }
 
-        int n = static_cast<int>(this->sum_tree.size());
+    template<class Tree, class T>
+    std::string PriorityTree::treeToStr(Tree tree, T (*get)(Tree, int, int), int max_n_elements, int precision) {
+
+        int n = static_cast<int>(tree.size());
         if (max_n_elements == -1) {
             max_n_elements = n;
         }
-        std::string tree_str = "[";
+        std::ostringstream out;
+        out.precision(precision);
+        out << std::fixed << "[";
 
         // Iterate over all sub-lists.
         for (auto i = 0; i < n; i++) {
 
             // Open the bracket in the string.
-            tree_str += ((i != 0) ? ", [" : "[");
+            out << ((i != 0) ? ", [" : "[");
 
             // Iterate over all elements.
-            int m = static_cast<int>(this->sum_tree[i].size());
+            int m = std::pow(this->n_children, this->depth - 1 - i);
             int max_j = (max_n_elements == -1) ? m : std::min(m, max_n_elements);
             for (auto j = 0; j < max_j; j++) {
 
                 // Add all elements to the string.
                 if (j != 0)
-                    tree_str += ", ";
-                tree_str += this->toString(this->sum_tree[i][j]);
+                    out << ", ";
+                out << get(tree, i, j);
             }
 
             // Close the bracket in the string, adding an ellipse if only part of inner vector was displayed.
             if (max_j != m) {
-                tree_str += ((max_n_elements != 0) ? " ..." : "...");
+                out << ((max_n_elements != 0) ? " ..." : "...");
             }
-            tree_str += "]";
+            out << "]";
         }
-        return tree_str + "]";
-    }
-
-    std::string PriorityTree::toString(float value, int precision) {
-        std::ostringstream out;
-        out.precision(precision);
-        out << std::fixed << value;
+        out << "]";
         return out.str();
     }
 

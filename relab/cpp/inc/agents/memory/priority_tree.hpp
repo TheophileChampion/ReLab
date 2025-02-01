@@ -192,12 +192,15 @@ namespace relab::agents::memory::impl {
         std::string sumTreeToStr(int max_n_elements=-1);
 
         /**
-         * Convert a float into a string with the specified number of decimals.
-         * @param value the float to convert
-         * @param precision the number of decimal digits
-         * @return the string
+         * Create a string representation of a tree.
+         * @param tree the tree to convert into a string
+         * @param get a function returning the j-th element of the i-th row in the tree
+         * @param max_n_elements the maximum number of elements to display, by default all elements are displayed
+         * @param precision the number of decimal digits used to display the tree elements
+         * @return a string representing the tree
          */
-        std::string toString(float value, int precision=1);
+        template<class Tree, class T>
+        std::string treeToStr(Tree tree, T (*get)(Tree, int, int), int max_n_elements=-1, int precision=1);
 
         /**
          * Load the priority tree from the checkpoint.
