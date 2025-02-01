@@ -1,3 +1,7 @@
+"""
+Module implementing a highly parameterizable Deep Q-Network.
+"""
+
 import logging
 import math
 from datetime import datetime
@@ -824,7 +828,7 @@ class DQN(AgentInterface):
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
-        @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
+        @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load ("" for default name)
         @return a tuple containing the checkpoint path and the checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
@@ -928,7 +932,7 @@ class DQN(AgentInterface):
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
-        @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer ("" for default name)
         """
         # @cond IGNORED_BY_DOXYGEN
         # Create the agent checkpoint directory and file, if they do not exist.

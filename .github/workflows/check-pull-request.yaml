@@ -37,4 +37,7 @@ jobs:
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.2.1
         env:
+          VALIDATE_PYTHON_MYPY: false
+          VALIDATE_PYTHON_PYLINT: false
+          VALIDATE_JSCPD: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

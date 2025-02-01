@@ -36,7 +36,7 @@ class ReplayBuffer:
         frame_skip: Optional[int] = None,
         stack_size: Optional[int] = None,
         screen_size: Optional[int] = None,
-        args: Config = None,
+        args: Optional[Config] = None,
     ) -> None:
         """!
         Create a replay buffer.
