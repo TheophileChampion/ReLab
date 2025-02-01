@@ -18,7 +18,7 @@ jobs:
       - name: Clone ReLab repository
         uses: actions/checkout@v4
       - name: Build ReLab library
-        uses: TheophileChampion/ContinuousDelivery/build-relab@v0.1.6
+        uses: TheophileChampion/ReLab/.github/actions/build-relab
       - name: Run unit tests
         run: cd build && ctest --output-on-failure
   run_super_linter:
