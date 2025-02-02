@@ -1,11 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "relab_test.hpp"
-#include <cmath>
 #include <gtest/gtest.h>
 #include <torch/extension.h>
 
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 namespace relab::test::impl {
@@ -40,7 +40,6 @@ std::vector<Experience> getExperiences(const std::vector<torch::Tensor> &observa
   std::vector<Experience> experiences;
   for (int i = 0; i < n_episodes; i++) {
     for (int t = 0; t < length; t++) {
-
       // Add an experiment.
       bool done = (episode_length == -1) ? false : (t == length - 1);
       experiences.push_back(Experience(observations[t], t, t, done, observations[t + 1]));
@@ -65,7 +64,6 @@ std::vector<Experience> getResultExperiences(
   std::vector<Experience> experiences;
   for (int i = 0; i < n_episodes; i++) {
     for (int t = 0; t < length; t++) {
-
       // Add an experiment.
       int tn = t + n_steps;
       if (episode_length != -1) {

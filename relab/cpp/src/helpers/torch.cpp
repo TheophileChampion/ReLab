@@ -5,12 +5,11 @@
 namespace relab::helpers {
 
 torch::Device getDevice() {
-  bool use_cuda = (torch::cuda::is_available() and torch::cuda::device_count() >= 1);
+  bool use_cuda = (torch::cuda::is_available() && torch::cuda::device_count() >= 1);
   return torch::Device((use_cuda == true) ? torch::kCUDA : torch::kCPU);
 }
 
 bool tensorsAreEqual(const torch::Tensor tensor_1, const torch::Tensor tensor_2) {
-
   // If both tensors are empty they are equal.
   if (tensor_1.numel() == 0 && tensor_2.numel() == 0) {
     return true;

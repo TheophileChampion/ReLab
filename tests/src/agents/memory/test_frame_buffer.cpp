@@ -4,6 +4,7 @@
 #include <torch/extension.h>
 
 #include <memory>
+#include <vector>
 
 #include "relab_test.hpp"
 
@@ -140,7 +141,6 @@ TEST(TestFrameBuffer, TestEncodingAndDecoding) {
   auto buffer = FrameBuffer(8, 1, 1, 4);
 
   for (int i = 0; i < 256; i++) {
-
     // Create the i-th frame to encode and decode.
     auto options = torch::TensorOptions().dtype(torch::kFloat32);
     auto frame = i / 255 * torch::ones({84, 84}, options);

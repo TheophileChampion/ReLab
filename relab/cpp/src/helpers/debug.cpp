@@ -1,10 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "helpers/debug.hpp"
+
 #include <algorithm>
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace relab::helpers {
 

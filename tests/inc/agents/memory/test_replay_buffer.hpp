@@ -49,7 +49,7 @@ class ReplayBufferParameters {
    * @param prioritized true if the buffer is prioritized, false otherwise
    * @param batch_size the size of batches to sample
    */
-  ReplayBufferParameters(bool prioritized, int batch_size = 32);
+  explicit ReplayBufferParameters(bool prioritized, int batch_size = 32);
 
   /**
    * Create a structure storing the parameters of the replay buffer tests.

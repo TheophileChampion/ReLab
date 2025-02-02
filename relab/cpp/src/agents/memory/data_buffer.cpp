@@ -1,9 +1,9 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/data_buffer.hpp"
-#include <cmath>
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
