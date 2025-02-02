@@ -3,12 +3,12 @@
 #ifndef TEST_DEQUE_HPP
 #define TEST_DEQUE_HPP
 
-#include "agents/memory/experience.hpp"
-#include "helpers/deque.hpp"
-#include <deque>
 #include <gtest/gtest.h>
+#include <deque>
 #include <memory>
 #include <vector>
+#include "agents/memory/experience.hpp"
+#include "helpers/deque.hpp"
 
 namespace relab::test::helpers::impl {
 

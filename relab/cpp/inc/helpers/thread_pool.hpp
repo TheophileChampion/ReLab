@@ -47,7 +47,7 @@ class ThreadPool {
    * Creates a thread pool.
    * @param num_threads the number of thread threads in the pool
    */
-  ThreadPool(size_t num_threads);
+  explicit ThreadPool(size_t num_threads);
 
   /**
    * Destroy the thread pool.
@@ -65,6 +65,6 @@ class ThreadPool {
    */
   void synchronize();
 };
-} // namespace relab::helpers
+}  // namespace relab::helpers
 
-#endif // RELAB_CPP_INC_HELPERS_THREAD_POOL_HPP_
+#endif  // RELAB_CPP_INC_HELPERS_THREAD_POOL_HPP_

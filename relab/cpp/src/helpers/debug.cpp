@@ -183,4 +183,4 @@ template void print_vector<int>(const std::vector<int> &vector,
 template void
 print_vector<torch::Tensor, float>(const std::vector<torch::Tensor> &vector,
                                    int start, int max_n_elements);
-} // namespace relab::helpers
+}  // namespace relab::helpers

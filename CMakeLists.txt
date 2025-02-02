@@ -50,6 +50,7 @@ list(APPEND ALL_LIBRARIES
     ZLIB::ZLIB
     ${Python_LIBRARIES}
     pthread
+    stdc++fs
 )
 
 # Download and make Google test available.

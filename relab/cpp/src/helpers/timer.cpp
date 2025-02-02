@@ -23,4 +23,4 @@ void Timer::stop() {
              1000.0
       << std::endl;
 }
-} // namespace relab::helpers
+}  // namespace relab::helpers

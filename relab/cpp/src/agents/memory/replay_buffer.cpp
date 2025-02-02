@@ -1,9 +1,6 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/replay_buffer.hpp"
-#include "helpers/debug.hpp"
-#include "helpers/serialize.hpp"
-#include "helpers/torch.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -12,9 +9,12 @@
 #include <memory>
 #include <random>
 #include <string>
+#include "helpers/debug.hpp"
+#include "helpers/serialize.hpp"
+#include "helpers/torch.hpp"
 
 using namespace relab::helpers;
-using namespace std::filesystem;
+using namespace std::experimental::filesystem;
 
 namespace relab::agents::memory {
 
@@ -192,9 +192,9 @@ void ReplayBuffer::saveToFile(std::ostream &checkpoint) {
   save_tensor<long>(this->indices, checkpoint);
 }
 
-std::filesystem::path
-ReplayBuffer::getCheckpointPath(std::string &checkpoint_path,
-                                std::string &checkpoint_name, bool save_all) {
+path ReplayBuffer::getCheckpointPath(std::string &checkpoint_path,
+                                     std::string &checkpoint_name,
+                                     bool save_all) {
   // If all replay buffer must be saved and checkpoint name was not provided,
   // replace "model" by "buffer" in the checkpoint path.
   if (checkpoint_name == "" && save_all == true) {
@@ -279,4 +279,4 @@ bool operator==(const ReplayBuffer &lhs, const ReplayBuffer &rhs) {
   // Compare the indices.
   return tensorsAreEqual(lhs.indices, rhs.indices);
 }
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory

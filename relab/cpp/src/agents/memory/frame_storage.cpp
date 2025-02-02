@@ -1,12 +1,12 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/frame_storage.hpp"
-#include "helpers/debug.hpp"
-#include "helpers/serialize.hpp"
-#include "helpers/torch.hpp"
 #include <iostream>
 #include <string>
 #include <utility>
+#include "helpers/debug.hpp"
+#include "helpers/serialize.hpp"
+#include "helpers/torch.hpp"
 
 using namespace relab::helpers;
 
@@ -152,4 +152,4 @@ bool operator==(const FrameStorage &lhs, const FrameStorage &rhs) {
   }
   return true;
 }
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory

@@ -151,9 +151,10 @@ class ReplayBuffer {
    * @param save_all: true if all replay buffer must be saved, false otherwise
    * @return the path to the file in which the replay buffer must be saved
    */
-  std::filesystem::path getCheckpointPath(std::string &checkpoint_path,
-                                          std::string &checkpoint_name,
-                                          bool save_all);
+  std::experimental::filesystem::path
+  getCheckpointPath(std::string &checkpoint_path,
+                    std::string &checkpoint_name,
+                    bool save_all);
 
   /**
    * Print the replay buffer on the standard output.

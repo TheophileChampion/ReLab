@@ -26,6 +26,6 @@ torch::Device getDevice();
  */
 bool tensorsAreEqual(const torch::Tensor tensor_1,
                      const torch::Tensor tensor_2);
-} // namespace relab::helpers
+}  // namespace relab::helpers
 
-#endif // RELAB_CPP_INC_HELPERS_TORCH_HPP_
+#endif  // RELAB_CPP_INC_HELPERS_TORCH_HPP_

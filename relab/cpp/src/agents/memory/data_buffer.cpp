@@ -1,16 +1,16 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/data_buffer.hpp"
-#include "agents/memory/replay_buffer.hpp"
-#include "helpers/debug.hpp"
-#include "helpers/serialize.hpp"
-#include "helpers/torch.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <tuple>
+#include "agents/memory/replay_buffer.hpp"
+#include "helpers/debug.hpp"
+#include "helpers/serialize.hpp"
+#include "helpers/torch.hpp"
 
 using namespace relab::helpers;
 
@@ -51,7 +51,6 @@ void DataBuffer::append(const Experience &experience) {
 
   // Add new data to the buffer.
   if (experience.done == true) {
-
     // If the current episode has ended, keep track of all valid data.
     while (this->past_rewards.size() != 0) {
       this->addDatum(this->past_actions.back(), this->past_rewards.back(),
@@ -66,7 +65,6 @@ void DataBuffer::append(const Experience &experience) {
     this->past_dones.clear();
 
   } else if (static_cast<int>(this->past_rewards.size()) == this->n_steps) {
-
     // If the current episode has not ended, but the queues are full, then keep
     // track of next valid datum.
     this->addDatum(this->past_actions.back(), this->past_rewards.back(),
@@ -167,8 +165,10 @@ void DataBuffer::print(bool verbose, const std::string &prefix) {
 
 bool operator==(const DataBuffer &lhs, const DataBuffer &rhs) {
   // Check that all attributes of standard types are identical.
-  if (lhs.capacity != rhs.capacity || lhs.n_steps != rhs.n_steps ||
-      lhs.gamma != rhs.gamma || lhs.current_id != rhs.current_id) {
+  if (lhs.capacity != rhs.capacity ||
+      lhs.n_steps != rhs.n_steps ||
+      lhs.gamma != rhs.gamma ||
+      lhs.current_id != rhs.current_id) {
     return false;
   }
 

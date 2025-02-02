@@ -160,4 +160,4 @@ template void save_tensor<bool>(const torch::Tensor &tensor,
                                 std::ostream &checkpoint);
 template void save_tensor<float>(const torch::Tensor &tensor,
                                  std::ostream &checkpoint);
-} // namespace relab::helpers
+}  // namespace relab::helpers

@@ -81,4 +81,4 @@ void ThreadPool::synchronize() {
     lock.unlock();
   }
 }
-} // namespace relab::helpers
+}  // namespace relab::helpers

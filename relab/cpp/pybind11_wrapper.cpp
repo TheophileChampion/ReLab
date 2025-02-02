@@ -1,18 +1,17 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <pybind11/pybind11.h>
+#include <map>
+#include <string>
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/replay_buffer.hpp"
-#include <map>
-#include <pybind11/pybind11.h>
-#include <string>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 using namespace relab::agents::memory;
 
 PYBIND11_MODULE(cpp, m) {
-
   m.doc() = "A module providing C++ acceleration for ReLab.";
 
   auto m_agents = m.def_submodule(

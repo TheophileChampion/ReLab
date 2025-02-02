@@ -1,15 +1,15 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/priority_tree.hpp"
-#include "helpers/debug.hpp"
-#include "helpers/serialize.hpp"
-#include "helpers/torch.hpp"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
+#include "helpers/debug.hpp"
+#include "helpers/serialize.hpp"
+#include "helpers/torch.hpp"
 
 using namespace torch::indexing;
 using namespace relab::helpers;
@@ -423,4 +423,4 @@ bool operator==(const PriorityTree &lhs, const PriorityTree &rhs) {
   }
   return true;
 }
-} // namespace relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl

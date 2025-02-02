@@ -26,4 +26,4 @@ bool tensorsAreEqual(const torch::Tensor tensor_1,
   }
   return torch::all(torch::eq(tensor_1, tensor_2)).item<bool>();
 }
-} // namespace relab::helpers
+}  // namespace relab::helpers

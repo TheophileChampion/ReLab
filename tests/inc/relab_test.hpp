@@ -3,8 +3,8 @@
 #ifndef TESTS_INC_RELAB_TEST_HPP_
 #define TESTS_INC_RELAB_TEST_HPP_
 
-#include "agents/memory/experience.hpp"
 #include <vector>
+#include "agents/memory/experience.hpp"
 
 #define TEST_EPSILON 1e-5
 #define MAX_PRIORITY 1e9

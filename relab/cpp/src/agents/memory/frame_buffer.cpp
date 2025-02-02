@@ -1,17 +1,17 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/frame_buffer.hpp"
-#include "agents/memory/replay_buffer.hpp"
-#include "helpers/debug.hpp"
-#include "helpers/serialize.hpp"
-#include "helpers/timer.hpp"
-#include "helpers/torch.hpp"
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
+#include "agents/memory/replay_buffer.hpp"
+#include "helpers/debug.hpp"
+#include "helpers/serialize.hpp"
+#include "helpers/timer.hpp"
+#include "helpers/torch.hpp"
 
 using namespace torch::indexing;
 using namespace relab::helpers;
@@ -275,4 +275,4 @@ bool operator==(const FrameBuffer &lhs, const FrameBuffer &rhs) {
 bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs) {
   return !(lhs == rhs);
 }
-} // namespace relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
