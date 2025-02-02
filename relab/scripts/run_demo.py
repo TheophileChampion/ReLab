@@ -30,11 +30,11 @@ def run_demo(agent : str, env : str, seed : int, index : int):
 
 def main():
     """
-    Entry point of the run_demo script.
+    Entry point of the run_demo.py script.
     """
 
     # Parse the script arguments.
-    parser = ArgumentParser(prog="run_demo", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(prog="run_demo.py", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
     parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
     parser.add_argument("--seed", type=int, default=0, help="random seed to use")

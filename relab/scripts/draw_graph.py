@@ -124,11 +124,11 @@ def draw_graph(agents : List[str], env : str, seeds : List[int], metric : str, o
 
 def main():
     """
-    Entry point of the draw_graph script.
+    Entry point of the draw_graph.py script.
     """
 
     # Parse the script arguments.
-    parser = ArgumentParser(prog="draw_graph", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(prog="draw_graph.py", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument("--agents", nargs="+", default=["DQN", "RainbowDQN", "RainbowIQN"], help="name of the agents whose metric should be added to the graph")
     parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment for which to draw the graph")
     parser.add_argument("--seeds", nargs="+", type=int, default=[i for i in range(5)], help="random seeds to use")

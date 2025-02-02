@@ -286,7 +286,7 @@ class AgentInterface(ABC):
 
         # Keep track of time elapsed since last training iteration.
         now = time.time() * 1000
-        if self.last_time == -1:
+        if self.last_time == -1 and len(self.time_elapsed) != 0:
             # Ensure a smooth time curve upon reload.
             self.time_elapsed.append(self.time_elapsed[-1])
         elif self.last_time is not None:

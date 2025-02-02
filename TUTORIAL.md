@@ -1,8 +1,10 @@
 # 📗 Tutorial
 
-ReLab is a flexible and powerful library for training, evaluating, and analyzing reinforcement
-learning agents. This tutorial will guide you through its core features, from configuring environments
-and creating agents to running complete experiments using ReLab's python API.
+ReLab is a versatile and powerful library for training, evaluating, and analyzing 
+reinforcement learning agents. This tutorial will walk you through its core features, 
+including creating environments, defining agents, and training your first model using
+ReLab’s Python API. Additionally, you'll learn how to run complete experiments using 
+ReLab’s command-line interface.
 
 ## 1. Understanding the Data Directory Structure
 
@@ -274,9 +276,10 @@ if __name__ == "__main__":
 
 ## 6. Running your First Experiment
 
-While, you could use the individual scripts such as `run_training` and `run_demo` manually,
-ReLab allows you to run entire experiments. An experiment automates training, evaluation, and result visualization
-across multiple agents, environments, and seeds. Here's a breakdown of what the script does:
+While you could use Poetry to train and demonstrate the policy of individual agents, 
+ReLab enables you to run full-scale experiments. An experiment automates training, 
+evaluation, and result visualization across multiple agents, environments, and 
+random seeds. Here’s a breakdown of what the script does:
 
 1. **Training Agents**: For each combination of agent, environment, and seed, the script launches training jobs either locally or using Slurm (a workload manager for distributed systems).
 
@@ -290,7 +293,7 @@ across multiple agents, environments, and seeds. Here's a breakdown of what the 
 
 - Specify agents, environments, and seeds using command-line arguments. For example:
   ```bash
-  python ./scripts/run_experiments --agents DQN RainbowDQN --envs ALE/Pong-v5 --seeds 0 1 2 --no-local
+  poetry run experiment --agents DQN RainbowDQN --envs ALE/Pong-v5 --seeds 0 1 2
   ```
 - Use the `--no-local` flag to run experiments using Slurm. Omitting it defaults to run locally.
 
