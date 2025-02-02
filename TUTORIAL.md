@@ -135,32 +135,32 @@ agent = agents.make("DuelingDDQN", learning_rate=0.0001, gamma=0.99)
 Here’s a table summarizing the supported agents in ReLab. It includes their full names, abbreviations, and key characteristics such as whether they are value-based, distributional, random, or learn a world model.
 
 | **Abbreviation**    | **Full Name**                          | **Value-Based** | **Distributional** | **Random Actions**                | **World Model** |
-| ------------------- | -------------------------------------- | --------------- | ------------------ | --------------------------------- | --------------- |
-| **DQN**             | Deep Q-Network                         | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **DDQN**            | Double Deep Q-Network                  | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **CDQN**            | Categorical Deep Q-Network             | ✅              | ✅                 | ✖️                                | ✖️              |
-| **MDQN**            | Multi-step Deep Q-Network              | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **QRDQN**           | Quantile Regression Deep Q-Network     | ✅              | ✅                 | ✖️                                | ✖️              |
-| **NoisyDQN**        | Noisy Deep Q-Network                   | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
-| **NoisyDDQN**       | Noisy Double Deep Q-Network            | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
-| **NoisyCDQN**       | Noisy Categorical Deep Q-Network       | ✅              | ✅                 | ✖️ (noisy layers for exploration) | ✖️              |
-| **DuelingDQN**      | Dueling Deep Q-Network                 | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **DuelingDDQN**     | Dueling Double Deep Q-Network          | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedDQN**  | Prioritized Experience Replay DQN      | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedDDQN** | Prioritized Experience Replay DDQN     | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedMDQN** | Prioritized Multi-step DQN             | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **RainbowDQN**      | Rainbow Deep Q-Network                 | ✅              | ✅                 | ✖️                                | ✖️              |
-| **RainbowIQN**      | Rainbow with Implicit Quantile Network | ✅              | ✅                 | ✖️                                | ✖️              |
-| **IQN**             | Implicit Quantile Network              | ✅              | ✅                 | ✖️                                | ✖️              |
-| **Random**          | Random Agent                           | ✖️              | ✖️                 | ✅                                | ✖️              |
-| **VAE**             | Variational Autoencoder                | ✖️              | ✖️                 | ✅                                | ✅              |
-| **BetaVAE**         | Beta Variational Autoencoder           | ✖️              | ✖️                 | ✅                                | ✅              |
-| **DiscreteVAE**     | Discrete Variational Autoencoder       | ✖️              | ✖️                 | ✅                                | ✅              |
-| **JointVAE**        | Joint Variational Autoencoder          | ✖️              | ✖️                 | ✅                                | ✅              |
-| **HMM**             | Hidden Markov Model                    | ✖️              | ✖️                 | ✅                                | ✅              |
-| **BetaHMM**         | Beta Hidden Markov Model               | ✖️              | ✖️                 | ✅                                | ✅              |
-| **DiscreteHMM**     | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                | ✅              |
-| **JointHMM**        | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                | ✅              |
+|---------------------|----------------------------------------|-----------------|--------------------|-----------------------------------|-----------------|
+| **DQN**             | Deep Q-Network                         | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **DDQN**            | Double Deep Q-Network                  | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **CDQN**            | Categorical Deep Q-Network             | ✅               | ✅                  | ✖️                                | ✖️              |
+| **MDQN**            | Multi-step Deep Q-Network              | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **QRDQN**           | Quantile Regression Deep Q-Network     | ✅               | ✅                  | ✖️                                | ✖️              |
+| **NoisyDQN**        | Noisy Deep Q-Network                   | ✅               | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
+| **NoisyDDQN**       | Noisy Double Deep Q-Network            | ✅               | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
+| **NoisyCDQN**       | Noisy Categorical Deep Q-Network       | ✅               | ✅                  | ✖️ (noisy layers for exploration) | ✖️              |
+| **DuelingDQN**      | Dueling Deep Q-Network                 | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **DuelingDDQN**     | Dueling Double Deep Q-Network          | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedDQN**  | Prioritized Experience Replay DQN      | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedDDQN** | Prioritized Experience Replay DDQN     | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedMDQN** | Prioritized Multi-step DQN             | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **RainbowDQN**      | Rainbow Deep Q-Network                 | ✅               | ✅                  | ✖️                                | ✖️              |
+| **RainbowIQN**      | Rainbow with Implicit Quantile Network | ✅               | ✅                  | ✖️                                | ✖️              |
+| **IQN**             | Implicit Quantile Network              | ✅               | ✅                  | ✖️                                | ✖️              |
+| **Random**          | Random Agent                           | ✖️              | ✖️                 | ✅                                 | ✖️              |
+| **VAE**             | Variational Autoencoder                | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **BetaVAE**         | Beta Variational Autoencoder           | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **DiscreteVAE**     | Discrete Variational Autoencoder       | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **JointVAE**        | Joint Variational Autoencoder          | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **HMM**             | Hidden Markov Model                    | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **BetaHMM**         | Beta Hidden Markov Model               | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **DiscreteHMM**     | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **JointHMM**        | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                 | ✅               |
 
 **Notes:**
 
