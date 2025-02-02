@@ -22,37 +22,37 @@ using Batch = std::tuple<Tensor, Tensor, Tensor, Tensor, Tensor>;
  * @brief Class storing an experience.
  */
 class Experience {
-public:
-  /// @var obs
-  /// The observation tensor at time t.
-  Tensor obs;
+  public:
+    /// @var obs
+    /// The observation tensor at time t.
+    Tensor obs;
 
-  /// @var action
-  /// The action taken at time t.
-  int action;
+    /// @var action
+    /// The action taken at time t.
+    int action;
 
-  /// @var reward
-  /// The reward received at time t + 1.
-  float reward;
+    /// @var reward
+    /// The reward received at time t + 1.
+    float reward;
 
-  /// @var done
-  /// Flag indicating if the episode ended after this transition.
-  bool done;
+    /// @var done
+    /// Flag indicating if the episode ended after this transition.
+    bool done;
 
-  /// @var next_obs
-  /// The observation tensor at time t + 1.
-  Tensor next_obs;
+    /// @var next_obs
+    /// The observation tensor at time t + 1.
+    Tensor next_obs;
 
-public:
-  /**
-   * Create an experience.
-   * @param obs the observation at time t
-   * @param action the action at time t
-   * @param reward the reward at time t + 1
-   * @param done true if episode ended, false otherwise
-   * @param next_obs the observation at time t + 1
-   */
-  Experience(Tensor obs, int action, float reward, bool done, Tensor next_obs);
+  public:
+    /**
+     * Create an experience.
+     * @param obs the observation at time t
+     * @param action the action at time t
+     * @param reward the reward at time t + 1
+     * @param done true if episode ended, false otherwise
+     * @param next_obs the observation at time t + 1
+     */
+    Experience(Tensor obs, int action, float reward, bool done, Tensor next_obs);
 };
 }  // namespace relab::agents::memory::impl
 

@@ -76,55 +76,55 @@ enum LogLevel {
  * @brief Class allowing the user to log messages of various levels.
  */
 class Logger {
-private:
-  // The current logging level and the logger's name.
-  LogLevel level;
-  std::string logger_name;
+  private:
+    // The current logging level and the logger's name.
+    LogLevel level;
+    std::string logger_name;
 
-  /**
-   * Convert a logging level into its corresponding string.
-   * @params level the level whose string must be returned
-   * @return the string corresponding to the level passed as parameter
-   */
-  std::string levelToString(LogLevel level);
+    /**
+     * Convert a logging level into its corresponding string.
+     * @params level the level whose string must be returned
+     * @return the string corresponding to the level passed as parameter
+     */
+    std::string levelToString(LogLevel level);
 
-public:
-  /**
-   * Create a logger.
-   * @params level the minimum level required for a message to be displayed
-   * @params logger_name the logger's name
-   */
-  explicit Logger(LogLevel level = INFO, const std::string &logger_name = "root");
+  public:
+    /**
+     * Create a logger.
+     * @params level the minimum level required for a message to be displayed
+     * @params logger_name the logger's name
+     */
+    explicit Logger(LogLevel level = INFO, const std::string &logger_name = "root");
 
-  /**
-   * Log a debugging message.
-   * @params message the message to be displayed
-   */
-  void debug(const std::string &message);
+    /**
+     * Log a debugging message.
+     * @params message the message to be displayed
+     */
+    void debug(const std::string &message);
 
-  /**
-   * Log an information.
-   * @params message the message to be displayed
-   */
-  void info(const std::string &message);
+    /**
+     * Log an information.
+     * @params message the message to be displayed
+     */
+    void info(const std::string &message);
 
-  /**
-   * Log a warning for the user.
-   * @params message the message to be displayed
-   */
-  void warning(const std::string &message);
+    /**
+     * Log a warning for the user.
+     * @params message the message to be displayed
+     */
+    void warning(const std::string &message);
 
-  /**
-   * Log a critical error.
-   * @params message the message to be displayed
-   */
-  void critical(const std::string &message);
+    /**
+     * Log a critical error.
+     * @params message the message to be displayed
+     */
+    void critical(const std::string &message);
 
-  /**
-   * Log a message with a specified level.
-   * @params message the message to be displayed
-   */
-  void log(LogLevel level, const std::string &message);
+    /**
+     * Log a message with a specified level.
+     * @params message the message to be displayed
+     */
+    void log(LogLevel level, const std::string &message);
 };
 
 // Root logger.
