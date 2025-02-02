@@ -1,8 +1,12 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
+#include <torch/extension.h>
+#include <thread>
+#include <memory>
+#include <iostream>
 #include <cstdlib>
 #include "agents/memory/replay_buffer.hpp"
 #include "agents/memory/experience.hpp"
-#include <torch/extension.h>
-#include <thread>
 
 using namespace relab::agents::memory;
 

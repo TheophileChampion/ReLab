@@ -1,5 +1,6 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <utility>
 #include "helpers/thread_pool.hpp"
 
 using namespace std;
@@ -81,4 +82,4 @@ void ThreadPool::synchronize() {
         lock.unlock();
     }
 }
-}
+}  // namespace relab::helpers

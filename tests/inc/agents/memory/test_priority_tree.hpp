@@ -1,9 +1,12 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#ifndef TEST_PRIORITY_TREE_HPP
-#define TEST_PRIORITY_TREE_HPP
+#ifndef TESTS_INC_AGENTS_MEMORY_TEST_PRIORITY_TREE_HPP_
+#define TESTS_INC_AGENTS_MEMORY_TEST_PRIORITY_TREE_HPP_
 
 #include <gtest/gtest.h>
+#include <memory>
+#include <string>
+#include <vector>
 #include "agents/memory/priority_tree.hpp"
 
 namespace relab::test::agents::memory::impl {
@@ -259,4 +262,4 @@ using impl::PriorityTreeParameters9;
 using impl::TestPriorityTree9;
 }  // namespace relab::test::agents::memory
 
-#endif  // TEST_PRIORITY_TREE_HPP
+#endif  // TESTS_INC_AGENTS_MEMORY_TEST_PRIORITY_TREE_HPP_

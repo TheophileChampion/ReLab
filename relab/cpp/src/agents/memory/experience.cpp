@@ -11,4 +11,4 @@ Experience::Experience(torch::Tensor obs, int action, float reward, bool done, t
     this->done = done;
     this->next_obs = next_obs;
 }
-}
+}  // namespace relab::agents::memory

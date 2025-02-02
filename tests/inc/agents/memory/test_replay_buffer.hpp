@@ -4,6 +4,9 @@
 #define TEST_REPLAY_BUFFER_HPP
 
 #include <memory>
+#include <map>
+#include <string>
+#include <vector>
 #include "agents/memory/replay_buffer.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/compressors.hpp"

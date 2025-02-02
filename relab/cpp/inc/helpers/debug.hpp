@@ -10,6 +10,7 @@
 #include <torch/extension.h>
 #include <vector>
 #include <iostream>
+#include <string>
 
 namespace relab::helpers {
 

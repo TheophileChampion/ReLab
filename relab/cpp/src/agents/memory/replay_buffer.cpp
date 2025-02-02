@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <iomanip>
+#include <map>
+#include <algorithm>
+#include <memory>
+#include <string>
 #include <random>
 #include <cmath>
 #include "agents/memory/replay_buffer.hpp"
@@ -281,4 +285,4 @@ bool operator==(const ReplayBuffer &lhs, const ReplayBuffer &rhs) {
     // Compare the indices.
     return tensorsAreEqual(lhs.indices, rhs.indices);
 }
-}
+}  // namespace relab::agents::memory

@@ -1,6 +1,8 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include <pybind11/pybind11.h>
+#include <string>
+#include <map>
 #include "agents/memory/replay_buffer.hpp"
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"

@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <vector>
 #include "agents/memory/data_buffer.hpp"
 #include "agents/memory/experience.hpp"
 

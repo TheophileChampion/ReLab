@@ -8,6 +8,8 @@
 #define RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_
 
 #include <torch/extension.h>
+#include <vector>
+#include <string>
 
 namespace relab::agents::memory {
 

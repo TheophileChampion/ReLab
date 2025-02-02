@@ -1,9 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#include "relab_test.hpp"
 #include <gtest/gtest.h>
 #include <torch/extension.h>
 #include <cmath>
+#include <algorithm>
+#include <vector>
+#include "relab_test.hpp"
 
 namespace relab::test::impl {
 
@@ -103,4 +105,4 @@ std::vector<T> repeat(T value, int n) {
 
 // Explicit instantiation.
 template std::vector<float> repeat(float value, int n);
-}  // relab::test::impl
+}  // namespace relab::test::impl

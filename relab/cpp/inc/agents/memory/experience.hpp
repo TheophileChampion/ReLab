@@ -10,16 +10,12 @@
 #include <torch/extension.h>
 #include <tuple>
 
-namespace relab::agents::memory {
+namespace relab::agents::memory::impl {
+
+using torch::Tensor;
 
 // Alias for a batch of experiences.
-using Batch = std::tuple<
-    torch::Tensor,
-    torch::Tensor,
-    torch::Tensor,
-    torch::Tensor,
-    torch::Tensor
->;
+using Batch = std::tuple<Tensor, Tensor, Tensor, Tensor, Tensor>;
 
 /**
  * @brief Class storing an experience.
@@ -28,7 +24,7 @@ class Experience {
  public:
     /// @var obs
     /// The observation tensor at time t.
-    torch::Tensor obs;
+    Tensor obs;
 
     /// @var action
     /// The action taken at time t.
@@ -44,7 +40,7 @@ class Experience {
 
     /// @var next_obs
     /// The observation tensor at time t + 1.
-    torch::Tensor next_obs;
+    Tensor next_obs;
 
  public:
     /**
@@ -56,13 +52,18 @@ class Experience {
      * @param next_obs the observation at time t + 1
      */
     Experience(
-        torch::Tensor obs,
+        Tensor obs,
         int action,
         float reward,
         bool done,
-        torch::Tensor next_obs
+        Tensor next_obs
     );
 };
+}  // namespace relab::agents::memory::impl
+
+namespace relab::agents::memory {
+using impl::Batch;
+using impl::Experience;
 }  // namespace relab::agents::memory
 
 #endif  // RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_

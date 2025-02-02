@@ -1,10 +1,15 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <cmath>
+#include <vector>
+#include <utility>
+#include <algorithm>
+#include <string>
+#include <iostream>
 #include "agents/memory/priority_tree.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"
 #include "helpers/torch.hpp"
-#include <cmath>
 
 using namespace torch::indexing;
 using namespace relab::helpers;
@@ -88,7 +93,7 @@ void PriorityTree::append(float priority) {
     this->updateSumTree(idx, old_priority);
 
     // Check if the full sum tree must be refreshed.
-    if (this->max() != this->initial_priority && this->need_refresh_all == true) {
+    if (this->max() != this->initial_priority and this->need_refresh_all == true) {
         this->refreshAllSumTree();
         this->need_refresh_all = false;
     }
@@ -408,4 +413,4 @@ bool operator==(const PriorityTree &lhs, const PriorityTree &rhs) {
     }
     return true;
 }
-}
+}  // namespace relab::agents::memory::impl

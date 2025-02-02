@@ -1,5 +1,6 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <memory>
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/replay_buffer.hpp"
 
@@ -109,4 +110,4 @@ void ZCompressor::decode(const torch::Tensor &input, float *output) {
     inflate(&inflate_stream, Z_NO_FLUSH);
     inflateEnd(&inflate_stream);
 }
-}
+}  // namespace relab::agents::memory

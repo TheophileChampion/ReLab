@@ -9,6 +9,7 @@
 
 #include <torch/extension.h>
 #include <vector>
+#include <string>
 
 namespace relab::agents::memory::impl {
 

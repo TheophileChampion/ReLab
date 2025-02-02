@@ -1,5 +1,6 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <vector>
 #include "helpers/serialize.hpp"
 
 namespace relab::helpers {
@@ -153,4 +154,4 @@ template void save_tensor<int>(const torch::Tensor &tensor, std::ostream &checkp
 template void save_tensor<long>(const torch::Tensor &tensor, std::ostream &checkpoint);
 template void save_tensor<bool>(const torch::Tensor &tensor, std::ostream &checkpoint);
 template void save_tensor<float>(const torch::Tensor &tensor, std::ostream &checkpoint);
-}
+}  // namespace relab::helpers

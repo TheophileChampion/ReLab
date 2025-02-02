@@ -1,5 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <tuple>
+#include <algorithm>
+#include <vector>
+#include <utility>
+#include <string>
+#include <iostream>
 #include "agents/memory/frame_buffer.hpp"
 #include "agents/memory/replay_buffer.hpp"
 #include "helpers/serialize.hpp"
@@ -263,4 +269,4 @@ bool operator==(const FrameBuffer &lhs, const FrameBuffer &rhs) {
 bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs) {
     return !(lhs == rhs);
 }
-}
+}  // namespace relab::agents::memory::impl

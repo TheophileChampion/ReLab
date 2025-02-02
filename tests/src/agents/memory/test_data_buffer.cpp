@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <torch/extension.h>
+#include <memory>
 #include "agents/memory/test_data_buffer.hpp"
 #include "agents/memory/data_buffer.hpp"
 #include "relab_test.hpp"
@@ -133,4 +134,4 @@ INSTANTIATE_TEST_SUITE_P(UnitTests, TestDataBuffer, testing::Values(
     DataBufferParameters(5, 6, 0.979), DataBufferParameters(5, 1, 0.98),
     DataBufferParameters(5, 1, 0.999), DataBufferParameters(9, 8, 0.1)
 ));
-} // relab::test::agents::memory
+} // namespace relab::test::agents::memory

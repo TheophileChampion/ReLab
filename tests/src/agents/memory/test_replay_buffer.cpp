@@ -1,5 +1,6 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <memory>
 #include <gtest/gtest.h>
 #include <torch/extension.h>
 #include "agents/memory/test_replay_buffer.hpp"
@@ -18,8 +19,7 @@ namespace relab::test::agents::memory {
 
 ReplayBufferParameters::ReplayBufferParameters(int capacity, int n_steps, float gamma)
     : prioritized(false), capacity(capacity), batch_size(32), frame_skip(1), stack_size(4), screen_size(84),
-      n_steps(n_steps), gamma(gamma), comp_type(CompressorType::ZLIB)
-{
+      n_steps(n_steps), gamma(gamma), comp_type(CompressorType::ZLIB) {
     this->args["n_steps"] = n_steps;
     this->args["gamma"] = gamma;
 }
@@ -36,7 +36,6 @@ ReplayBufferParameters::ReplayBufferParameters(bool prioritized, int batch_size)
 ReplayBufferParameters::ReplayBufferParameters() : ReplayBufferParameters(false) {}
 
 void TestReplayBuffer::SetUp() {
-
     // Create the replay buffer.
     this->params = GetParam();
     this->buffer = std::make_unique<ReplayBuffer>(
@@ -50,7 +49,6 @@ void TestReplayBuffer::SetUp() {
 }
 
 TEST_P(TestReplayBuffer, TestStoringAndRetrievalMultipleEpisodes) {
-
     // Create the experiences at time t.
     auto experiences = getExperiences(observations, 2 * params.capacity - 1, params.capacity);
 
@@ -79,7 +77,6 @@ TEST_P(TestReplayBuffer, TestStoringAndRetrievalMultipleEpisodes) {
 }
 
 TEST_P(TestReplayBuffer, TestStoringAndRetrieval) {
-
     // Create the experiences at time t.
     auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -108,7 +105,6 @@ TEST_P(TestReplayBuffer, TestStoringAndRetrieval) {
 }
 
 TEST_P(TestReplayBuffer, TestSaveAndLoad) {
-
     // Create the experiences at time t.
     auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -145,7 +141,6 @@ INSTANTIATE_TEST_SUITE_P(UnitTests, TestReplayBuffer, testing::Values(
 ));
 
 TEST(TestReplayBuffer, TestReport) {
-
     // Arrange.
     auto params = ReplayBufferParameters(true, 2);
     auto buffer = ReplayBuffer(
@@ -181,7 +176,6 @@ TEST(TestReplayBuffer, TestReport) {
  */
 
 TEST_P(TestReplayBuffer2, TestGetPrioritized) {
-
     // Arrange.
     auto params = GetParam();
     auto buffer = ReplayBuffer(
@@ -202,7 +196,6 @@ INSTANTIATE_TEST_SUITE_P(UnitTests, TestReplayBuffer2, testing::Values(
  */
 
 void TestReplayBuffer3::SetUp() {
-
     // Arrange.
     auto n_experiences = GetParam();
     this->buffer = std::make_unique<ReplayBuffer>();
@@ -211,7 +204,6 @@ void TestReplayBuffer3::SetUp() {
 }
 
 TEST_P(TestReplayBuffer3, TestSize) {
-
     // Act.
     for (auto experience : experiences) {
         buffer->append(experience);
@@ -222,7 +214,6 @@ TEST_P(TestReplayBuffer3, TestSize) {
 }
 
 TEST_P(TestReplayBuffer3, TestClear) {
-
     // Act.
     for (auto experience : experiences) {
         buffer->append(experience);
@@ -234,4 +225,4 @@ TEST_P(TestReplayBuffer3, TestClear) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, TestReplayBuffer3, testing::Values(0, 1, 2, 3, 10));
-}  // relab::test::agents::memory
+}  // namespace relab::test::agents::memory

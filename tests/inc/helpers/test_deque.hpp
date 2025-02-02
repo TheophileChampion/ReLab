@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <vector>
+#include <deque>
 #include "helpers/deque.hpp"
 #include "agents/memory/experience.hpp"
 

@@ -1,6 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include <cmath>
+#include <tuple>
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <iostream>
 #include "agents/memory/replay_buffer.hpp"
 #include "agents/memory/data_buffer.hpp"
 #include "helpers/serialize.hpp"
@@ -188,4 +193,4 @@ bool operator==(const DataBuffer &lhs, const DataBuffer &rhs) {
 bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs) {
     return !(lhs == rhs);
 }
-}
+}  // namespace relab::agents::memory::impl

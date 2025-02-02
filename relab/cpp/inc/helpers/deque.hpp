@@ -78,6 +78,6 @@ class Deque : public std::deque<T> {
 template class Deque<int>;
 template class Deque<float>;
 template class Deque<bool>;
-}  // namespace namespace relab::helpers
+}  // namespace relab::helpers
 
 #endif  // RELAB_CPP_INC_HELPERS_DEQUE_HPP_

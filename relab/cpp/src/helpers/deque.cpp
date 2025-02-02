@@ -1,5 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <utility>
+#include <iostream>
 #include "helpers/deque.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"
@@ -99,4 +101,4 @@ bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs) {
 template bool operator==(const Deque<int> &lhs, const Deque<int> &rhs);
 template bool operator==(const Deque<float> &lhs, const Deque<float> &rhs);
 template bool operator==(const Deque<bool> &lhs, const Deque<bool> &rhs);
-}
+}  // namespace relab::helpers

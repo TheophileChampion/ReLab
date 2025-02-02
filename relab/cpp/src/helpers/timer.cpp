@@ -1,7 +1,8 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#include "helpers/timer.hpp"
 #include <iostream>
+#include <string>
+#include "helpers/timer.hpp"
 
 using namespace std::chrono;
 
@@ -22,4 +23,4 @@ void Timer::stop() {
     auto end_time = high_resolution_clock::now();
     std::cout << "Elapsed: " << duration_cast<microseconds>(end_time - this->start_time).count() / 1000.0 << std::endl;
 }
-}
+}  // namespace relab::helpers

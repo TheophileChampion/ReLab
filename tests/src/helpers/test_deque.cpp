@@ -1,5 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <memory>
+#include <deque>
 #include <gtest/gtest.h>
 #include <torch/extension.h>
 #include "helpers/test_deque.hpp"
@@ -175,4 +177,4 @@ INSTANTIATE_TEST_SUITE_P(UnitTests, TestDeque, testing::Values(
     DequeParameters({1, 2, 3, 4}, 4, 3, 4),
     DequeParameters({10, 2}, 4, 2, 2)
 ));
-}  // relab::test::helpers
+}  // namespace relab::test::helpers

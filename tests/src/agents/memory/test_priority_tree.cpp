@@ -1,7 +1,10 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#include "agents/memory/test_priority_tree.hpp"
 #include <torch/extension.h>
+#include <memory>
+#include <string>
+#include <vector>
+#include "agents/memory/test_priority_tree.hpp"
 #include "relab_test.hpp"
 
 using namespace relab::agents::memory;
@@ -14,7 +17,6 @@ PriorityTreeParameters::PriorityTreeParameters(const std::initializer_list<float
 PriorityTreeParameters::PriorityTreeParameters() : PriorityTreeParameters({}, 0) {}
 
 void TestPriorityTree::SetUp() {
-
     // Create a priority tree.
     this->params = GetParam();
     int capacity = 4;
@@ -24,7 +26,6 @@ void TestPriorityTree::SetUp() {
 }
 
 TEST_P(TestPriorityTree, TestSum) {
-
     // Act.
     for (auto element : params.elements) {
         priority_tree->append(element);
@@ -35,7 +36,6 @@ TEST_P(TestPriorityTree, TestSum) {
 }
 
 TEST_P(TestPriorityTree, TestClear) {
-
      // Act.
      for (auto element : params.elements) {
          priority_tree->append(element);
@@ -44,12 +44,11 @@ TEST_P(TestPriorityTree, TestClear) {
 
     // Assert.
     EXPECT_EQ(priority_tree->size(), 0);
-    EXPECT_TRUE(priority_tree->maxTreeToStr() == "[[0.0, 0.0], [0.0]]");
-    EXPECT_TRUE(priority_tree->sumTreeToStr() == "[[0.0, 0.0], [0.0]]");
+    EXPECT_EQ(priority_tree->maxTreeToStr(), "[[0.0, 0.0], [0.0]]");
+    EXPECT_EQ(priority_tree->sumTreeToStr(), "[[0.0, 0.0], [0.0]]");
 }
 
 TEST_P(TestPriorityTree, TestSaveAndLoad) {
-
     // Add all elements to the priority tree.
     for (auto element : params.elements) {
         priority_tree->append(element);
@@ -76,7 +75,6 @@ INSTANTIATE_TEST_SUITE_P(UnitTests, TestPriorityTree, testing::Values(
 ));
 
 TEST_P(TestPriorityTree2, TestMax) {
-
     // Arrange.
     auto params = GetParam();
     int capacity = 4;
@@ -107,7 +105,6 @@ PriorityTreeParameters4::PriorityTreeParameters4(
 ) : elements(elements), sum_result(sum_result), max_result(max_result), length_result(length_result) {}
 
 TEST_P(TestPriorityTree4, TestAppend) {
-
     // Arrange.
     auto params = GetParam();
     int capacity = 4;
@@ -144,7 +141,6 @@ PriorityTreeParameters5::PriorityTreeParameters5(
     sum_result(sum_result), max_result(max_result), length_result(length_result) {}
 
 TEST_P(TestPriorityTree5, TestSetItem) {
-
     // Arrange.
     auto params = GetParam();
     int capacity = 4;
@@ -182,7 +178,6 @@ PriorityTreeParameters6::PriorityTreeParameters6(
 ) : elements(elements), results(results), length_result(length_result) {}
 
 TEST_P(TestPriorityTree6, TestGetItem) {
-
     // Arrange.
     auto params = GetParam();
     int capacity = 4;
@@ -215,7 +210,6 @@ PriorityTreeParameters7::PriorityTreeParameters7(int index, int n_children, int 
     : index(index), n_children(n_children), result(result) {}
 
 TEST_P(TestPriorityTree7, TestParentIndex) {
-
     // Arrange.
     auto params = GetParam();
     int capacity = 100;
@@ -247,7 +241,6 @@ PriorityTreeParameters8::PriorityTreeParameters8(
 }
 
 TEST_P(TestPriorityTree8, TestUpdateSumTree) {
-
     // Arrange.
     auto params = GetParam();
     int capacity = 8;
@@ -279,7 +272,6 @@ PriorityTreeParameters9::PriorityTreeParameters9(
 ) : capacity(capacity), n_children(n_children), elements(elements), priority(priority), result(result) {}
 
 TEST(TestPriorityTree, TestSampleIndices) {
-
     // Arrange.
     int capacity = 4;
     int initial_priority = 1.0;
@@ -305,7 +297,6 @@ TEST(TestPriorityTree, TestSampleIndices) {
 }
 
 TEST_P(TestPriorityTree9, TestTowerSampling) {
-
     // Arrange.
     auto params = GetParam();
     int initial_priority = 1.0;
@@ -373,4 +364,4 @@ INSTANTIATE_TEST_SUITE_P(UnitTests, TestPriorityTree9, testing::Values(
     PriorityTreeParameters9(8, 2, {1, 3, 3, 1, 1, 1}, 6.8, 2),
     PriorityTreeParameters9(8, 2, {1, 3, 3, 1, 1, 1}, 11.0, 5)
 ));
-}  // relab::test::agents::memory
+}  // namespace relab::test::agents::memory

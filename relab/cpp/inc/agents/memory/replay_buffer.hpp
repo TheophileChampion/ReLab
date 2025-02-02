@@ -9,6 +9,9 @@
 
 #include <torch/extension.h>
 #include <filesystem>
+#include <memory>
+#include <map>
+#include <string>
 #include "agents/memory/frame_buffer.hpp"
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/data_buffer.hpp"
