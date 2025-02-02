@@ -3,12 +3,13 @@
 #ifndef TESTS_INC_AGENTS_MEMORY_TEST_PRIORITY_TREE_HPP_
 #define TESTS_INC_AGENTS_MEMORY_TEST_PRIORITY_TREE_HPP_
 
+#include <gtest/gtest.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "agents/memory/priority_tree.hpp"
-#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 

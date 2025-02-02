@@ -3,6 +3,8 @@
 #ifndef TEST_REPLAY_BUFFER_HPP
 #define TEST_REPLAY_BUFFER_HPP
 
+#include <gtest/gtest.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -11,7 +13,6 @@
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/replay_buffer.hpp"
-#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 

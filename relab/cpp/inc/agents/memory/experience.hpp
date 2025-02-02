@@ -7,9 +7,9 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_
 
-#include <tuple>
-
 #include <torch/extension.h>
+
+#include <tuple>
 
 namespace relab::agents::memory::impl {
 

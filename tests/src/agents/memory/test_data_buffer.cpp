@@ -1,12 +1,12 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_data_buffer.hpp"
+#include <gtest/gtest.h>
+#include <torch/extension.h>
 
 #include <memory>
 
 #include "agents/memory/data_buffer.hpp"
-#include <gtest/gtest.h>
-#include <torch/extension.h>
 
 #include "relab_test.hpp"
 

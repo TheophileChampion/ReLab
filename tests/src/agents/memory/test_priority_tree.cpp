@@ -1,12 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_priority_tree.hpp"
+#include <torch/extension.h>
 
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <torch/extension.h>
 
 #include "relab_test.hpp"
 

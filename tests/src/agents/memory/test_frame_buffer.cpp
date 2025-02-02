@@ -1,10 +1,9 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_frame_buffer.hpp"
+#include <torch/extension.h>
 
 #include <memory>
-
-#include <torch/extension.h>
 
 #include "relab_test.hpp"
 

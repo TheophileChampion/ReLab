@@ -7,11 +7,11 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
 
-#include <memory>
-#include <vector>
+#include <torch/extension.h>
 #include <zlib.h>
 
-#include <torch/extension.h>
+#include <memory>
+#include <vector>
 
 namespace relab::agents::memory {
 

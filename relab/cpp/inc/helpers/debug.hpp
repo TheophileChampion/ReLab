@@ -7,11 +7,11 @@
 #ifndef RELAB_CPP_INC_HELPERS_DEBUG_HPP_
 #define RELAB_CPP_INC_HELPERS_DEBUG_HPP_
 
+#include <torch/extension.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include <torch/extension.h>
 
 namespace relab::helpers {
 

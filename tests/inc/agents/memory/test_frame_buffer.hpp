@@ -3,11 +3,12 @@
 #ifndef TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_
 #define TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_
 
+#include <gtest/gtest.h>
+
 #include <memory>
 
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
-#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 

@@ -7,6 +7,8 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 
+#include <torch/extension.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -16,7 +18,6 @@
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
 #include <experimental/filesystem>
-#include <torch/extension.h>
 
 namespace relab::agents::memory {
 

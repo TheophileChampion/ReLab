@@ -3,12 +3,13 @@
 #ifndef TEST_DATA_BUFFER_HPP
 #define TEST_DATA_BUFFER_HPP
 
+#include <gtest/gtest.h>
+
 #include <memory>
 #include <vector>
 
 #include "agents/memory/data_buffer.hpp"
 #include "agents/memory/experience.hpp"
-#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 

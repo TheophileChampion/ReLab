@@ -9,6 +9,8 @@ SortUsingDeclarations: true
 IncludeBlocks: Regroup
 IncludeIsMainSourceRegex: '$?'
 IncludeCategories:
+  - Regex:           '[<"].*h[>"]'
+    Priority:        0
   - Regex:           '[<"].*(/|\\).*'
     Priority:        2
   - Regex:           '^<.*'

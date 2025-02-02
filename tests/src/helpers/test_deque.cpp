@@ -1,13 +1,13 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "helpers/test_deque.hpp"
+#include <gtest/gtest.h>
+#include <torch/extension.h>
 
 #include <deque>
 #include <memory>
 
 #include "helpers/deque.hpp"
-#include <gtest/gtest.h>
-#include <torch/extension.h>
 
 #include "relab_test.hpp"
 

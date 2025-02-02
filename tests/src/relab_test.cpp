@@ -1,13 +1,12 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "relab_test.hpp"
-
-#include <algorithm>
 #include <cmath>
-#include <vector>
-
 #include <gtest/gtest.h>
 #include <torch/extension.h>
+
+#include <algorithm>
+#include <vector>
 
 namespace relab::test::impl {
 

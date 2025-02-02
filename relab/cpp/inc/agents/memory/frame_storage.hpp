@@ -7,10 +7,10 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_
 
+#include <torch/extension.h>
+
 #include <string>
 #include <vector>
-
-#include <torch/extension.h>
 
 namespace relab::agents::memory {
 
