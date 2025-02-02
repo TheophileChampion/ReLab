@@ -13,7 +13,7 @@
 
 namespace relab::test::agents::memory::impl {
 
-using namespace relab::agents::memory;
+using relab::agents::memory::DataBuffer;
 
 /**
  * A class storing the parameters of the data buffer tests.

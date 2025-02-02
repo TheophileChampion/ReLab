@@ -14,7 +14,8 @@
 
 namespace relab::test::impl {
 
-using namespace relab::agents::memory;
+using relab::agents::memory::Batch;
+using relab::agents::memory::Experience;
 
 /**
  * Compute the multistep reward.

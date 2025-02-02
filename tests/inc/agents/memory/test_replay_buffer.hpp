@@ -16,7 +16,9 @@
 
 namespace relab::test::agents::memory::impl {
 
-using namespace relab::agents::memory;
+using relab::agents::memory::ReplayBuffer;
+using relab::agents::memory::CompressorType;
+using relab::agents::memory::Experience;
 
 /**
  * A class storing the parameters of the replay buffer tests.

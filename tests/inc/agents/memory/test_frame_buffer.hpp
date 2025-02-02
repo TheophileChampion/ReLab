@@ -12,7 +12,7 @@
 
 namespace relab::test::agents::memory::impl {
 
-using namespace relab::agents::memory;
+using relab::agents::memory::FrameBuffer;
 
 /**
  * A class storing the parameters of the frame buffer tests.

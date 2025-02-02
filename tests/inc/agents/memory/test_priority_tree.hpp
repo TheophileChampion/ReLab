@@ -13,7 +13,7 @@
 
 namespace relab::test::agents::memory::impl {
 
-using namespace relab::agents::memory;
+using relab::agents::memory::PriorityTree;
 
 /**
  * A class storing the parameters of the priority tree tests.

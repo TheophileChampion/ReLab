@@ -14,7 +14,7 @@
 
 namespace relab::test::helpers::impl {
 
-using namespace relab::helpers;
+using relab::helpers::Deque;
 
 /**
  * A class storing the parameters of the deque tests.
