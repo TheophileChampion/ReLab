@@ -13,10 +13,8 @@ applications, ReLab simplifies the process, saving you time and effort.
 <!-- toc -->
 
 - [Installation](#installation)
-  - [Clone the ReLab source code](#clone-the-relab-source-code)
-  - [Download ReLab dependencies](#download-relab-dependencies)
-  - [Ensure that python scripts can find the ReLab package](#ensure-that-python-scripts-can-find-the-relab-package)
-  - [Check that the installation was successful](#check-that-the-installation-was-successful)
+  - [Install Poetry](#install-poetry)
+  - [Install ReLab and its dependencies](#install-relab-and-its-dependencies)
 - [ReLab Fundamentals](#relab-fundamentals)
 - [Documentation](#documentation)
 - [Releases and Contributing](#releases-and-contributing)
