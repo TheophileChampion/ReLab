@@ -9,11 +9,12 @@ on:
   # Comment this line to trigger action only on pull-requests
   # (not recommended if you don't pay for GH Actions)
   push:
+    branches:
+      - main
 
   pull_request:
     branches:
       - main
-      - master
 
 # Set global permissions.
 permissions: {}
@@ -23,7 +24,7 @@ env:
   # Apply linter fixes configuration
   #
   # When active, APPLY_FIXES must also be defined as environment variable
-  # (in github/workflows/mega-linter.yml or other CI tool)
+  # (in github/workflows/mega-linter.yaml or other CI tool)
   APPLY_FIXES: all
 
   # Decide which event triggers application of fixes in a commit or a PR
@@ -38,7 +39,7 @@ env:
   PYTHON_FLAKE8_ARGUMENTS: --max-line-length 120
 
   # Pass some arguments to cpplinter.
-  CPP_CPPLINT_ARGUMENTS: --linelength=120 --filter=-whitespace/parens
+  CPP_CPPLINT_ARGUMENTS: --linelength=120 --filter=-whitespace/parens,-runtime/references,-readability/casting,-runtime/references
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -106,7 +107,7 @@ jobs:
           # API_REPORTER_DEBUG: false
 
           # ADD YOUR CUSTOM ENV VARIABLES HERE TO OVERRIDE VALUES OF
-          # .mega-linter.yml AT THE ROOT OF YOUR REPOSITORY
+          # .mega-linter.yaml AT THE ROOT OF YOUR REPOSITORY
 
       # Upload MegaLinter artifacts
       - name: Archive production artifacts

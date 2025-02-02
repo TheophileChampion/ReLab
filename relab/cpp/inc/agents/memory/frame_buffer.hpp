@@ -20,11 +20,11 @@
 
 namespace relab::agents::memory::impl {
 
-using namespace relab::helpers;
+using relab::helpers::Deque;
+using relab::helpers::ThreadPool;
 
 /**
- * @brief A buffer allowing for storage and retrieval of experience
- * observations.
+ * @brief A buffer allowing for storage and retrieval of experience observations.
  */
 class FrameBuffer {
  private:
