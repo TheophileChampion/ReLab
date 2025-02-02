@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import collections
-import os
-from os.path import join
 import logging
-
-import torch
+import os
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from os.path import join
 
 import relab
+import torch
 
 
-def display_checkpoint(agent : str, env : str, seed : int, index : int, verbose : bool = False) -> None:
+def display_checkpoint(
+    agent: str, env: str, seed: int, index: int, verbose: bool = False
+) -> None:
     """
     Display the key-value pairs in a checkpoint.
     :param agent: the agent name
@@ -26,7 +27,9 @@ def display_checkpoint(agent : str, env : str, seed : int, index : int, verbose 
 
     # Load the checkpoint.
     checkpoint_path = join(os.environ["CHECKPOINT_DIRECTORY"], f"model_{index}.pt")
-    checkpoint = torch.load(checkpoint_path, map_location=relab.device(), weights_only=False)
+    checkpoint = torch.load(
+        checkpoint_path, map_location=relab.device(), weights_only=False
+    )
 
     # Display key-value pair in the checkpoint.
     for key, value in checkpoint.items():
@@ -41,11 +44,25 @@ def main():
     """
 
     # Parse the script arguments.
-    parser = ArgumentParser(prog="display_checkpoint.py", formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
-    parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
+    parser = ArgumentParser(
+        prog="display_checkpoint.py", formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--agent",
+        type=str,
+        default="DuelingDDQN",
+        help="name of the agent whose policy needs to be demonstrated",
+    )
+    parser.add_argument(
+        "--env",
+        type=str,
+        default="ALE/Pong-v5",
+        help="name of the environment on which to demonstrate the agent's policy",
+    )
     parser.add_argument("--seed", type=int, default=0, help="random seed to use")
-    parser.add_argument("--index", type=int, default=10000000, help="index of the checkpoint to load")
+    parser.add_argument(
+        "--index", type=int, default=10000000, help="index of the checkpoint to load"
+    )
     args = parser.parse_args()
 
     # Display the key-value pairs in a checkpoint.

@@ -1,21 +1,18 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+import logging
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from typing import Iterator
 
-import torch
-from torch import nn
-import logging
-
 import relab
+import torch
 from relab import agents
 from relab.helpers.Typing import Parameter
+from torch import nn
 
 
 def describe(
-    network_name : str,
-    parameters : Iterator[Parameter],
-    memory_unit : str = "GB"
+    network_name: str, parameters: Iterator[Parameter], memory_unit: str = "GB"
 ) -> None:
     """
     Describe the parameters passed as arguments.
@@ -26,16 +23,33 @@ def describe(
 
     # The size of one parameter in bits for each data type.
     dtype_sizes = {
-        torch.complex128: 128, torch.cdouble: 128,
-        torch.float64: 64, torch.double: 64, torch.complex64: 64, torch.cfloat: 64, torch.int64: 64, torch.long: 64,
-        torch.float32: 32, torch.float: 32, torch.int32: 32, torch.int: 32,
-        torch.float16: 16, torch.half: 16, torch.bfloat16: 16, torch.int16: 16, torch.short: 16,
-        torch.uint8: 8, torch.int8: 8,
+        torch.complex128: 128,
+        torch.cdouble: 128,
+        torch.float64: 64,
+        torch.double: 64,
+        torch.complex64: 64,
+        torch.cfloat: 64,
+        torch.int64: 64,
+        torch.long: 64,
+        torch.float32: 32,
+        torch.float: 32,
+        torch.int32: 32,
+        torch.int: 32,
+        torch.float16: 16,
+        torch.half: 16,
+        torch.bfloat16: 16,
+        torch.int16: 16,
+        torch.short: 16,
+        torch.uint8: 8,
+        torch.int8: 8,
     }
 
     # The number of bytes for each memory unit.
     memory_units = {
-        "B": 1, "KB": 1e3, "MB": 1e6, "GB": 1e9,
+        "B": 1,
+        "KB": 1e3,
+        "MB": 1e6,
+        "GB": 1e9,
     }
 
     # Count the number of parameters, keep track of their types, and memory usage.
@@ -58,7 +72,7 @@ def describe(
     logging.info(f"  Parameters memory size: {memory_usage:0.3f} {memory_unit}.")
 
 
-def describe_params(agent : str, env : str, seed : int) -> None:
+def describe_params(agent: str, env: str, seed: int) -> None:
     """
     Describe the agent's parameters.
     :param agent: the agent name
@@ -86,9 +100,21 @@ def main():
     """
 
     # Parse the script arguments.
-    parser = ArgumentParser(prog="describe_params.py", formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
-    parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
+    parser = ArgumentParser(
+        prog="describe_params.py", formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--agent",
+        type=str,
+        default="DuelingDDQN",
+        help="name of the agent whose policy needs to be demonstrated",
+    )
+    parser.add_argument(
+        "--env",
+        type=str,
+        default="ALE/Pong-v5",
+        help="name of the environment on which to demonstrate the agent's policy",
+    )
     parser.add_argument("--seed", type=int, default=0, help="random seed to use")
     args = parser.parse_args()
 

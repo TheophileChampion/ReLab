@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from functools import partial
 from typing import List
 
@@ -11,7 +11,9 @@ from relab.environments import small_atari_benchmark as atari_games
 from relab.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
 
 
-def run_experiment(agent_names : List[str], env_names : List[str], seeds : List[int], local : bool = True) -> None:
+def run_experiment(
+    agent_names: List[str], env_names: List[str], seeds: List[int], local: bool = True
+) -> None:
     """
     Run an experiments by:
     - training all reinforcement learning agents on all gym environments using all seeds
@@ -24,10 +26,7 @@ def run_experiment(agent_names : List[str], env_names : List[str], seeds : List[
     """
 
     # Select the requested job runner.
-    job_runners = {
-        True: partial(LocalJobRunner, max_worker=5),
-        False: SlurmJobRunner
-    }
+    job_runners = {True: partial(LocalJobRunner, max_worker=5), False: SlurmJobRunner}
     job_runner = job_runners[local]()
 
     # Iterate over all environments.
@@ -46,22 +45,32 @@ def run_experiment(agent_names : List[str], env_names : List[str], seeds : List[
                 # Train the agent on the environment with the specified seed.
                 job_id = job_runner.launch_job(
                     task=prefix + os.sep + "run_training.sh",
-                    kwargs={"agent": agent, "env": env, "seed": seed}
+                    kwargs={"agent": agent, "env": env, "seed": seed},
                 )
                 job_indices.append(job_id)
 
                 # Demonstrate the policy learned by the agent on the environment with the specified seed.
                 job_runner.launch_job(
                     task=prefix + os.sep + "run_demo.sh",
-                    kwargs={"agent": agent, "env": env, "seed": seed, "index": relab.config(key="max_n_steps")},
-                    dependencies=[job_id]
+                    kwargs={
+                        "agent": agent,
+                        "env": env,
+                        "seed": seed,
+                        "index": relab.config(key="max_n_steps"),
+                    },
+                    dependencies=[job_id],
                 )
 
         # Draw the graph of mean episodic reward for all agents in the current environment.
         job_runner.launch_job(
             task=prefix + os.sep + "draw_graph.sh",
-            kwargs={"agents": agent_names, "env": env, "seeds": seeds, "metric": "mean_episodic_reward"},
-            dependencies=job_indices
+            kwargs={
+                "agents": agent_names,
+                "env": env,
+                "seeds": seeds,
+                "metric": "mean_episodic_reward",
+            },
+            dependencies=job_indices,
         )
         job_indices.clear()
 
@@ -75,15 +84,34 @@ def main():
     """
 
     # Parse the script arguments.
-    parser = ArgumentParser(prog="run_experiments", formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--agents", nargs="+", default=["DQN", "RainbowDQN", "RainbowIQN"], help="name of the agents to train")
-    parser.add_argument("--envs", nargs="+", default=atari_games(), help="name of the environments on which to train the agents")
-    parser.add_argument("--seeds", nargs="+", default=[str(i) for i in range(5)], help="random seeds to use")
+    parser = ArgumentParser(
+        prog="run_experiments", formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--agents",
+        nargs="+",
+        default=["DQN", "RainbowDQN", "RainbowIQN"],
+        help="name of the agents to train",
+    )
+    parser.add_argument(
+        "--envs",
+        nargs="+",
+        default=atari_games(),
+        help="name of the environments on which to train the agents",
+    )
+    parser.add_argument(
+        "--seeds",
+        nargs="+",
+        default=[str(i) for i in range(5)],
+        help="random seeds to use",
+    )
     parser.add_argument("--local", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
 
     # Train a reinforcement learning agent on a gym environment.
-    run_experiment(agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=args.local)
+    run_experiment(
+        agent_names=args.agents, env_names=args.envs, seeds=args.seeds, local=args.local
+    )
 
 
 if __name__ == "__main__":

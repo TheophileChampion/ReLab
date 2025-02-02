@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
-from relab import agents
 import relab
-from relab import environments
+from relab import agents, environments
 
 
-def run_demo(agent : str, env : str, seed : int, index : int):
+def run_demo(agent: str, env: str, seed: int, index: int):
     """
     Demonstrate the policy learned by a reinforcement learning agent on a gym environment.
     :param agent: the agent name
@@ -34,11 +33,25 @@ def main():
     """
 
     # Parse the script arguments.
-    parser = ArgumentParser(prog="run_demo.py", formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--agent", type=str, default="DuelingDDQN", help="name of the agent whose policy needs to be demonstrated")
-    parser.add_argument("--env", type=str, default="ALE/Pong-v5", help="name of the environment on which to demonstrate the agent's policy")
+    parser = ArgumentParser(
+        prog="run_demo.py", formatter_class=ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--agent",
+        type=str,
+        default="DuelingDDQN",
+        help="name of the agent whose policy needs to be demonstrated",
+    )
+    parser.add_argument(
+        "--env",
+        type=str,
+        default="ALE/Pong-v5",
+        help="name of the environment on which to demonstrate the agent's policy",
+    )
     parser.add_argument("--seed", type=int, default=0, help="random seed to use")
-    parser.add_argument("--index", type=int, default=10000000, help="index of the checkpoint to load")
+    parser.add_argument(
+        "--index", type=int, default=10000000, help="index of the checkpoint to load"
+    )
     args = parser.parse_args()
 
     # Demonstrate the policy learned by a reinforcement learning agent on a gym environment.

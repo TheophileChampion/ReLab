@@ -1,9 +1,9 @@
 # 📗 Tutorial
 
-ReLab is a versatile and powerful library for training, evaluating, and analyzing 
-reinforcement learning agents. This tutorial will walk you through its core features, 
+ReLab is a versatile and powerful library for training, evaluating, and analyzing
+reinforcement learning agents. This tutorial will walk you through its core features,
 including creating environments, defining agents, and training your first model using
-ReLab’s Python API. Additionally, you'll learn how to run complete experiments using 
+ReLab’s Python API. Additionally, you'll learn how to run complete experiments using
 ReLab’s command-line interface.
 
 ## 1. Understanding the Data Directory Structure
@@ -137,32 +137,32 @@ agent = agents.make("DuelingDDQN", learning_rate=0.0001, gamma=0.99)
 Here’s a table summarizing the supported agents in ReLab. It includes their full names, abbreviations, and key characteristics such as whether they are value-based, distributional, random, or learn a world model.
 
 | **Abbreviation**    | **Full Name**                          | **Value-Based** | **Distributional** | **Random Actions**                | **World Model** |
-| ------------------- | -------------------------------------- | --------------- | ------------------ | --------------------------------- | --------------- |
-| **DQN**             | Deep Q-Network                         | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **DDQN**            | Double Deep Q-Network                  | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **CDQN**            | Categorical Deep Q-Network             | ✅              | ✅                 | ✖️                                | ✖️              |
-| **MDQN**            | Multi-step Deep Q-Network              | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **QRDQN**           | Quantile Regression Deep Q-Network     | ✅              | ✅                 | ✖️                                | ✖️              |
-| **NoisyDQN**        | Noisy Deep Q-Network                   | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
-| **NoisyDDQN**       | Noisy Double Deep Q-Network            | ✅              | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
-| **NoisyCDQN**       | Noisy Categorical Deep Q-Network       | ✅              | ✅                 | ✖️ (noisy layers for exploration) | ✖️              |
-| **DuelingDQN**      | Dueling Deep Q-Network                 | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **DuelingDDQN**     | Dueling Double Deep Q-Network          | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedDQN**  | Prioritized Experience Replay DQN      | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedDDQN** | Prioritized Experience Replay DDQN     | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **PrioritizedMDQN** | Prioritized Multi-step DQN             | ✅              | ✖️                 | ✖️                                | ✖️              |
-| **RainbowDQN**      | Rainbow Deep Q-Network                 | ✅              | ✅                 | ✖️                                | ✖️              |
-| **RainbowIQN**      | Rainbow with Implicit Quantile Network | ✅              | ✅                 | ✖️                                | ✖️              |
-| **IQN**             | Implicit Quantile Network              | ✅              | ✅                 | ✖️                                | ✖️              |
-| **Random**          | Random Agent                           | ✖️              | ✖️                 | ✅                                | ✖️              |
-| **VAE**             | Variational Autoencoder                | ✖️              | ✖️                 | ✅                                | ✅              |
-| **BetaVAE**         | Beta Variational Autoencoder           | ✖️              | ✖️                 | ✅                                | ✅              |
-| **DiscreteVAE**     | Discrete Variational Autoencoder       | ✖️              | ✖️                 | ✅                                | ✅              |
-| **JointVAE**        | Joint Variational Autoencoder          | ✖️              | ✖️                 | ✅                                | ✅              |
-| **HMM**             | Hidden Markov Model                    | ✖️              | ✖️                 | ✅                                | ✅              |
-| **BetaHMM**         | Beta Hidden Markov Model               | ✖️              | ✖️                 | ✅                                | ✅              |
-| **DiscreteHMM**     | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                | ✅              |
-| **JointHMM**        | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                | ✅              |
+|---------------------|----------------------------------------|-----------------|--------------------|-----------------------------------|-----------------|
+| **DQN**             | Deep Q-Network                         | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **DDQN**            | Double Deep Q-Network                  | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **CDQN**            | Categorical Deep Q-Network             | ✅               | ✅                  | ✖️                                | ✖️              |
+| **MDQN**            | Multi-step Deep Q-Network              | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **QRDQN**           | Quantile Regression Deep Q-Network     | ✅               | ✅                  | ✖️                                | ✖️              |
+| **NoisyDQN**        | Noisy Deep Q-Network                   | ✅               | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
+| **NoisyDDQN**       | Noisy Double Deep Q-Network            | ✅               | ✖️                 | ✖️ (noisy layers for exploration) | ✖️              |
+| **NoisyCDQN**       | Noisy Categorical Deep Q-Network       | ✅               | ✅                  | ✖️ (noisy layers for exploration) | ✖️              |
+| **DuelingDQN**      | Dueling Deep Q-Network                 | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **DuelingDDQN**     | Dueling Double Deep Q-Network          | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedDQN**  | Prioritized Experience Replay DQN      | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedDDQN** | Prioritized Experience Replay DDQN     | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **PrioritizedMDQN** | Prioritized Multi-step DQN             | ✅               | ✖️                 | ✖️                                | ✖️              |
+| **RainbowDQN**      | Rainbow Deep Q-Network                 | ✅               | ✅                  | ✖️                                | ✖️              |
+| **RainbowIQN**      | Rainbow with Implicit Quantile Network | ✅               | ✅                  | ✖️                                | ✖️              |
+| **IQN**             | Implicit Quantile Network              | ✅               | ✅                  | ✖️                                | ✖️              |
+| **Random**          | Random Agent                           | ✖️              | ✖️                 | ✅                                 | ✖️              |
+| **VAE**             | Variational Autoencoder                | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **BetaVAE**         | Beta Variational Autoencoder           | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **DiscreteVAE**     | Discrete Variational Autoencoder       | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **JointVAE**        | Joint Variational Autoencoder          | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **HMM**             | Hidden Markov Model                    | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **BetaHMM**         | Beta Hidden Markov Model               | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **DiscreteHMM**     | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **JointHMM**        | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                 | ✅               |
 
 **Notes:**
 
@@ -276,9 +276,9 @@ if __name__ == "__main__":
 
 ## 6. Running your First Experiment
 
-While you could use Poetry to train and demonstrate the policy of individual agents, 
-ReLab enables you to run full-scale experiments. An experiment automates training, 
-evaluation, and result visualization across multiple agents, environments, and 
+While you could use Poetry to train and demonstrate the policy of individual agents,
+ReLab enables you to run full-scale experiments. An experiment automates training,
+evaluation, and result visualization across multiple agents, environments, and
 random seeds. Here’s a breakdown of what the script does:
 
 1. **Training Agents**: For each combination of agent, environment, and seed, the script launches training jobs either locally or using Slurm (a workload manager for distributed systems).
