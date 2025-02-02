@@ -16,27 +16,27 @@ namespace relab::helpers {
  * @brief A timer class allowing to time the execution of a piece of code.
  */
 class Timer {
- private:
-    std::string name;
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+private:
+  std::string name;
+  std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
 
- public:
-    /**
-     * Create a timer.
-     * @param name the code whose runtime must be measured
-     */
-    Timer(std::string name = "");
+public:
+  /**
+   * Create a timer.
+   * @param name the code whose runtime must be measured
+   */
+  Timer(std::string name = "");
 
-    /**
-     * Start the timer.
-     */
-    void start();
+  /**
+   * Start the timer.
+   */
+  void start();
 
-    /**
-     * Stop the timer and display the runtime.
-     */
-    void stop();
+  /**
+   * Stop the timer and display the runtime.
+   */
+  void stop();
 };
-}  // namespace relab::helpers
+} // namespace relab::helpers
 
-#endif  // RELAB_CPP_INC_HELPERS_TIMER_HPP_
+#endif // RELAB_CPP_INC_HELPERS_TIMER_HPP_

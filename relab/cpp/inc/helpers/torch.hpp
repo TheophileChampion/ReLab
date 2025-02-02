@@ -24,10 +24,8 @@ torch::Device getDevice();
  * @param tensor_2 the second tensor to compare
  * @return true if the tensors are equal, false otherwise
  */
-bool tensorsAreEqual(
-    const torch::Tensor tensor_1,
-    const torch::Tensor tensor_2
-);
-}  // namespace relab::helpers
+bool tensorsAreEqual(const torch::Tensor tensor_1,
+                     const torch::Tensor tensor_2);
+} // namespace relab::helpers
 
-#endif  // RELAB_CPP_INC_HELPERS_TORCH_HPP_
+#endif // RELAB_CPP_INC_HELPERS_TORCH_HPP_
