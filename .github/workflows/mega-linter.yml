@@ -34,6 +34,9 @@ env:
   # or posted in a PR (pull_request)
   APPLY_FIXES_MODE: commit
 
+  # Pass some arguments to flake8.
+  PYTHON_FLAKE8_ARGUMENTS: --max-line-length 120
+
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
