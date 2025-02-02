@@ -1,7 +1,9 @@
-"""Build script."""
+"""
+Module building ReLab's C++ extension.
+"""
 
-import shutil
 import logging
+import shutil
 from pathlib import Path
 from typing import Any, Dict
 
@@ -36,7 +38,7 @@ def remove_files(target_dir: Path, pattern: str) -> None:
             shutil.rmtree(path)
         else:
             path.unlink()
-        logging.info(f"removed {path}")
+        logging.info("removed %s", path)
 
 
 def copy_files(src_dir: Path, dest_dir: Path, pattern: str) -> None:
@@ -49,7 +51,7 @@ def copy_files(src_dir: Path, dest_dir: Path, pattern: str) -> None:
         else:
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
-            logging.info(f"copied {src} to {dest}")
+            logging.info("copied %s to %s", src, dest)
 
 
 if __name__ == "__main__":

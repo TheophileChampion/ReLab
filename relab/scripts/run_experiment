@@ -7,7 +7,7 @@ from functools import partial
 from typing import List
 
 import relab
-from relab.environments import small_benchmark_atari_games as atari_games
+from relab.environments import small_atari_benchmark as atari_games
 from relab.helpers.JobRunners import LocalJobRunner, SlurmJobRunner
 
 

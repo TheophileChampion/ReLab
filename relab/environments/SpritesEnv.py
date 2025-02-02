@@ -7,10 +7,9 @@ import torch
 import torch.nn.functional as func
 from gymnasium import Env, spaces
 from numpy import ndarray
-from torch import Tensor
-
 from relab.helpers.SpritesDataset import DataSet
 from relab.helpers.Typing import ActionType, Config, GymStepData
+from torch import Tensor
 
 
 class SpritesALE:
@@ -179,7 +178,7 @@ class SpritesEnv(Env):
         return self.state_to_one_hot(state) if one_hot else self.state
 
     def reset(
-        self, seed: Optional[int] = None, options: Config = None
+        self, seed: Optional[int] = None, options: Optional[Config] = None
     ) -> Tuple[ndarray, Dict]:
         """!
         Reset the state of the environment to an initial state.

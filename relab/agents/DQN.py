@@ -1,3 +1,7 @@
+"""
+Module implementing a highly parameterizable Deep Q-Network.
+"""
+
 import logging
 import math
 from datetime import datetime
@@ -7,27 +11,34 @@ from os.path import join
 from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
+import relab
 import torch
 from gymnasium import Env
-from torch import Tensor, nn
-from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
-
-import relab
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.agents.networks.CategoricalDeepQNetworks import (CategoricalDeepQNetwork, NoisyCategoricalDeepQNetwork)
+from relab.agents.networks.CategoricalDeepQNetworks import (
+    CategoricalDeepQNetwork,
+    NoisyCategoricalDeepQNetwork,
+)
 from relab.agents.networks.DeepQNetworks import DeepQNetwork, NoisyDeepQNetwork
-from relab.agents.networks.DuelingDeepQNetworks import (DuelingDeepQNetwork, NoisyDuelingDeepQNetwork)
-from relab.agents.networks.QuantileDeepQNetworks import (ImplicitQuantileNetwork, QuantileDeepQNetwork)
-from relab.agents.networks.RainbowDeepQNetwork import (RainbowDeepQNetwork, RainbowImplicitQuantileNetwork)
+from relab.agents.networks.DuelingDeepQNetworks import (
+    DuelingDeepQNetwork,
+    NoisyDuelingDeepQNetwork,
+)
+from relab.agents.networks.QuantileDeepQNetworks import (
+    ImplicitQuantileNetwork,
+    QuantileDeepQNetwork,
+)
+from relab.agents.networks.RainbowDeepQNetwork import (
+    RainbowDeepQNetwork,
+    RainbowImplicitQuantileNetwork,
+)
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Serialization import (
-    get_optimizer,
-    safe_load,
-    safe_load_state_dict,
-)
+from relab.helpers.Serialization import get_optimizer, safe_load, safe_load_state_dict
 from relab.helpers.Typing import ActionType, Checkpoint, Loss, ObservationType
+from torch import Tensor, nn
+from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
 
 class LossType(IntEnum):
@@ -817,7 +828,7 @@ class DQN(AgentInterface):
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
-        @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
+        @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load ("" for default name)
         @return a tuple containing the checkpoint path and the checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
@@ -828,7 +839,8 @@ class DQN(AgentInterface):
             )
 
             # Update the agent's parameters using the checkpoint.
-            attributes_names = [  # TODO add new function + all other classes
+            # TODO add new function + all other classes
+            attributes_names = [
                 "gamma",
                 "learning_rate",
                 "buffer_size",
@@ -920,7 +932,7 @@ class DQN(AgentInterface):
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
-        @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer ("" for default name)
         """
         # @cond IGNORED_BY_DOXYGEN
         # Create the agent checkpoint directory and file, if they do not exist.

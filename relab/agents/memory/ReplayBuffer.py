@@ -1,10 +1,9 @@
 from typing import Optional
 
-from torch import Tensor
-
 import relab
 from relab.cpp.agents.memory import Experience, FastReplayBuffer
 from relab.helpers.Typing import Batch, Config
+from torch import Tensor
 
 
 class ReplayBuffer:
@@ -37,7 +36,7 @@ class ReplayBuffer:
         frame_skip: Optional[int] = None,
         stack_size: Optional[int] = None,
         screen_size: Optional[int] = None,
-        args: Config = None,
+        args: Optional[Config] = None,
     ) -> None:
         """!
         Create a replay buffer.
@@ -91,7 +90,7 @@ class ReplayBuffer:
         """!
         Load a replay buffer from the filesystem.
         @param checkpoint_path: the full checkpoint path from which the agent has been loaded
-        @param checkpoint_name: the name of the checkpoint from which the replay buffer must be loaded ("" for default name)
+        @param checkpoint_name: the checkpoint name from which the replay buffer must be loaded ("" for default name)
         """
         self.buffer.load(
             checkpoint_path, checkpoint_name, relab.config("save_all_replay_buffers")
@@ -101,7 +100,7 @@ class ReplayBuffer:
         """!
         Save the replay buffer on the filesystem.
         @param checkpoint_path: the full checkpoint path in which the agent has been saved
-        @param checkpoint_name: the name of the checkpoint in which the replay buffer must be saved ("" for default name)
+        @param checkpoint_name: the checkpoint name in which the replay buffer must be saved ("" for default name)
         """
         self.buffer.save(
             checkpoint_path, checkpoint_name, relab.config("save_all_replay_buffers")

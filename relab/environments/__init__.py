@@ -1,6 +1,11 @@
-from relab.environments.factory import all_atari_games as all_atari_games
-from relab.environments.factory import \
-    benchmark_atari_games as benchmark_atari_games
+from relab.environments.factory import atari_benchmark as atari_benchmark
+from relab.environments.factory import full_atari_benchmark as full_atari_benchmark
 from relab.environments.factory import make as make
-from relab.environments.factory import \
-    small_benchmark_atari_games as small_benchmark_atari_games
+from relab.environments.factory import small_atari_benchmark as small_atari_benchmark
+
+__all__ = (
+    "atari_benchmark",
+    "full_atari_benchmark",
+    "make",
+    "small_atari_benchmark",
+)

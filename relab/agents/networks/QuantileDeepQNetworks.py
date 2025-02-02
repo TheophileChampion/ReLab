@@ -1,10 +1,9 @@
 from typing import Optional, Tuple
 
+import relab
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
-
-import relab
 
 
 class QuantileDeepQNetwork(nn.Module):

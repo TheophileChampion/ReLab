@@ -17,7 +17,7 @@ applications, ReLab simplifies the process, saving you time and effort.
   - [Download ReLab dependencies](#download-relab-dependencies)
   - [Ensure that python scripts can find the ReLab package](#ensure-that-python-scripts-can-find-the-relab-package)
   - [Check that the installation was successful](#check-that-the-installation-was-successful)
-- [Getting Started](#getting-started)
+- [ReLab Fundamentals](#relab-fundamentals)
 - [Documentation](#documentation)
 - [Releases and Contributing](#releases-and-contributing)
 - [License](#license)

@@ -1,9 +1,8 @@
 from typing import Optional
 
+import relab
 import torch
 from torch import Tensor, nn
-
-import relab
 
 
 class DeepQNetwork(nn.Module):

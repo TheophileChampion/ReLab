@@ -1,5 +1,8 @@
-import invoke
+"""
+Module installing python dependencies and building ReLab's C++ extension.
+"""
 
+import invoke
 
 if __name__ == "__main__":
 

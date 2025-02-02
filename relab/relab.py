@@ -9,7 +9,6 @@ import ale_py
 import gymnasium as gym
 import numpy as np
 import torch
-
 from relab.cpp.agents.memory import CompressorType as Compressor
 from relab.environments.SpritesEnv import SpritesEnv
 from relab.helpers.Typing import ConfigInfo, Device

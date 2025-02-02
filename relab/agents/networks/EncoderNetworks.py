@@ -2,11 +2,10 @@ from math import prod
 from typing import List, Optional, Tuple
 
 import torch
-from torch import Tensor, nn
-
 from relab import relab
 from relab.agents.networks.layers.Categorical import Categorical
 from relab.agents.networks.layers.DiagonalGaussian import DiagonalGaussian
+from torch import Tensor, nn
 
 
 class ContinuousEncoderNetwork(nn.Module):

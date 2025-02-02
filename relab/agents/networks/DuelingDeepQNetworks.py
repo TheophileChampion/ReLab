@@ -1,10 +1,9 @@
 from typing import Optional, Tuple, Union
 
+import relab
 import torch
 from torch import Tensor, nn
 from torchrl.modules import NoisyLinear
-
-import relab
 
 
 class DuelingDeepQNetwork(nn.Module):

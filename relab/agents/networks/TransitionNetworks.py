@@ -1,10 +1,9 @@
 from typing import Tuple
 
 import torch
-from torch import Tensor, nn
-
 from relab.agents.networks.layers.Categorical import Categorical
 from relab.agents.networks.layers.DiagonalGaussian import DiagonalGaussian
+from torch import Tensor, nn
 
 
 class ContinuousTransitionNetwork(nn.Module):

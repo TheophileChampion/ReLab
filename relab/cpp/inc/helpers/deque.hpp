@@ -1,85 +1,82 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
 /**
  * @file deque.hpp
  * @brief Declaration of double-ended queue with a maximum length.
  */
 
-#ifndef DEQUE_HPP
-#define DEQUE_HPP
+#ifndef RELAB_CPP_INC_HELPERS_DEQUE_HPP_
+#define RELAB_CPP_INC_HELPERS_DEQUE_HPP_
 
-#include <deque>
 #include <cstdint>
+#include <deque>
 #include <fstream>
 
 namespace relab::helpers {
 
-    /**
-     * @brief A double-ended queue with a maximum length.
-     */
-    template<class T>
-    class Deque : public std::deque<T> {
+/**
+ * @brief A double-ended queue with a maximum length.
+ */
+template <class T> class Deque : public std::deque<T> {
+private:
+  int max_size;
 
-    private:
+public:
+  /**
+   * Create a double ended queue.
+   * @param max_size the maximum length of the queue
+   */
+  explicit Deque(int max_size = -1);
 
-        int max_size;
+  /**
+   * Add an element at the end of the queue.
+   * @param element the element to add
+   */
+  void push_back(T element);
 
-    public:
+  /**
+   * Add an element at the front of the queue.
+   * @param element the element to add
+   */
+  void push_front(T element);
 
-        /**
-         * Create a double ended queue.
-         * @param max_size the maximum length of the queue
-         */
-        Deque(int max_size=-1);
+  /**
+   * Retrieve the element whose index is passed as parameters.
+   * @param index the index
+   * @return the element at the given index
+   */
+  T get(int index);
 
-        /**
-         * Add an element at the end of the queue.
-         * @param element the element to add
-         */
-        void push_back(T element);
+  /**
+   * Load the double ended queue from the checkpoint.
+   * @param checkpoint a stream reading from the checkpoint file
+   */
+  void load(std::istream &checkpoint);
 
-        /**
-         * Add an element at the front of the queue.
-         * @param element the element to add
-         */
-        void push_front(T element);
+  /**
+   * Save the double ended queue in the checkpoint.
+   * @param checkpoint a stream writing into the checkpoint file
+   */
+  void save(std::ostream &checkpoint);
 
-        /**
-         * Retrieve the element whose index is passed as parameters.
-         * @param index the index
-         * @return the element at the given index
-         */
-        T get(int index);
+  /**
+   * Print the double ended queue on the standard output.
+   */
+  void print();
 
-        /**
-         * Load the double ended queue from the checkpoint.
-         * @param checkpoint a stream reading from the checkpoint file
-         */
-        void load(std::istream &checkpoint);
+  /**
+   * Compare two double ended queues.
+   * @param lhs the double ended queue on the left-hand-side of the equal sign
+   * @param rhs the double ended queue on the right-hand-side of the equal sign
+   * @return true if the double ended queues are identical, false otherwise
+   */
+  template <class Type>
+  friend bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs);
+};
 
-        /**
-         * Save the double ended queue in the checkpoint.
-         * @param checkpoint a stream writing into the checkpoint file
-         */
-        void save(std::ostream &checkpoint);
+// Explicit instantiation of double ended queue.
+template class Deque<int>;
+template class Deque<float>;
+template class Deque<bool>;
+}  // namespace relab::helpers
 
-        /**
-         * Print the double ended queue on the standard output.
-         */
-        void print();
-
-        /**
-         * Compare two double ended queues.
-         * @param lhs the double ended queue on the left-hand-side of the equal sign
-         * @param rhs the double ended queue on the right-hand-side of the equal sign
-         * @return true if the double ended queues are identical, false otherwise
-         */
-        template<class Type>
-        friend bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs);
-    };
-
-    // Explicit instantiation of double ended queue.
-    template class Deque<int>;
-    template class Deque<float>;
-    template class Deque<bool>;
-}
-
-#endif //DEQUE_HPP
+#endif  // RELAB_CPP_INC_HELPERS_DEQUE_HPP_

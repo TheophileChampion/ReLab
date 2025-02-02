@@ -4,10 +4,8 @@ from typing import List, Optional, Tuple
 
 import pandas as pd
 from pandas import DataFrame
-from tensorboard.backend.event_processing.event_accumulator import \
-    EventAccumulator
-
 from relab.helpers.FileSystem import FileSystem
+from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
 
 class TensorBoard:
