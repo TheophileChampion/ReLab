@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <vector>
 
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
