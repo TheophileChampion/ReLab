@@ -14,9 +14,15 @@ APPLY_FIXES: all
 # default
 # ENABLE_LINTERS:
 
-# DISABLE:
-  # - COPYPASTE # Uncomment to disable checks of excessive copy-pastes
-  # - SPELL # Uncomment to disable checks of spelling mistakes
+DISABLE:
+  - CSS
+  - HTML
+  - SPELL
+
+ENABLE_LINTERS:
+  - PYTHON_MYPY
+  - PYTHON_PYRIGHT
+  - PYTHON_PYLINT
 
 SHOW_ELAPSED_TIME: false
 

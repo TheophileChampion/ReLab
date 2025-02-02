@@ -136,7 +136,7 @@ When multiple seeds are provided, the graph will display a solid line representi
 
 <img alt="Graph comparing the performance of several agents." src="./assets/mean_episodic_reward.png" width="500"/>
 
-For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](https://theophilechampion.github.io/ReLab/md_Tutorial.html).
+For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](./TUTORIAL.md).
 
 ## Documentation
 
