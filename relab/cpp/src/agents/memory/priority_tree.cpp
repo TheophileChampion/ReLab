@@ -215,7 +215,6 @@ void PriorityTree::refreshAllSumTree() {
     // Go up the tree until the root node is reached.
     int depth = 0;
     while (depth < this->depth) {
-
       // Update the sums in the sum-tree.
       this->sum_tree[depth][parent_index] += priority;
 
@@ -293,7 +292,6 @@ std::string PriorityTree::treeToStr(Tree tree, T (*get)(Tree, int, int), int max
     int m = std::pow(this->n_children, this->depth - 1 - i);
     int max_j = (max_n_elements == -1) ? m : std::min(m, max_n_elements);
     for (auto j = 0; j < max_j; j++) {
-
       // Add all elements to the string.
       if (j != 0)
         out << ", ";

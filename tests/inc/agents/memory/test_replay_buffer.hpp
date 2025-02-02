@@ -1,7 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#ifndef TEST_REPLAY_BUFFER_HPP
-#define TEST_REPLAY_BUFFER_HPP
+#ifndef TESTS_INC_AGENTS_MEMORY_TEST_REPLAY_BUFFER_HPP_
+#define TESTS_INC_AGENTS_MEMORY_TEST_REPLAY_BUFFER_HPP_
 
 #include <gtest/gtest.h>
 
@@ -101,4 +101,4 @@ using impl::TestReplayBuffer2;
 using impl::TestReplayBuffer3;
 }  // namespace relab::test::agents::memory
 
-#endif  // TEST_REPLAY_BUFFER_HPP
+#endif  // TESTS_INC_AGENTS_MEMORY_TEST_REPLAY_BUFFER_HPP_

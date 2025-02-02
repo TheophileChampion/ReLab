@@ -149,7 +149,7 @@ void ReplayBuffer::loadFromFile(std::istream &checkpoint) {
   this->omega_is = load_value<float>(checkpoint);
   this->observations->load(checkpoint);
   this->data->load(checkpoint);
-  this->indices = load_tensor<long>(checkpoint);
+  this->indices = load_tensor<int64_t>(checkpoint);
 }
 
 void ReplayBuffer::save(std::string checkpoint_path, std::string checkpoint_name, bool save_all) {
@@ -183,7 +183,7 @@ void ReplayBuffer::saveToFile(std::ostream &checkpoint) {
   save_value(this->omega_is, checkpoint);
   this->observations->save(checkpoint);
   this->data->save(checkpoint);
-  save_tensor<long>(this->indices, checkpoint);
+  save_tensor<int64_t>(this->indices, checkpoint);
 }
 
 path ReplayBuffer::getCheckpointPath(std::string &checkpoint_path, std::string &checkpoint_name, bool save_all) {
@@ -214,7 +214,7 @@ void ReplayBuffer::print(bool verbose) {
   // Display optional information about the replay buffer.
   if (verbose == true) {
     std::cout << " #-> indices = ";
-    print_tensor<long>(this->indices);
+    print_tensor<int64_t>(this->indices);
     std::cout << " #-> observations: ";
     this->observations->print(verbose, "     ");
     std::cout << " #-> data: ";

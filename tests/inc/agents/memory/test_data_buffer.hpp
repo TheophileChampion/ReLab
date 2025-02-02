@@ -1,7 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#ifndef TEST_DATA_BUFFER_HPP
-#define TEST_DATA_BUFFER_HPP
+#ifndef TESTS_INC_AGENTS_MEMORY_TEST_DATA_BUFFER_HPP_
+#define TESTS_INC_AGENTS_MEMORY_TEST_DATA_BUFFER_HPP_
 
 #include <gtest/gtest.h>
 
@@ -66,4 +66,4 @@ using impl::DataBufferParameters;
 using impl::TestDataBuffer;
 }  // namespace relab::test::agents::memory
 
-#endif  // TEST_DATA_BUFFER_HPP
+#endif  // TESTS_INC_AGENTS_MEMORY_TEST_DATA_BUFFER_HPP_

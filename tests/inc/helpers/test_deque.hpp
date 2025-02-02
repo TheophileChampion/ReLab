@@ -1,7 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#ifndef TEST_DEQUE_HPP
-#define TEST_DEQUE_HPP
+#ifndef TESTS_INC_HELPERS_TEST_DEQUE_HPP_
+#define TESTS_INC_HELPERS_TEST_DEQUE_HPP_
 
 #include <gtest/gtest.h>
 
@@ -98,4 +98,4 @@ using impl::PushType;
 using impl::TestDeque;
 }  // namespace relab::test::helpers
 
-#endif  // TEST_DEQUE_HPP
+#endif  // TESTS_INC_HELPERS_TEST_DEQUE_HPP_

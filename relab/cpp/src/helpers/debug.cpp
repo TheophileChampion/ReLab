@@ -1,6 +1,10 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "helpers/debug.hpp"
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <string>
 
 namespace relab::helpers {
 
@@ -150,7 +154,7 @@ void Logger::log(LogLevel level, const std::string &message) {
 
 // Explicit instantiations.
 template void print_tensor<int>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
-template void print_tensor<long>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
+template void print_tensor<int64_t>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
 template void print_tensor<bool>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
 template void print_tensor<float>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
 

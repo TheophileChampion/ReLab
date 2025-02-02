@@ -21,7 +21,6 @@ DataBufferParameters::DataBufferParameters(
 DataBufferParameters::DataBufferParameters() : DataBufferParameters(0, 0, 0, 0, 0) {}
 
 void TestDataBuffer::SetUp() {
-
   // Create the replay buffer.
   this->params = GetParam();
   this->buffer = std::make_unique<DataBuffer>(
@@ -35,7 +34,6 @@ void TestDataBuffer::SetUp() {
 }
 
 TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {
-
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, 2 * params.capacity - 1, params.capacity);
 
@@ -75,7 +73,6 @@ TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {
 }
 
 TEST_P(TestDataBuffer, TestStoringAndRetrieval) {
-
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -114,7 +111,6 @@ TEST_P(TestDataBuffer, TestStoringAndRetrieval) {
 }
 
 TEST_P(TestDataBuffer, TestSaveAndLoad) {
-
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 

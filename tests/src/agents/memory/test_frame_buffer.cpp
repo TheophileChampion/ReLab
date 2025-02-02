@@ -16,7 +16,6 @@ namespace relab::test::agents::memory {
  */
 
 void TestFrameBuffer::SetUp() {
-
   // Create the frame buffer.
   this->params = GetParam();
   this->buffer = std::make_unique<FrameBuffer>(
@@ -34,7 +33,6 @@ FrameBufferParameters::FrameBufferParameters(int capacity, int frame_skip, int n
 FrameBufferParameters::FrameBufferParameters() : FrameBufferParameters(0, 0, 0, 0) {}
 
 TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
-
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, 2 * params.capacity - 1, params.capacity);
 
@@ -70,7 +68,6 @@ TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
 }
 
 TEST_P(TestFrameBuffer, TestStoringAndRetrieval) {
-
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -107,7 +104,6 @@ TEST_P(TestFrameBuffer, TestStoringAndRetrieval) {
 }
 
 TEST_P(TestFrameBuffer, TestSaveAndLoad) {
-
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -140,7 +136,6 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 TEST(TestFrameBuffer, TestEncodingAndDecoding) {
-
   // Create a frame buffer.
   auto buffer = FrameBuffer(8, 1, 1, 4);
 

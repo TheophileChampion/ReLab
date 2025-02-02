@@ -228,5 +228,4 @@ TEST_P(TestReplayBuffer3, TestClear) {
 }
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, TestReplayBuffer3, testing::Values(0, 1, 2, 3, 10));
-
 }  // namespace relab::test::agents::memory
