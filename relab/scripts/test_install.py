@@ -5,7 +5,7 @@ from relab import version
 
 def main():
     """
-    Entry point of the test_install script.
+    Entry point of the test_install.py script.
     """
 
     # Display current ReLab version.

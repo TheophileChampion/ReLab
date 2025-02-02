@@ -50,9 +50,9 @@ numpy = "==2.2.1"
 gymnasium = {version = "1.0.0", extras = ["atari", "other"]}
 
 [tool.poetry.scripts]
-run_experiment="relab.scripts.run_experiment:main"
-run_training="relab.scripts.run_training:main"
-run_demo="relab.scripts.run_demo:main"
+experiment="relab.scripts.run_experiment:main"
+training="relab.scripts.run_training:main"
+demo="relab.scripts.run_demo:main"
 draw_graph="relab.scripts.draw_graph:main"
 describe_params="relab.scripts.describe_params:main"
 display_checkpoint="relab.scripts.display_checkpoint:main"

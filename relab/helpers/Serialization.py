@@ -30,7 +30,7 @@ def safe_load_state_dict(obj: Any, checkpoint: Checkpoint, key: str) -> None:
     if key not in checkpoint.keys():
         logging.info(f"Could not load state_dict of {key} from checkpoint.")
         return
-    obj.load_state_dict(checkpoint, key)
+    obj.load_state_dict(checkpoint[key])
 
 
 def get_optimizer(

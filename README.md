@@ -13,10 +13,8 @@ applications, ReLab simplifies the process, saving you time and effort.
 <!-- toc -->
 
 - [Installation](#installation)
-  - [Clone the ReLab source code](#clone-the-relab-source-code)
-  - [Download ReLab dependencies](#download-relab-dependencies)
-  - [Ensure that python scripts can find the ReLab package](#ensure-that-python-scripts-can-find-the-relab-package)
-  - [Check that the installation was successful](#check-that-the-installation-was-successful)
+  - [Install Poetry](#install-poetry)
+  - [Install ReLab and its dependencies](#install-relab-and-its-dependencies)
 - [ReLab Fundamentals](#relab-fundamentals)
 - [Documentation](#documentation)
 - [Releases and Contributing](#releases-and-contributing)
@@ -25,43 +23,43 @@ applications, ReLab simplifies the process, saving you time and effort.
 
 ## Installation
 
-### Clone the ReLab source code
+### Install Poetry
 
+Linux, macOS, Windows (WSL):
+```console
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+Windows (Powershell)
+```console
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+```
+
+### Install ReLab and its dependencies
+
+Clone the ReLab repository:
 ```console
 git clone git@github.com:TheophileChampion/ReLab.git
 cd ReLab
 ```
 
-### Download ReLab dependencies
-
+Install ReLab's package and its dependencies inside a virtual environment:
 ```console
-python3.12 -m venv venv-relab
-source ./venv-relab/bin/activate
-pip install -r requirements.txt
+poetry install
 ```
 
-### Ensure that python scripts can find the ReLab package
-
+Check that the installation was successful:
 ```console
-pwd > ./venv-relab/lib/python3.12/site-packages/relab.pth
+poetry run test_install
 ```
-
-### Check that the installation was successful
-
-```console
-python ./scripts/test_install
-```
-
-Note, when running the above command for the first time, ReLab will compile its C++ library.
 
 ## ReLab Fundamentals
 
 ReLab provides a collection of well-known reinforcement learning agents and enables you to train them on any [Gym](https://gymnasium.farama.org/) environment.
 You can then visualize the learned policies and compare the performance of various agents.
 Before proceeding with the following sections, make sure that ReLab is [installed](#installation) and activate the virtual environment using the following command:
-
 ```console
-source ./venv-relab/bin/activate
+source ./.venv/bin/activate
 ```
 
 ### Training an Agent
@@ -69,7 +67,7 @@ source ./venv-relab/bin/activate
 An agent can be trained by running the following command:
 
 ```console
-python ./scripts/run_training --agent DQN --env ALE/Pong-v5 --seed 0
+poetry run training --agent DQN --env ALE/Pong-v5 --seed 0
 ```
 
 The training script accepts three parameters:
@@ -98,7 +96,7 @@ By default, ReLab saves the learned policy every 500,000 training iterations.
 Once an agent has been trained, you can visualize its learned policy using the following command:
 
 ```console
-python ./scripts/run_demo --agent DQN --env ALE/Pong-v5 --seed 0
+poetry run demo --agent DQN --env ALE/Pong-v5 --seed 0
 ```
 
 These parameters should look familiar, as they are identical to those used in the training script.
@@ -106,7 +104,7 @@ By default, ReLab demonstrates the latest policy.
 However, you can specify a particular model checkpoint using the following command:
 
 ```console
-python ./scripts/run_demo --agent DQN --env ALE/Pong-v5 --seed 0 --index 1000000
+poetry run demo --agent DQN --env ALE/Pong-v5 --seed 0 --index 1000000
 ```
 
 Here, the `--index` parameter allows you to select the policy learned by the agent after 1,000,000 training iterations.
@@ -123,7 +121,7 @@ After running the above command, ReLab will generate a GIF of the agent's behavi
 ReLab also provides a script to generate graphs summarizing the agent performance:
 
 ```console
-python ./scripts/draw_graph --agents DQN --env ALE/Pong-v5 --seeds 0 --metric mean_episodic_reward
+poetry run draw_graph --agents DQN --env ALE/Pong-v5 --seeds 0 --metric mean_episodic_reward
 ```
 
 Importantly, the parameters `--agents` and `--seeds` are now plural because the script accepts a list of agents and seeds.
@@ -131,7 +129,7 @@ The `--metric` parameter allows you to compare agents based on various metrics, 
 This script can also be used to compare multiple agents across different seeds, as shown below:
 
 ```console
-python ./scripts/draw_graph --agents DQN RainbowDQN --env ALE/Pong-v5 --seeds 0 1 2 3 4 --metric mean_episodic_reward
+poetry run draw_graph --agents DQN RainbowDQN --env ALE/Pong-v5 --seeds 0 1 2 3 4 --metric mean_episodic_reward
 ```
 
 When multiple seeds are provided, the graph will display a solid line representing the average metric, along with a shaded area indicating the metric's standard deviation.
