@@ -20,13 +20,13 @@ using namespace relab::helpers;
 
 namespace relab::agents::memory::impl {
 
-FrameBuffer::FrameBuffer(int capacity, int frame_skip, int n_steps,
-                         int stack_size, int screen_size, CompressorType type,
-                         int n_threads)
-    : device(getDevice()), frame_skip(frame_skip), stack_size(stack_size),
-      capacity(capacity), n_steps(n_steps), screen_size(screen_size),
-      frames(FrameStorage(capacity)), past_references(n_steps + 1),
-      pool(n_threads) {
+FrameBuffer::FrameBuffer(
+    int capacity, int frame_skip, int n_steps, int stack_size, int screen_size,
+    CompressorType type, int n_threads
+) :
+    device(getDevice()), frame_skip(frame_skip), stack_size(stack_size),
+    capacity(capacity), n_steps(n_steps), screen_size(screen_size),
+    frames(FrameStorage(capacity)), past_references(n_steps + 1), pool(n_threads) {
   // A list storing the observation references of each experience.
   std::vector<int> references_t(capacity);
   this->references_t = std::move(references_t);
@@ -46,8 +46,7 @@ void FrameBuffer::append(const Experience &experience) {
   // If the buffer is full, remove the oldest observation frames from the
   // buffer.
   if (this->size() == this->capacity) {
-    int first_frame_index =
-        this->references_t[this->firstReference() % this->capacity];
+    int first_frame_index = this->references_t[this->firstReference() % this->capacity];
     while (this->frames.top_index() <= first_frame_index) {
       this->frames.pop();
     }
@@ -56,8 +55,9 @@ void FrameBuffer::append(const Experience &experience) {
   // Add the frames of the observation at time t, if needed.
   if (this->new_episode == true) {
     for (auto i = 0; i < this->stack_size; i++) {
-      int reference = this->addFrame(this->encode(
-          experience.obs.index({i, Slice(), Slice()}).detach().clone()));
+      int reference = this->addFrame(
+          this->encode(experience.obs.index({i, Slice(), Slice()}).detach().clone())
+      );
       if (i == 0) {
         this->past_references.push_back(reference);
       }
@@ -67,8 +67,9 @@ void FrameBuffer::append(const Experience &experience) {
   // Add the frames of the observation at time t + 1.
   int n = std::min(this->frame_skip, this->stack_size);
   for (auto i = n; i >= 1; i--) {
-    int reference = this->addFrame(this->encode(
-        experience.next_obs.index({-i, Slice(), Slice()}).detach().clone()));
+    int reference = this->addFrame(
+        this->encode(experience.next_obs.index({-i, Slice(), Slice()}).detach().clone())
+    );
     if (i == 1) {
       this->past_references.push_back(reference + 1 - this->stack_size);
     }
@@ -85,8 +86,7 @@ void FrameBuffer::append(const Experience &experience) {
     // Then, clear the queue of past observation frames.
     this->past_references.clear();
 
-  } else if (static_cast<int>(this->past_references.size()) ==
-             this->n_steps + 1) {
+  } else if (static_cast<int>(this->past_references.size()) == this->n_steps + 1) {
     // If the current episode has not ended, but the queue of past observation
     // frame is full, then keep track of next valid reference (before it is
     // discarded in the next call to append).
@@ -101,10 +101,10 @@ void FrameBuffer::append(const Experience &experience) {
 std::tuple<torch::Tensor, torch::Tensor>
 FrameBuffer::operator[](const torch::Tensor &indices) {
   int n_elements = indices.numel();
-  torch::Tensor obs_batch = torch::zeros(
-      {n_elements, this->stack_size, this->screen_size, this->screen_size});
-  torch::Tensor next_obs_batch = torch::zeros(
-      {n_elements, this->stack_size, this->screen_size, this->screen_size});
+  torch::Tensor obs_batch =
+      torch::zeros({n_elements, this->stack_size, this->screen_size, this->screen_size});
+  torch::Tensor next_obs_batch =
+      torch::zeros({n_elements, this->stack_size, this->screen_size, this->screen_size});
 
   // Retrieve the all the decoded observations.
   int frame_size = this->screen_size * this->screen_size;
@@ -168,10 +168,8 @@ void FrameBuffer::addReference(int t, int tn) {
   }
 
   // Add the reference and increase the reference index.
-  this->references_t[this->current_ref % this->capacity] =
-      this->past_references[t];
-  this->references_tn[this->current_ref % this->capacity] =
-      this->past_references[tn];
+  this->references_t[this->current_ref % this->capacity] = this->past_references[t];
+  this->references_tn[this->current_ref % this->capacity] = this->past_references[tn];
   this->current_ref += 1;
 }
 
@@ -220,10 +218,8 @@ void FrameBuffer::save(std::ostream &checkpoint) {
 void FrameBuffer::print(bool verbose, const std::string &prefix) {
   // Display the most important information about the frame buffer.
   std::cout << "FrameBuffer[frame_skip: " << this->frame_skip
-            << ", stack_size: " << this->stack_size
-            << ", capacity: " << this->capacity
-            << ", n_steps: " << this->n_steps
-            << ", screen_size: " << this->screen_size
+            << ", stack_size: " << this->stack_size << ", capacity: " << this->capacity
+            << ", n_steps: " << this->n_steps << ", screen_size: " << this->screen_size
             << ", current_ref: " << this->current_ref << ", new_episode: ";
   print_bool(this->new_episode);
   std::cout << "]" << std::endl;
@@ -246,8 +242,7 @@ bool operator==(const FrameBuffer &lhs, const FrameBuffer &rhs) {
   // identical.
   if (lhs.frame_skip != rhs.frame_skip || lhs.stack_size != rhs.stack_size ||
       lhs.capacity != rhs.capacity || lhs.n_steps != rhs.n_steps ||
-      lhs.screen_size != rhs.screen_size ||
-      lhs.current_ref != rhs.current_ref ||
+      lhs.screen_size != rhs.screen_size || lhs.current_ref != rhs.current_ref ||
       lhs.new_episode != rhs.new_episode ||
       lhs.references_t.size() != rhs.references_t.size() ||
       lhs.references_tn.size() != rhs.references_tn.size()) {
@@ -274,7 +269,5 @@ bool operator==(const FrameBuffer &lhs, const FrameBuffer &rhs) {
   return lhs.frames == rhs.frames;
 }
 
-bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs) {
-  return !(lhs == rhs);
-}
+bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs) { return !(lhs == rhs); }
 }  // namespace relab::agents::memory::impl

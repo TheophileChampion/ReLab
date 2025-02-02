@@ -18,8 +18,7 @@ using namespace relab::helpers;
 
 namespace relab::agents::memory::impl {
 
-PriorityTree::PriorityTree(int capacity, float initial_priority,
-                           int n_children) {
+PriorityTree::PriorityTree(int capacity, float initial_priority, int n_children) {
   // Store the priority tree parameters.
   this->initial_priority = initial_priority;
   this->capacity = capacity;
@@ -94,8 +93,7 @@ void PriorityTree::append(float priority) {
   this->updateSumTree(idx, old_priority);
 
   // Check if the full sum tree must be refreshed.
-  if (this->max() != this->initial_priority and
-      this->need_refresh_all == true) {
+  if (this->max() != this->initial_priority and this->need_refresh_all == true) {
     this->refreshAllSumTree();
     this->need_refresh_all = false;
   }
@@ -115,8 +113,7 @@ void PriorityTree::set(int index, float priority) {
   this->updateSumTree(idx, old_priority);
 
   // Check if the full sum tree must be refreshed.
-  if (this->max() != this->initial_priority and
-      this->need_refresh_all == true) {
+  if (this->max() != this->initial_priority and this->need_refresh_all == true) {
     this->refreshAllSumTree();
     this->need_refresh_all = false;
   }
@@ -140,8 +137,7 @@ int PriorityTree::externalIndex(int index) {
 
 torch::Tensor PriorityTree::sampleIndices(int n) {
   // Sample priorities between zero and the sum of priorities.
-  torch::Tensor sampled_priorities =
-      torch::rand({n}) * static_cast<float>(this->sum());
+  torch::Tensor sampled_priorities = torch::rand({n}) * static_cast<float>(this->sum());
 
   // Sample 'n' indices with a probability proportional to their priorities.
   torch::Tensor indices = torch::zeros({n}, torch::kInt64);
@@ -253,8 +249,8 @@ void PriorityTree::updateMaxTree(int index, float old_priority) {
     // Update the maximum values in the max-tree.
     float parent_value = this->max_tree[depth][parent_index].item<float>();
     if (parent_value == old_priority) {
-      this->max_tree[depth][parent_index] = this->maxChildValue(
-          depth, parent_index, index, old_priority, new_priority);
+      this->max_tree[depth][parent_index] =
+          this->maxChildValue(depth, parent_index, index, old_priority, new_priority);
     } else if (parent_value < new_priority) {
       this->max_tree[depth][parent_index] = new_priority;
     } else {
@@ -267,8 +263,9 @@ void PriorityTree::updateMaxTree(int index, float old_priority) {
   }
 }
 
-float PriorityTree::maxChildValue(int depth, int parent_index, int index,
-                                  float old_priority, float new_priority) {
+float PriorityTree::maxChildValue(
+    int depth, int parent_index, int index, float old_priority, float new_priority
+) {
   int first_child = this->n_children * parent_index;
   auto slice = Slice(first_child, first_child + this->n_children);
   float max_value = 0;
@@ -297,8 +294,9 @@ std::string PriorityTree::sumTreeToStr(int max_n_elements) {
 }
 
 template <class Tree, class T>
-std::string PriorityTree::treeToStr(Tree tree, T (*get)(Tree, int, int),
-                                    int max_n_elements, int precision) {
+std::string PriorityTree::treeToStr(
+    Tree tree, T (*get)(Tree, int, int), int max_n_elements, int precision
+) {
   int n = static_cast<int>(tree.size());
   if (max_n_elements == -1) {
     max_n_elements = n;
@@ -324,8 +322,7 @@ std::string PriorityTree::treeToStr(Tree tree, T (*get)(Tree, int, int),
       out << get(tree, i, j);
     }
 
-    // Close the bracket in the string, adding an ellipse if only part of inner
-    // vector was displayed.
+    // Close the bracket in the string, adding an ellipse if elements are hidden.
     if (max_j != m) {
       out << ((max_n_elements != 0) ? " ..." : "...");
     }
@@ -370,10 +367,9 @@ void PriorityTree::save(std::ostream &checkpoint) {
 void PriorityTree::print(bool verbose, const std::string &prefix) {
   // Display the most important information about the data buffer.
   std::cout << "PriorityTree[initial_priority: " << this->initial_priority
-            << ", capacity: " << this->capacity
-            << ", n_children: " << this->n_children
-            << ", depth: " << this->depth
-            << ", current_id: " << this->current_id << ", need_refresh_all: ";
+            << ", capacity: " << this->capacity << ", n_children: " << this->n_children
+            << ", depth: " << this->depth << ", current_id: " << this->current_id
+            << ", need_refresh_all: ";
   print_bool(this->need_refresh_all);
   std::cout << "]" << std::endl;
 
@@ -381,22 +377,20 @@ void PriorityTree::print(bool verbose, const std::string &prefix) {
   if (verbose == true) {
     std::cout << prefix << " #-> priorities = ";
     print_tensor<float>(this->priorities, 10);
-    std::cout << prefix << " #-> sum_tree = " << this->sumTreeToStr(3)
-              << std::endl;
-    std::cout << prefix << " #-> max_tree = " << this->maxTreeToStr(3)
-              << std::endl;
+    std::cout << prefix << " #-> sum_tree = " << this->sumTreeToStr(3) << std::endl;
+    std::cout << prefix << " #-> max_tree = " << this->maxTreeToStr(3) << std::endl;
   }
 }
 
 bool operator==(const PriorityTree &lhs, const PriorityTree &rhs) {
-  // Check that all attributes of standard types and container sizes are
-  // identical.
-  if (lhs.initial_priority != rhs.initial_priority ||
-      lhs.capacity != rhs.capacity || lhs.n_children != rhs.n_children ||
-      lhs.depth != rhs.depth || lhs.current_id != rhs.current_id ||
-      lhs.need_refresh_all != rhs.need_refresh_all ||
-      lhs.sum_tree.size() != rhs.sum_tree.size() ||
-      lhs.max_tree.size() != rhs.max_tree.size()) {
+  // Check that all attributes of standard types are identical.
+  if (lhs.initial_priority != rhs.initial_priority ||  //
+      lhs.capacity != rhs.capacity ||                  //
+      lhs.n_children != rhs.n_children ||              //
+      lhs.depth != rhs.depth ||                        //
+      lhs.current_id != rhs.current_id ||              //
+      lhs.need_refresh_all != rhs.need_refresh_all     //
+  ) {
     return false;
   }
 
@@ -406,6 +400,9 @@ bool operator==(const PriorityTree &lhs, const PriorityTree &rhs) {
   }
 
   // Compare the sum-trees.
+  if (lhs.sum_tree.size() != rhs.sum_tree.size()) {
+    return false
+  }
   for (size_t i = 0; i < lhs.sum_tree.size(); i++) {
     if (lhs.sum_tree[i].size() != rhs.sum_tree[i].size()) {
       return false;
@@ -418,6 +415,9 @@ bool operator==(const PriorityTree &lhs, const PriorityTree &rhs) {
   }
 
   // Compare the max-trees.
+  if (lhs.max_tree.size() != rhs.max_tree.size()) {
+    return false
+  }
   for (size_t i = 0; i < lhs.max_tree.size(); i++) {
     if (!tensorsAreEqual(lhs.max_tree[i], rhs.max_tree[i])) {
       return false;

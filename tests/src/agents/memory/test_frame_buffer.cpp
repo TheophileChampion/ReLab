@@ -22,21 +22,22 @@ void TestFrameBuffer::SetUp() {
   this->params = GetParam();
   this->buffer = std::make_unique<FrameBuffer>(
       this->params.capacity, this->params.frame_skip, this->params.n_steps,
-      this->params.stack_size);
+      this->params.stack_size
+  );
 
   // Create the observations at time t.
   int n_observations = 2 * this->params.capacity + this->params.n_steps;
-  this->observations = getObservations(n_observations, this->params.frame_skip,
-                                       this->params.stack_size);
+  this->observations =
+      getObservations(n_observations, this->params.frame_skip, this->params.stack_size);
 }
 
-FrameBufferParameters::FrameBufferParameters(int capacity, int frame_skip,
-                                             int n_steps, int stack_size)
-    : capacity(capacity), frame_skip(frame_skip), n_steps(n_steps),
-      stack_size(stack_size), gamma(1) {}
+FrameBufferParameters::FrameBufferParameters(
+    int capacity, int frame_skip, int n_steps, int stack_size
+) :
+    capacity(capacity), frame_skip(frame_skip), n_steps(n_steps), stack_size(stack_size),
+    gamma(1) {}
 
-FrameBufferParameters::FrameBufferParameters()
-    : FrameBufferParameters(0, 0, 0, 0) {}
+FrameBufferParameters::FrameBufferParameters() : FrameBufferParameters(0, 0, 0, 0) {}
 
 TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
 
@@ -46,9 +47,9 @@ TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
 
   // Create the multistep experiences at time t (experiences expected to be
   // returned by the frame buffer).
-  auto results =
-      getResultExperiences(observations, params.gamma, params.n_steps,
-                           2 * params.capacity, params.capacity);
+  auto results = getResultExperiences(
+      observations, params.gamma, params.n_steps, 2 * params.capacity, params.capacity
+  );
 
   // Fill the buffer with experiences.
   for (int t = 0; t < params.capacity; t++) {
@@ -72,10 +73,8 @@ TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   // Check that the new experiences in the frame buffer are as expected.
   std::tie(obs_t, obs_tn) = (*buffer)[indices];
   for (int t = 0; t < params.capacity - params.n_steps + 1; t++) {
-    EXPECT_EQ_TENSOR(results[params.capacity - params.n_steps + t].obs,
-                     obs_t[t]);
-    EXPECT_EQ_TENSOR(results[params.capacity - params.n_steps + t].next_obs,
-                     obs_tn[t]);
+    EXPECT_EQ_TENSOR(results[params.capacity - params.n_steps + t].obs, obs_t[t]);
+    EXPECT_EQ_TENSOR(results[params.capacity - params.n_steps + t].next_obs, obs_tn[t]);
   }
 }
 
@@ -86,8 +85,9 @@ TEST_P(TestFrameBuffer, TestStoringAndRetrieval) {
 
   // Create the multistep experiences at time t (experiences expected to be
   // returned by the replay buffer).
-  auto results = getResultExperiences(observations, params.gamma,
-                                      params.n_steps, 2 * params.capacity);
+  auto results = getResultExperiences(
+      observations, params.gamma, params.n_steps, 2 * params.capacity
+  );
 
   // Fill the buffer with experiences.
   int n_experiences = params.capacity + params.n_steps - 1;
@@ -148,7 +148,9 @@ INSTANTIATE_TEST_SUITE_P(
         FrameBufferParameters(6, 2, 2, 4), FrameBufferParameters(7, 3, 1, 2),
         FrameBufferParameters(8, 1, 3, 4), FrameBufferParameters(9, 1, 2, 1),
         FrameBufferParameters(5, 1, 6, 1), FrameBufferParameters(5, 6, 1, 1),
-        FrameBufferParameters(5, 1, 1, 6), FrameBufferParameters(9, 9, 8, 9)));
+        FrameBufferParameters(5, 1, 1, 6), FrameBufferParameters(9, 9, 8, 9)
+    )
+);
 
 TEST(TestFrameBuffer, TestEncodingAndDecoding) {
 

@@ -15,9 +15,9 @@ using namespace relab::helpers;
 
 namespace relab::test::helpers {
 
-DequeParameters::DequeParameters(const std::initializer_list<int> &elements,
-                                 int max_size, int n_pops, int length)
-    : elements(elements), max_size(max_size), n_pops(n_pops), length(length) {}
+DequeParameters::DequeParameters(
+    const std::initializer_list<int> &elements, int max_size, int n_pops, int length
+) : elements(elements), max_size(max_size), n_pops(n_pops), length(length) {}
 
 DequeParameters::DequeParameters() : DequeParameters({}, 0, 0, 0) {}
 
@@ -28,10 +28,9 @@ void TestDeque::compare(Deque<int> &queue, const std::deque<int> &result) {
   }
 }
 
-std::deque<int> TestDeque::getResult(const DequeParameters &params,
-                                     const PushType &push_type,
-                                     const PopType &pop_type) {
-
+std::deque<int> TestDeque::getResult(
+    const DequeParameters &params, const PushType &push_type, const PopType &pop_type
+) {
   // Create the result deque.
   std::deque<int> result;
 
@@ -69,14 +68,12 @@ std::deque<int> TestDeque::getResult(const DequeParameters &params,
 }
 
 void TestDeque::SetUp() {
-
   // Create a deque.
   this->params = GetParam();
   this->queue = std::make_unique<Deque<int>>(params.max_size);
 }
 
 TEST_P(TestDeque, TestClear) {
-
   // Add all elements to the end of the double ended queue.
   for (auto element : params.elements) {
     queue->push_back(element);
@@ -91,7 +88,6 @@ TEST_P(TestDeque, TestClear) {
 }
 
 TEST_P(TestDeque, TestPushBack) {
-
   // Add all elements to the end of the double ended queue.
   for (auto element : params.elements) {
     queue->push_back(element);
@@ -103,7 +99,6 @@ TEST_P(TestDeque, TestPushBack) {
 }
 
 TEST_P(TestDeque, TestPushFront) {
-
   // Add all elements to the front of the double ended queue.
   for (auto element : params.elements) {
     queue->push_front(element);
@@ -115,7 +110,6 @@ TEST_P(TestDeque, TestPushFront) {
 }
 
 TEST_P(TestDeque, TestPopFront) {
-
   // Add all elements to the end of the double ended queue.
   for (auto element : params.elements) {
     queue->push_front(element);
@@ -132,7 +126,6 @@ TEST_P(TestDeque, TestPopFront) {
 }
 
 TEST_P(TestDeque, TestPopBack) {
-
   // Add all elements to the end of the double ended queue.
   for (auto element : params.elements) {
     queue->push_front(element);
@@ -149,7 +142,6 @@ TEST_P(TestDeque, TestPopBack) {
 }
 
 TEST_P(TestDeque, TestSize) {
-
   // Add all elements to the end of the double ended queue.
   for (auto element : params.elements) {
     queue->push_back(element);
@@ -160,7 +152,6 @@ TEST_P(TestDeque, TestSize) {
 }
 
 TEST_P(TestDeque, TestSaveAndLoad) {
-
   // Add all elements to the end of the double ended queue.
   for (auto element : params.elements) {
     queue->push_back(element);
@@ -178,9 +169,12 @@ TEST_P(TestDeque, TestSaveAndLoad) {
   EXPECT_EQ(*queue, loaded_queue);
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, TestDeque,
-                         testing::Values(DequeParameters({5, 1, 1}, 2, 1, 2),
-                                         DequeParameters({}, 4, 0, 0),
-                                         DequeParameters({1, 2, 3, 4}, 4, 3, 4),
-                                         DequeParameters({10, 2}, 4, 2, 2)));
+INSTANTIATE_TEST_SUITE_P(
+    UnitTests, TestDeque,
+    testing::Values(
+        DequeParameters({5, 1, 1}, 2, 1, 2), DequeParameters({}, 4, 0, 0),
+        DequeParameters({1, 2, 3, 4}, 4, 3, 4), DequeParameters({10, 2}, 4, 2, 2)
+    )
+);
+
 }  // namespace relab::test::helpers

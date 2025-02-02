@@ -1,6 +1,9 @@
 ---
 Language: Cpp
 SpacesBeforeTrailingComments: 2
+ColumnLimit: 90
+AlignAfterOpenBracket: BlockIndent
+BreakConstructorInitializers: AfterColon
 SortIncludes: true
 SortUsingDeclarations: true
 IncludeBlocks: Regroup

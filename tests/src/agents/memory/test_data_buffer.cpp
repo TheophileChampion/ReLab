@@ -14,14 +14,13 @@ using namespace relab::agents::memory;
 
 namespace relab::test::agents::memory {
 
-DataBufferParameters::DataBufferParameters(int capacity, int n_steps,
-                                           float gamma, float initial_priority,
-                                           int n_children)
-    : capacity(capacity), n_steps(n_steps), gamma(gamma),
-      initial_priority(initial_priority), n_children(n_children) {}
+DataBufferParameters::DataBufferParameters(
+    int capacity, int n_steps, float gamma, float initial_priority, int n_children
+) :
+    capacity(capacity), n_steps(n_steps), gamma(gamma),
+    initial_priority(initial_priority), n_children(n_children) {}
 
-DataBufferParameters::DataBufferParameters()
-    : DataBufferParameters(0, 0, 0, 0, 0) {}
+DataBufferParameters::DataBufferParameters() : DataBufferParameters(0, 0, 0, 0, 0) {}
 
 void TestDataBuffer::SetUp() {
 
@@ -29,7 +28,8 @@ void TestDataBuffer::SetUp() {
   this->params = GetParam();
   this->buffer = std::make_unique<DataBuffer>(
       this->params.capacity, this->params.n_steps, this->params.gamma,
-      this->params.initial_priority, this->params.n_children);
+      this->params.initial_priority, this->params.n_children
+  );
 
   // Create the observations at time t.
   int n_observations = 2 * this->params.capacity + this->params.n_steps;
@@ -44,9 +44,9 @@ TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {
 
   // Create the multistep experiences at time t (experiences expected to be
   // returned by the frame buffer).
-  auto results =
-      getResultExperiences(observations, params.gamma, params.n_steps,
-                           2 * params.capacity, params.capacity);
+  auto results = getResultExperiences(
+      observations, params.gamma, params.n_steps, 2 * params.capacity, params.capacity
+  );
 
   // Fill the buffer with experiences.
   for (int t = 0; t < params.capacity; t++) {
@@ -58,8 +58,7 @@ TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   auto [actions, rewards, dones] = (*buffer)[indices];
   for (int t = 0; t < params.capacity; t++) {
     EXPECT_EQ(actions[t].item<int>(), results[t].action);
-    EXPECT_TRUE(std::abs(rewards[t].item<float>() - results[t].reward) <
-                TEST_EPSILON);
+    EXPECT_TRUE(std::abs(rewards[t].item<float>() - results[t].reward) < TEST_EPSILON);
     EXPECT_EQ(dones[t].item<bool>(), results[t].done);
   }
 
@@ -72,13 +71,16 @@ TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   // Check that the new experiences in the frame buffer are as expected.
   std::tie(actions, rewards, dones) = (*buffer)[indices];
   for (int t = 0; t < params.capacity - params.n_steps + 1; t++) {
-    EXPECT_EQ(actions[t].item<int>(),
-              results[params.capacity - params.n_steps + t].action);
-    EXPECT_TRUE(std::abs(rewards[t].item<float>() -
-                         results[params.capacity - params.n_steps + t].reward) <
-                TEST_EPSILON);
-    EXPECT_EQ(dones[t].item<bool>(),
-              results[params.capacity - params.n_steps + t].done);
+    EXPECT_EQ(
+        actions[t].item<int>(), results[params.capacity - params.n_steps + t].action
+    );
+    EXPECT_TRUE(
+        std::abs(
+            rewards[t].item<float>() -
+            results[params.capacity - params.n_steps + t].reward
+        ) < TEST_EPSILON
+    );
+    EXPECT_EQ(dones[t].item<bool>(), results[params.capacity - params.n_steps + t].done);
   }
 }
 
@@ -89,8 +91,9 @@ TEST_P(TestDataBuffer, TestStoringAndRetrieval) {
 
   // Create the multistep experiences at time t (experiences expected to be
   // returned by the replay buffer).
-  auto results = getResultExperiences(observations, params.gamma,
-                                      params.n_steps, 2 * params.capacity);
+  auto results = getResultExperiences(
+      observations, params.gamma, params.n_steps, 2 * params.capacity
+  );
 
   // Fill the buffer with experiences.
   int n_experiences = params.capacity + params.n_steps - 1;
@@ -103,8 +106,7 @@ TEST_P(TestDataBuffer, TestStoringAndRetrieval) {
   auto [actions, rewards, dones] = (*buffer)[indices];
   for (int t = 0; t < params.capacity; t++) {
     EXPECT_EQ(actions[t].item<int>(), results[t].action);
-    EXPECT_TRUE(std::abs(rewards[t].item<float>() - results[t].reward) <
-                TEST_EPSILON);
+    EXPECT_TRUE(std::abs(rewards[t].item<float>() - results[t].reward) < TEST_EPSILON);
     EXPECT_EQ(dones[t].item<bool>(), results[t].done);
   }
 
@@ -118,8 +120,10 @@ TEST_P(TestDataBuffer, TestStoringAndRetrieval) {
   std::tie(actions, rewards, dones) = (*buffer)[indices];
   for (int t = 0; t < params.capacity; t++) {
     EXPECT_EQ(actions[t].item<int>(), results[t + params.capacity].action);
-    EXPECT_TRUE(std::abs(rewards[t].item<float>() -
-                         results[t + params.capacity].reward) < TEST_EPSILON);
+    EXPECT_TRUE(
+        std::abs(rewards[t].item<float>() - results[t + params.capacity].reward) <
+        TEST_EPSILON
+    );
     EXPECT_EQ(dones[t].item<bool>(), results[t + params.capacity].done);
   }
 }
@@ -155,5 +159,7 @@ INSTANTIATE_TEST_SUITE_P(
         DataBufferParameters(6, 2, 0.95), DataBufferParameters(7, 1, 0.5),
         DataBufferParameters(8, 3, 0.75), DataBufferParameters(9, 2, 0.8),
         DataBufferParameters(5, 6, 0.979), DataBufferParameters(5, 1, 0.98),
-        DataBufferParameters(5, 1, 0.999), DataBufferParameters(9, 8, 0.1)));
+        DataBufferParameters(5, 1, 0.999), DataBufferParameters(9, 8, 0.1)
+    )
+);
 }  // namespace relab::test::agents::memory

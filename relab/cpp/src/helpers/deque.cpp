@@ -76,8 +76,7 @@ template <> void Deque<bool>::print() {
 }
 // @endcond
 
-template <class Type>
-bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs) {
+template <class Type> bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs) {
   if (lhs.max_size != rhs.max_size || lhs.size() != rhs.size()) {
     return false;
   }

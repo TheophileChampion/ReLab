@@ -51,8 +51,7 @@ std::vector<TensorType> load_vector(std::istream &checkpoint) {
 }
 
 template <class TensorType, class DataType>
-void save_vector(const std::vector<TensorType> &vector,
-                 std::ostream &checkpoint) {
+void save_vector(const std::vector<TensorType> &vector, std::ostream &checkpoint) {
 
   // Save the vector of tensors.
   int capacity = static_cast<int>(vector.capacity());
@@ -127,16 +126,15 @@ void save_tensor(const torch::Tensor &tensor, std::ostream &checkpoint) {
 // Explicit instantiations.
 template std::vector<int> load_vector<int>(std::istream &checkpoint);
 template std::vector<double> load_vector<double>(std::istream &checkpoint);
-template void save_vector<int>(const std::vector<int> &vector,
-                               std::ostream &checkpoint);
-template void save_vector<double>(const std::vector<double> &vector,
-                                  std::ostream &checkpoint);
+template void save_vector<int>(const std::vector<int> &vector, std::ostream &checkpoint);
+template void
+save_vector<double>(const std::vector<double> &vector, std::ostream &checkpoint);
 
 template std::vector<torch::Tensor>
 load_vector<torch::Tensor, float>(std::istream &checkpoint);
-template void
-save_vector<torch::Tensor, float>(const std::vector<torch::Tensor> &vector,
-                                  std::ostream &checkpoint);
+template void save_vector<torch::Tensor, float>(
+    const std::vector<torch::Tensor> &vector, std::ostream &checkpoint
+);
 
 template int load_value<int>(std::istream &checkpoint);
 template bool load_value<bool>(std::istream &checkpoint);
@@ -153,12 +151,8 @@ template torch::Tensor load_tensor<int>(std::istream &checkpoint);
 template torch::Tensor load_tensor<long>(std::istream &checkpoint);
 template torch::Tensor load_tensor<bool>(std::istream &checkpoint);
 template torch::Tensor load_tensor<float>(std::istream &checkpoint);
-template void save_tensor<int>(const torch::Tensor &tensor,
-                               std::ostream &checkpoint);
-template void save_tensor<long>(const torch::Tensor &tensor,
-                                std::ostream &checkpoint);
-template void save_tensor<bool>(const torch::Tensor &tensor,
-                                std::ostream &checkpoint);
-template void save_tensor<float>(const torch::Tensor &tensor,
-                                 std::ostream &checkpoint);
+template void save_tensor<int>(const torch::Tensor &tensor, std::ostream &checkpoint);
+template void save_tensor<long>(const torch::Tensor &tensor, std::ostream &checkpoint);
+template void save_tensor<bool>(const torch::Tensor &tensor, std::ostream &checkpoint);
+template void save_tensor<float>(const torch::Tensor &tensor, std::ostream &checkpoint);
 }  // namespace relab::helpers
