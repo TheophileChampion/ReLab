@@ -111,5 +111,4 @@ void ZCompressor::decode(const torch::Tensor &input, float *output) {
   inflate(&inflate_stream, Z_NO_FLUSH);
   inflateEnd(&inflate_stream);
 }
-
 }  // namespace relab::agents::memory
