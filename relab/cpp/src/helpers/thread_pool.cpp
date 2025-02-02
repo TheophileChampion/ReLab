@@ -20,7 +20,9 @@ ThreadPool::ThreadPool(size_t num_threads) {
           unique_lock<mutex> lock(this->queue_mutex);
 
           // Waiting until there is a task to execute or the pool is stopped.
-          this->cv.wait(lock, [this] { return !this->tasks.empty() || this->stop; });
+          this->cv.wait(lock, [this] {
+            return !this->tasks.empty() || this->stop;
+          });
 
           // Exit the thread in case the pool is stopped and there are no tasks.
           if (this->stop && this->tasks.empty()) {

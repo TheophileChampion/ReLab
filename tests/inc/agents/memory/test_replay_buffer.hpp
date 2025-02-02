@@ -75,7 +75,8 @@ class TestReplayBuffer : public testing::TestWithParam<ReplayBufferParameters> {
 /**
  * A fixture class for testing the replay buffer.
  */
-class TestReplayBuffer2 : public testing::TestWithParam<ReplayBufferParameters> {};
+class TestReplayBuffer2
+    : public testing::TestWithParam<ReplayBufferParameters> {};
 
 /**
  * A fixture class for testing the replay buffer.

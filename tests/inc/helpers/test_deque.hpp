@@ -34,7 +34,8 @@ class DequeParameters {
    * @param length the expected length of the deque at the end of the test
    */
   DequeParameters(
-      const std::initializer_list<int> &elements, int max_size, int n_pops, int length
+      const std::initializer_list<int> &elements, int max_size, int n_pops,
+      int length
   );
 
   /**
@@ -84,7 +85,8 @@ class TestDeque : public testing::TestWithParam<DequeParameters> {
    * @return the expected result of the test
    */
   static std::deque<int> getResult(
-      const DequeParameters &params, const PushType &push_type, const PopType &pop_type
+      const DequeParameters &params, const PushType &push_type,
+      const PopType &pop_type
   );
 
   /**

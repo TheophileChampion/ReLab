@@ -73,8 +73,9 @@ class FrameBuffer {
    * decompression of tensors
    */
   FrameBuffer(
-      int capacity, int frame_skip, int n_steps, int stack_size, int screen_size = 84,
-      CompressorType type = CompressorType::ZLIB, int n_threads = 1
+      int capacity, int frame_skip, int n_steps, int stack_size,
+      int screen_size = 84, CompressorType type = CompressorType::ZLIB,
+      int n_threads = 1
   );
 
   /**
@@ -90,7 +91,8 @@ class FrameBuffer {
    * retrieved
    * @return the observations at time t and t + n_steps
    */
-  std::tuple<torch::Tensor, torch::Tensor> operator[](const torch::Tensor &indices);
+  std::tuple<torch::Tensor, torch::Tensor>
+  operator[](const torch::Tensor &indices);
 
   /**
    * Retrieve the number of experiences stored in the buffer.

@@ -42,7 +42,9 @@ std::vector<TensorType> load_vector(std::istream &checkpoint);
  * @param checkpoint the stream writing into the checkpoint file
  */
 template <class TensorType, class DataType>
-void save_vector(const std::vector<TensorType> &vector, std::ostream &checkpoint);
+void save_vector(
+    const std::vector<TensorType> &vector, std::ostream &checkpoint
+);
 
 /**
  * Load a value from a stream.

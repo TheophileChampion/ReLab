@@ -18,7 +18,8 @@ PriorityTreeParameters::PriorityTreeParameters(
     const std::initializer_list<float> &elements, float result
 ) : elements(elements), result(result) {}
 
-PriorityTreeParameters::PriorityTreeParameters() : PriorityTreeParameters({}, 0) {}
+PriorityTreeParameters::PriorityTreeParameters() :
+    PriorityTreeParameters({}, 0) {}
 
 void TestPriorityTree::SetUp() {
   // Create a priority tree.
@@ -74,7 +75,8 @@ TEST_P(TestPriorityTree, TestSaveAndLoad) {
 INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree,
     testing::Values(
-        PriorityTreeParameters({0, 0, 0, 0}, 0), PriorityTreeParameters({0, 1}, 1),
+        PriorityTreeParameters({0, 0, 0, 0}, 0),
+        PriorityTreeParameters({0, 1}, 1),
         PriorityTreeParameters({10, 0, 0, 0}, 10),
         PriorityTreeParameters({1, 10, 100, 1000}, 1111),
         PriorityTreeParameters({1, 10, 100, 1000, 2}, 1112)
@@ -101,7 +103,8 @@ TEST_P(TestPriorityTree2, TestMax) {
 INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree2,
     testing::Values(
-        PriorityTreeParameters({0, 0, 0, 0}, 0), PriorityTreeParameters({0, 1}, 1),
+        PriorityTreeParameters({0, 0, 0, 0}, 0),
+        PriorityTreeParameters({0, 1}, 1),
         PriorityTreeParameters({10, 0, 0, 0}, 10),
         PriorityTreeParameters({1, 10, 100, 1000}, 1000),
         PriorityTreeParameters({1000, 10, 100, 1, 999}, 999)
@@ -143,7 +146,9 @@ INSTANTIATE_TEST_SUITE_P(
         PriorityTreeParameters4(
             {0, 1, 2, 3}, "[[1.0, 5.0], [6.0]]", "[[1.0, 3.0], [3.0]]", 4
         ),
-        PriorityTreeParameters4({0, 1}, "[[1.0, 0.0], [1.0]]", "[[1.0, 0.0], [1.0]]", 2),
+        PriorityTreeParameters4(
+            {0, 1}, "[[1.0, 0.0], [1.0]]", "[[1.0, 0.0], [1.0]]", 2
+        ),
         PriorityTreeParameters4(
             {10, 0, 0, 0}, "[[10.0, 0.0], [10.0]]", "[[10.0, 0.0], [10.0]]", 4
         ),
@@ -161,11 +166,13 @@ INSTANTIATE_TEST_SUITE_P(
 PriorityTreeParameters5::PriorityTreeParameters5(
     const std::initializer_list<float> &elements,
     const std::initializer_list<int> &set_indices,
-    const std::initializer_list<float> &set_values, const std::string &sum_result,
-    const std::string &max_result, int length_result
+    const std::initializer_list<float> &set_values,
+    const std::string &sum_result, const std::string &max_result,
+    int length_result
 ) :
     elements(elements), set_indices(set_indices), set_values(set_values),
-    sum_result(sum_result), max_result(max_result), length_result(length_result) {}
+    sum_result(sum_result), max_result(max_result),
+    length_result(length_result) {}
 
 TEST_P(TestPriorityTree5, TestSetItem) {
   // Arrange.
@@ -197,10 +204,12 @@ INSTANTIATE_TEST_SUITE_P(
             "[[0.0, 10.0], [10.0]]", 4
         ),
         PriorityTreeParameters5(
-            {0, 1, 2, 3}, {1, 2}, {3, 0}, "[[3.0, 3.0], [6.0]]", "[[3.0, 3.0], [3.0]]", 4
+            {0, 1, 2, 3}, {1, 2}, {3, 0}, "[[3.0, 3.0], [6.0]]",
+            "[[3.0, 3.0], [3.0]]", 4
         ),
         PriorityTreeParameters5(
-            {0, 1}, {0, 1}, {2, -1}, "[[1.0, 0.0], [1.0]]", "[[2.0, 0.0], [2.0]]", 2
+            {0, 1}, {0, 1}, {2, -1}, "[[1.0, 0.0], [1.0]]",
+            "[[2.0, 0.0], [2.0]]", 2
         ),
         PriorityTreeParameters5(
             {10, 0, 0, 0}, {0, 0}, {0, -1}, "[[-1.0, 0.0], [-1.0]]",
@@ -211,8 +220,8 @@ INSTANTIATE_TEST_SUITE_P(
             "[[10.0, 100.0], [100.0]]", 4
         ),
         PriorityTreeParameters5(
-            {1000, 10, 100, 1, 999}, {0, 1, 2}, {0, 0, 0}, "[[999.0, 0.0], [999.0]]",
-            "[[999.0, 0.0], [999.0]]", 4
+            {1000, 10, 100, 1, 999}, {0, 1, 2}, {0, 0, 0},
+            "[[999.0, 0.0], [999.0]]", "[[999.0, 0.0], [999.0]]", 4
         )
     )
 );
@@ -258,15 +267,17 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
-PriorityTreeParameters7::PriorityTreeParameters7(int index, int n_children, int result) :
-    index(index), n_children(n_children), result(result) {}
+PriorityTreeParameters7::PriorityTreeParameters7(
+    int index, int n_children, int result
+) : index(index), n_children(n_children), result(result) {}
 
 TEST_P(TestPriorityTree7, TestParentIndex) {
   // Arrange.
   auto params = GetParam();
   int capacity = 100;
   int initial_priority = 1.0;
-  auto priority_tree = PriorityTree(capacity, initial_priority, params.n_children);
+  auto priority_tree =
+      PriorityTree(capacity, initial_priority, params.n_children);
 
   // Assert.
   EXPECT_EQ(priority_tree.parentIndex(params.index), params.result);
@@ -315,20 +326,25 @@ INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree8,
     testing::Values(
         PriorityTreeParameters8(repeat<float>(1, 8), 8, repeat<float>(0, 8), 0),
-        PriorityTreeParameters8(repeat<float>(1, 8), 8, repeat<float>(0.5, 8), 4),
-        PriorityTreeParameters8(repeat<float>(1, 6), 6, repeat<float>(0.5, 6), 3),
         PriorityTreeParameters8(
-            repeat<float>(MAX_PRIORITY, 6), 6, repeat<float>(0.1232, 6), 0.1232 * 6
+            repeat<float>(1, 8), 8, repeat<float>(0.5, 8), 4
+        ),
+        PriorityTreeParameters8(
+            repeat<float>(1, 6), 6, repeat<float>(0.5, 6), 3
+        ),
+        PriorityTreeParameters8(
+            repeat<float>(MAX_PRIORITY, 6), 6, repeat<float>(0.1232, 6),
+            0.1232 * 6
         )
     )
 );
 
 PriorityTreeParameters9::PriorityTreeParameters9(
-    int capacity, int n_children, const std::vector<float> &elements, float priority,
-    float result
+    int capacity, int n_children, const std::vector<float> &elements,
+    float priority, float result
 ) :
-    capacity(capacity), n_children(n_children), elements(elements), priority(priority),
-    result(result) {}
+    capacity(capacity), n_children(n_children), elements(elements),
+    priority(priority), result(result) {}
 
 TEST(TestPriorityTree, TestSampleIndices) {
   // Arrange.
@@ -360,7 +376,8 @@ TEST_P(TestPriorityTree9, TestTowerSampling) {
   // Arrange.
   auto params = GetParam();
   int initial_priority = 1.0;
-  auto priority_tree = PriorityTree(params.capacity, initial_priority, params.n_children);
+  auto priority_tree =
+      PriorityTree(params.capacity, initial_priority, params.n_children);
 
   // Act.
   for (auto element : params.elements) {

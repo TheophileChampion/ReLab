@@ -189,3 +189,5 @@ Testing/
 
 # SKbuild
 _skbuild
+
+megalinter-reports/

@@ -27,17 +27,19 @@ void TestFrameBuffer::SetUp() {
 
   // Create the observations at time t.
   int n_observations = 2 * this->params.capacity + this->params.n_steps;
-  this->observations =
-      getObservations(n_observations, this->params.frame_skip, this->params.stack_size);
+  this->observations = getObservations(
+      n_observations, this->params.frame_skip, this->params.stack_size
+  );
 }
 
 FrameBufferParameters::FrameBufferParameters(
     int capacity, int frame_skip, int n_steps, int stack_size
 ) :
-    capacity(capacity), frame_skip(frame_skip), n_steps(n_steps), stack_size(stack_size),
-    gamma(1) {}
+    capacity(capacity), frame_skip(frame_skip), n_steps(n_steps),
+    stack_size(stack_size), gamma(1) {}
 
-FrameBufferParameters::FrameBufferParameters() : FrameBufferParameters(0, 0, 0, 0) {}
+FrameBufferParameters::FrameBufferParameters() :
+    FrameBufferParameters(0, 0, 0, 0) {}
 
 TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
 
@@ -48,7 +50,8 @@ TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   // Create the multistep experiences at time t (experiences expected to be
   // returned by the frame buffer).
   auto results = getResultExperiences(
-      observations, params.gamma, params.n_steps, 2 * params.capacity, params.capacity
+      observations, params.gamma, params.n_steps, 2 * params.capacity,
+      params.capacity
   );
 
   // Fill the buffer with experiences.
@@ -73,8 +76,12 @@ TEST_P(TestFrameBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   // Check that the new experiences in the frame buffer are as expected.
   std::tie(obs_t, obs_tn) = (*buffer)[indices];
   for (int t = 0; t < params.capacity - params.n_steps + 1; t++) {
-    EXPECT_EQ_TENSOR(results[params.capacity - params.n_steps + t].obs, obs_t[t]);
-    EXPECT_EQ_TENSOR(results[params.capacity - params.n_steps + t].next_obs, obs_tn[t]);
+    EXPECT_EQ_TENSOR(
+        results[params.capacity - params.n_steps + t].obs, obs_t[t]
+    );
+    EXPECT_EQ_TENSOR(
+        results[params.capacity - params.n_steps + t].next_obs, obs_tn[t]
+    );
   }
 }
 

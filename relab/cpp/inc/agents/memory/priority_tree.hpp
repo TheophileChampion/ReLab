@@ -180,7 +180,8 @@ class PriorityTree {
    * @return the maximum value
    */
   float maxChildValue(
-      int depth, int parent_index, int index, float old_priority, float new_priority
+      int depth, int parent_index, int index, float old_priority,
+      float new_priority
   );
 
   /**
@@ -212,7 +213,8 @@ class PriorityTree {
    */
   template <class Tree, class T>
   std::string treeToStr(
-      Tree tree, T (*get)(Tree, int, int), int max_n_elements = -1, int precision = 1
+      Tree tree, T (*get)(Tree, int, int), int max_n_elements = -1,
+      int precision = 1
   );
 
   /**

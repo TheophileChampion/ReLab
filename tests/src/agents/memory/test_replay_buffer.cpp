@@ -20,15 +20,19 @@ namespace relab::test::agents::memory {
  * Implementation of the TestReplayBuffer test suite.
  */
 
-ReplayBufferParameters::ReplayBufferParameters(int capacity, int n_steps, float gamma) :
-    prioritized(false), capacity(capacity), batch_size(32), frame_skip(1), stack_size(4),
-    screen_size(84), n_steps(n_steps), gamma(gamma), comp_type(CompressorType::ZLIB) {
+ReplayBufferParameters::ReplayBufferParameters(
+    int capacity, int n_steps, float gamma
+) :
+    prioritized(false), capacity(capacity), batch_size(32), frame_skip(1),
+    stack_size(4), screen_size(84), n_steps(n_steps), gamma(gamma),
+    comp_type(CompressorType::ZLIB) {
   this->args["n_steps"] = n_steps;
   this->args["gamma"] = gamma;
 }
 
-ReplayBufferParameters::ReplayBufferParameters(bool prioritized, int batch_size) :
-    ReplayBufferParameters(4, 1, 1) {
+ReplayBufferParameters::ReplayBufferParameters(
+    bool prioritized, int batch_size
+) : ReplayBufferParameters(4, 1, 1) {
   this->batch_size = batch_size;
   this->prioritized = prioritized;
   if (prioritized == true) {
@@ -37,7 +41,8 @@ ReplayBufferParameters::ReplayBufferParameters(bool prioritized, int batch_size)
   }
 }
 
-ReplayBufferParameters::ReplayBufferParameters() : ReplayBufferParameters(false) {}
+ReplayBufferParameters::ReplayBufferParameters() :
+    ReplayBufferParameters(false) {}
 
 void TestReplayBuffer::SetUp() {
   // Create the replay buffer.
@@ -50,8 +55,9 @@ void TestReplayBuffer::SetUp() {
 
   // Create the observations at time t.
   int n_observations = 2 * this->params.capacity + this->params.n_steps;
-  this->observations =
-      getObservations(n_observations, this->params.frame_skip, this->params.stack_size);
+  this->observations = getObservations(
+      n_observations, this->params.frame_skip, this->params.stack_size
+  );
 }
 
 TEST_P(TestReplayBuffer, TestStoringAndRetrievalMultipleEpisodes) {
@@ -62,7 +68,8 @@ TEST_P(TestReplayBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   // Create the multistep experiences at time t (experiences expected to be
   // returned by the frame buffer).
   auto results = getResultExperiences(
-      observations, params.gamma, params.n_steps, 2 * params.capacity, params.capacity
+      observations, params.gamma, params.n_steps, 2 * params.capacity,
+      params.capacity
   );
 
   // Fill the buffer with experiences.
@@ -238,6 +245,8 @@ TEST_P(TestReplayBuffer3, TestClear) {
   EXPECT_EQ(buffer->size(), 0);
 }
 
-INSTANTIATE_TEST_SUITE_P(UnitTests, TestReplayBuffer3, testing::Values(0, 1, 2, 3, 10));
+INSTANTIATE_TEST_SUITE_P(
+    UnitTests, TestReplayBuffer3, testing::Values(0, 1, 2, 3, 10)
+);
 
 }  // namespace relab::test::agents::memory

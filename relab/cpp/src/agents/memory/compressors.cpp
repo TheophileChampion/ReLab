@@ -24,7 +24,8 @@ Compressor::create(int height, int width, CompressorType type) {
 Compressor::~Compressor() {}
 
 int Compressor::size_of(const torch::Tensor &tensor) const {
-  return tensor.numel() * torch::elementSize(torch::typeMetaToScalarType(tensor.dtype()));
+  return tensor.numel() *
+         torch::elementSize(torch::typeMetaToScalarType(tensor.dtype()));
 }
 
 /**
@@ -37,9 +38,13 @@ NoCompression::NoCompression(int height, int width) {
 
 NoCompression::~NoCompression() {}
 
-torch::Tensor NoCompression::encode(const torch::Tensor &input) { return input; }
+torch::Tensor NoCompression::encode(const torch::Tensor &input) {
+  return input;
+}
 
-torch::Tensor NoCompression::decode(const torch::Tensor &input) { return input; }
+torch::Tensor NoCompression::decode(const torch::Tensor &input) {
+  return input;
+}
 
 void NoCompression::decode(const torch::Tensor &input, float *output) {
   std::memcpy((void *)output, input.data_ptr(), this->uncompressed_size);
@@ -62,7 +67,8 @@ ZCompressor::ZCompressor(int height, int width) {
   this->n_dims = 2;
 
   // Allocate the buffer storing the compressed tensor.
-  this->max_compressed_size = this->uncompressed_size + (this->n_dims + 1) * sizeof(int);
+  this->max_compressed_size =
+      this->uncompressed_size + (this->n_dims + 1) * sizeof(int);
   this->compressed_output.resize(this->max_compressed_size / sizeof(float));
 }
 
@@ -81,10 +87,11 @@ torch::Tensor ZCompressor::encode(const torch::Tensor &input) {
   deflateEnd(&this->deflate_stream);
 
   // Return the compressed tensor.
-  int compressed_size =
-      ((char *)this->deflate_stream.next_out - (char *)this->compressed_output.data()) /
-      sizeof(int);
-  return torch::from_blob(this->compressed_output.data(), {compressed_size}).clone();
+  int compressed_size = ((char *)this->deflate_stream.next_out -
+                         (char *)this->compressed_output.data()) /
+                        sizeof(int);
+  return torch::from_blob(this->compressed_output.data(), {compressed_size})
+      .clone();
 }
 
 torch::Tensor ZCompressor::decode(const torch::Tensor &input) {

@@ -44,7 +44,8 @@ void print_vector(const std::vector<T> &vector, int max_n_elements = -1);
  */
 template <class TensorType, class DataType>
 void print_vector(
-    const std::vector<TensorType> &vector, int start = 0, int max_n_elements = -1
+    const std::vector<TensorType> &vector, int start = 0,
+    int max_n_elements = -1
 );
 
 /**
@@ -94,7 +95,9 @@ class Logger {
    * @params level the minimum level required for a message to be displayed
    * @params logger_name the logger's name
    */
-  explicit Logger(LogLevel level = INFO, const std::string &logger_name = "root");
+  explicit Logger(
+      LogLevel level = INFO, const std::string &logger_name = "root"
+  );
 
   /**
    * Log a debugging message.

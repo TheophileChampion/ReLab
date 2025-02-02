@@ -58,7 +58,8 @@ class DataBuffer {
    * @param n_children the number of children each node has
    */
   DataBuffer(
-      int capacity, int n_steps, float gamma, float initial_priority, int n_children
+      int capacity, int n_steps, float gamma, float initial_priority,
+      int n_children
   );
 
   /**

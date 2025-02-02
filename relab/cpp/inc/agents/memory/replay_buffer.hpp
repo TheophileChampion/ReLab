@@ -80,8 +80,9 @@ class ReplayBuffer {
    *     - gamma: the discount factor
    */
   ReplayBuffer(
-      int capacity = 10000, int batch_size = 32, int frame_skip = 1, int stack_size = 4,
-      int screen_size = 84, CompressorType type = CompressorType::ZLIB,
+      int capacity = 10000, int batch_size = 32, int frame_skip = 1,
+      int stack_size = 4, int screen_size = 84,
+      CompressorType type = CompressorType::ZLIB,
       std::map<std::string, float> args = {}
   );
 
@@ -118,7 +119,8 @@ class ReplayBuffer {
    * buffer must be loaded ("" for default name)
    * @param save_all: true if all replay buffer must be saved, false otherwise
    */
-  void load(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
+  void
+  load(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
   /**
    * Load a replay buffer from the filesystem.
@@ -134,7 +136,8 @@ class ReplayBuffer {
    * buffer must be saved ("" for default name)
    * @param save_all: true if all replay buffer must be saved, false otherwise
    */
-  void save(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
+  void
+  save(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
   /**
    * Save the replay buffer on the filesystem.

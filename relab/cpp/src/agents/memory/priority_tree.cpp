@@ -18,7 +18,9 @@ using namespace relab::helpers;
 
 namespace relab::agents::memory::impl {
 
-PriorityTree::PriorityTree(int capacity, float initial_priority, int n_children) {
+PriorityTree::PriorityTree(
+    int capacity, float initial_priority, int n_children
+) {
   // Store the priority tree parameters.
   this->initial_priority = initial_priority;
   this->capacity = capacity;
@@ -93,7 +95,8 @@ void PriorityTree::append(float priority) {
   this->updateSumTree(idx, old_priority);
 
   // Check if the full sum tree must be refreshed.
-  if (this->max() != this->initial_priority and this->need_refresh_all == true) {
+  if (this->max() != this->initial_priority and
+      this->need_refresh_all == true) {
     this->refreshAllSumTree();
     this->need_refresh_all = false;
   }
@@ -113,7 +116,8 @@ void PriorityTree::set(int index, float priority) {
   this->updateSumTree(idx, old_priority);
 
   // Check if the full sum tree must be refreshed.
-  if (this->max() != this->initial_priority and this->need_refresh_all == true) {
+  if (this->max() != this->initial_priority and
+      this->need_refresh_all == true) {
     this->refreshAllSumTree();
     this->need_refresh_all = false;
   }
@@ -137,7 +141,8 @@ int PriorityTree::externalIndex(int index) {
 
 torch::Tensor PriorityTree::sampleIndices(int n) {
   // Sample priorities between zero and the sum of priorities.
-  torch::Tensor sampled_priorities = torch::rand({n}) * static_cast<float>(this->sum());
+  torch::Tensor sampled_priorities =
+      torch::rand({n}) * static_cast<float>(this->sum());
 
   // Sample 'n' indices with a probability proportional to their priorities.
   torch::Tensor indices = torch::zeros({n}, torch::kInt64);
@@ -249,8 +254,9 @@ void PriorityTree::updateMaxTree(int index, float old_priority) {
     // Update the maximum values in the max-tree.
     float parent_value = this->max_tree[depth][parent_index].item<float>();
     if (parent_value == old_priority) {
-      this->max_tree[depth][parent_index] =
-          this->maxChildValue(depth, parent_index, index, old_priority, new_priority);
+      this->max_tree[depth][parent_index] = this->maxChildValue(
+          depth, parent_index, index, old_priority, new_priority
+      );
     } else if (parent_value < new_priority) {
       this->max_tree[depth][parent_index] = new_priority;
     } else {
@@ -264,7 +270,8 @@ void PriorityTree::updateMaxTree(int index, float old_priority) {
 }
 
 float PriorityTree::maxChildValue(
-    int depth, int parent_index, int index, float old_priority, float new_priority
+    int depth, int parent_index, int index, float old_priority,
+    float new_priority
 ) {
   int first_child = this->n_children * parent_index;
   auto slice = Slice(first_child, first_child + this->n_children);
@@ -322,7 +329,8 @@ std::string PriorityTree::treeToStr(
       out << get(tree, i, j);
     }
 
-    // Close the bracket in the string, adding an ellipse if elements are hidden.
+    // Close the bracket in the string, adding an ellipse if elements are
+    // hidden.
     if (max_j != m) {
       out << ((max_n_elements != 0) ? " ..." : "...");
     }
@@ -367,9 +375,10 @@ void PriorityTree::save(std::ostream &checkpoint) {
 void PriorityTree::print(bool verbose, const std::string &prefix) {
   // Display the most important information about the data buffer.
   std::cout << "PriorityTree[initial_priority: " << this->initial_priority
-            << ", capacity: " << this->capacity << ", n_children: " << this->n_children
-            << ", depth: " << this->depth << ", current_id: " << this->current_id
-            << ", need_refresh_all: ";
+            << ", capacity: " << this->capacity
+            << ", n_children: " << this->n_children
+            << ", depth: " << this->depth
+            << ", current_id: " << this->current_id << ", need_refresh_all: ";
   print_bool(this->need_refresh_all);
   std::cout << "]" << std::endl;
 
@@ -377,8 +386,10 @@ void PriorityTree::print(bool verbose, const std::string &prefix) {
   if (verbose == true) {
     std::cout << prefix << " #-> priorities = ";
     print_tensor<float>(this->priorities, 10);
-    std::cout << prefix << " #-> sum_tree = " << this->sumTreeToStr(3) << std::endl;
-    std::cout << prefix << " #-> max_tree = " << this->maxTreeToStr(3) << std::endl;
+    std::cout << prefix << " #-> sum_tree = " << this->sumTreeToStr(3)
+              << std::endl;
+    std::cout << prefix << " #-> max_tree = " << this->maxTreeToStr(3)
+              << std::endl;
   }
 }
 

@@ -5,7 +5,8 @@
 namespace relab::agents::memory {
 
 Experience::Experience(
-    torch::Tensor obs, int action, float reward, bool done, torch::Tensor next_obs
+    torch::Tensor obs, int action, float reward, bool done,
+    torch::Tensor next_obs
 ) {
   this->obs = obs;
   this->action = action;
