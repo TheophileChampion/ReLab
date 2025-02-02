@@ -1,11 +1,14 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_data_buffer.hpp"
-#include "agents/memory/data_buffer.hpp"
-#include "relab_test.hpp"
-#include <gtest/gtest.h>
+
 #include <memory>
+
+#include "agents/memory/data_buffer.hpp"
+#include <gtest/gtest.h>
 #include <torch/extension.h>
+
+#include "relab_test.hpp"
 
 using namespace relab::agents::memory;
 
@@ -153,4 +156,4 @@ INSTANTIATE_TEST_SUITE_P(
         DataBufferParameters(8, 3, 0.75), DataBufferParameters(9, 2, 0.8),
         DataBufferParameters(5, 6, 0.979), DataBufferParameters(5, 1, 0.98),
         DataBufferParameters(5, 1, 0.999), DataBufferParameters(9, 8, 0.1)));
-} // namespace relab::test::agents::memory
+}  // namespace relab::test::agents::memory

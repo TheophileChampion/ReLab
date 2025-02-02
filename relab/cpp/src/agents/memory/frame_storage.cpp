@@ -1,9 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/frame_storage.hpp"
+
 #include <iostream>
 #include <string>
 #include <utility>
+
 #include "helpers/debug.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/torch.hpp"

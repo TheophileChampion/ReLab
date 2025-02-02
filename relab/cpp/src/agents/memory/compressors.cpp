@@ -1,7 +1,9 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/compressors.hpp"
+
 #include <memory>
+
 #include "agents/memory/replay_buffer.hpp"
 
 namespace relab::agents::memory {
@@ -85,10 +87,9 @@ torch::Tensor ZCompressor::encode(const torch::Tensor &input) {
   deflateEnd(&this->deflate_stream);
 
   // Return the compressed tensor.
-  int compressed_size = (
-    (char *)this->deflate_stream.next_out -
-    (char *)this->compressed_output.data()
-  ) / sizeof(int);
+  int compressed_size = ((char *)this->deflate_stream.next_out -
+                         (char *)this->compressed_output.data()) /
+                        sizeof(int);
   return torch::from_blob(this->compressed_output.data(), {compressed_size})
       .clone();
 }

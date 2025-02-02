@@ -1,6 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "helpers/timer.hpp"
+
 #include <iostream>
 #include <string>
 

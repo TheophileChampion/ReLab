@@ -1,11 +1,12 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#include <pybind11/pybind11.h>
 #include <map>
 #include <string>
+
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/replay_buffer.hpp"
+#include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 using namespace pybind11::literals;

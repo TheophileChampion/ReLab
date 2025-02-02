@@ -1,6 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/replay_buffer.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -9,6 +10,7 @@
 #include <memory>
 #include <random>
 #include <string>
+
 #include "helpers/debug.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/torch.hpp"

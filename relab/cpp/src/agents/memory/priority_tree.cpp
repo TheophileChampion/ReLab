@@ -1,12 +1,14 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/priority_tree.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "helpers/debug.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/torch.hpp"

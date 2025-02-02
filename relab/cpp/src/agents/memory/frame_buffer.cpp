@@ -1,12 +1,14 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/frame_buffer.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
+
 #include "agents/memory/replay_buffer.hpp"
 #include "helpers/debug.hpp"
 #include "helpers/serialize.hpp"

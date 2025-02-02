@@ -1,12 +1,15 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_replay_buffer.hpp"
+
+#include <memory>
+
 #include "agents/memory/compressors.hpp"
 #include "helpers/torch.hpp"
-#include "relab_test.hpp"
 #include <gtest/gtest.h>
-#include <memory>
 #include <torch/extension.h>
+
+#include "relab_test.hpp"
 
 using namespace relab::agents::memory;
 using namespace relab::helpers;
@@ -236,4 +239,4 @@ TEST_P(TestReplayBuffer3, TestClear) {
 
 INSTANTIATE_TEST_SUITE_P(UnitTests, TestReplayBuffer3,
                          testing::Values(0, 1, 2, 3, 10));
-} // namespace relab::test::agents::memory
+}  // namespace relab::test::agents::memory

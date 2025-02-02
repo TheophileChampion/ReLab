@@ -1,12 +1,14 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/data_buffer.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <tuple>
+
 #include "agents/memory/replay_buffer.hpp"
 #include "helpers/debug.hpp"
 #include "helpers/serialize.hpp"
@@ -165,10 +167,8 @@ void DataBuffer::print(bool verbose, const std::string &prefix) {
 
 bool operator==(const DataBuffer &lhs, const DataBuffer &rhs) {
   // Check that all attributes of standard types are identical.
-  if (lhs.capacity != rhs.capacity ||
-      lhs.n_steps != rhs.n_steps ||
-      lhs.gamma != rhs.gamma ||
-      lhs.current_id != rhs.current_id) {
+  if (lhs.capacity != rhs.capacity || lhs.n_steps != rhs.n_steps ||
+      lhs.gamma != rhs.gamma || lhs.current_id != rhs.current_id) {
     return false;
   }
 
@@ -193,4 +193,4 @@ bool operator==(const DataBuffer &lhs, const DataBuffer &rhs) {
 bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs) {
   return !(lhs == rhs);
 }
-} // namespace relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl

@@ -1,9 +1,12 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_frame_buffer.hpp"
-#include "relab_test.hpp"
+
 #include <memory>
+
 #include <torch/extension.h>
+
+#include "relab_test.hpp"
 
 using namespace relab::agents::memory;
 
@@ -166,4 +169,4 @@ TEST(TestFrameBuffer, TestEncodingAndDecoding) {
     EXPECT_EQ_TENSOR(frame, decoded_frame);
   }
 }
-} // namespace relab::test::agents::memory
+}  // namespace relab::test::agents::memory

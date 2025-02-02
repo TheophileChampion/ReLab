@@ -1,11 +1,14 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_priority_tree.hpp"
-#include "relab_test.hpp"
+
 #include <memory>
 #include <string>
-#include <torch/extension.h>
 #include <vector>
+
+#include <torch/extension.h>
+
+#include "relab_test.hpp"
 
 using namespace relab::agents::memory;
 
@@ -405,4 +408,4 @@ INSTANTIATE_TEST_SUITE_P(
         PriorityTreeParameters9(8, 2, {1, 3, 3, 1, 1, 1}, 5.7, 2),
         PriorityTreeParameters9(8, 2, {1, 3, 3, 1, 1, 1}, 6.8, 2),
         PriorityTreeParameters9(8, 2, {1, 3, 3, 1, 1, 1}, 11.0, 5)));
-} // namespace relab::test::agents::memory
+}  // namespace relab::test::agents::memory
