@@ -35,7 +35,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: TODO remove
-        run: ls -la && ls -la ReLab
+        run: ls -la
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.2.1
         env:
