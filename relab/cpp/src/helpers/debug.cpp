@@ -2,13 +2,16 @@
 
 #include "helpers/debug.hpp"
 
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+
 namespace relab::helpers {
 
-template <class T>
-void print_tensor(const torch::Tensor &tensor, int max_n_elements, bool new_line) {
+template <class T> void print_tensor(const torch::Tensor &tensor, int max_n_elements, bool new_line) {
   // Display the most important information about the tensor.
-  std::cout << "Tensor(type: " << tensor.dtype() << ", shape: " << tensor.sizes()
-            << ", values: [";
+  std::cout << "Tensor(type: " << tensor.dtype() << ", shape: " << tensor.sizes() << ", values: [";
 
   // Retrieve the number of elements that needs to be displayed.
   if (max_n_elements == -1) {
@@ -34,11 +37,9 @@ void print_tensor(const torch::Tensor &tensor, int max_n_elements, bool new_line
   }
 }
 
-template <>
-void print_tensor<bool>(const torch::Tensor &tensor, int max_n_elements, bool new_line) {
+template <> void print_tensor<bool>(const torch::Tensor &tensor, int max_n_elements, bool new_line) {
   // Display the most important information about the tensor.
-  std::cout << "Tensor(type: " << tensor.dtype() << ", shape: " << tensor.sizes()
-            << ", values: [";
+  std::cout << "Tensor(type: " << tensor.dtype() << ", shape: " << tensor.sizes() << ", values: [";
 
   // Retrieve the number of elements that needs to be displayed.
   if (max_n_elements == -1) {
@@ -67,8 +68,7 @@ void print_tensor<bool>(const torch::Tensor &tensor, int max_n_elements, bool ne
 template <class T> void print_vector(const std::vector<T> &vector, int max_n_elements) {
   // Display the most important information about the tensor.
   int size = static_cast<int>(vector.size());
-  std::cout << "std::vector(type: " << torch::CppTypeToScalarType<T>()
-            << ", size: " << size << ", values: [";
+  std::cout << "std::vector(type: " << torch::CppTypeToScalarType<T>() << ", size: " << size << ", values: [";
 
   // Retrieve the number of elements that needs to be displayed.
   if (max_n_elements == -1) {
@@ -137,8 +137,7 @@ std::string Logger::levelToString(LogLevel level) {
   }
 }
 
-Logger::Logger(LogLevel level, const std::string &logger_name) :
-    level(level), logger_name(logger_name) {}
+Logger::Logger(LogLevel level, const std::string &logger_name) : level(level), logger_name(logger_name) {}
 
 void Logger::debug(const std::string &message) { this->log(DEBUG, message); }
 
@@ -150,24 +149,18 @@ void Logger::critical(const std::string &message) { this->log(CRITICAL, message)
 
 void Logger::log(LogLevel level, const std::string &message) {
   if (level >= this->level) {
-    std::cout << this->levelToString(level) << ":" << this->logger_name << ":" << message
-              << std::endl;
+    std::cout << this->levelToString(level) << ":" << this->logger_name << ":" << message << std::endl;
   }
 }
 
 // Explicit instantiations.
-template void
-print_tensor<int>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
-template void
-print_tensor<long>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
-template void
-print_tensor<bool>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
-template void
-print_tensor<float>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
+template void print_tensor<int>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
+template void print_tensor<int64_t>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
+template void print_tensor<bool>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
+template void print_tensor<float>(const torch::Tensor &tensor, int max_n_elements, bool new_line);
 
 template void print_vector<int>(const std::vector<int> &vector, int max_n_elements);
 
-template void print_vector<torch::Tensor, float>(
-    const std::vector<torch::Tensor> &vector, int start, int max_n_elements
-);
+template void
+print_vector<torch::Tensor, float>(const std::vector<torch::Tensor> &vector, int start, int max_n_elements);
 }  // namespace relab::helpers

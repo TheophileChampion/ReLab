@@ -9,7 +9,6 @@ using namespace std;
 namespace relab::helpers {
 
 ThreadPool::ThreadPool(size_t num_threads) {
-
   // Creating worker threads.
   for (size_t i = 0; i < num_threads; ++i) {
     this->threads.emplace_back([this] {
@@ -46,7 +45,6 @@ ThreadPool::ThreadPool(size_t num_threads) {
 }
 
 ThreadPool::~ThreadPool() {
-
   // Lock the queue to update the stop flag safely.
   {
     unique_lock<mutex> lock(this->queue_mutex);

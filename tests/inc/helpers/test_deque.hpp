@@ -1,7 +1,9 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#ifndef TEST_DEQUE_HPP
-#define TEST_DEQUE_HPP
+#ifndef TESTS_INC_HELPERS_TEST_DEQUE_HPP_
+#define TESTS_INC_HELPERS_TEST_DEQUE_HPP_
+
+#include <gtest/gtest.h>
 
 #include <deque>
 #include <memory>
@@ -9,23 +11,22 @@
 
 #include "agents/memory/experience.hpp"
 #include "helpers/deque.hpp"
-#include <gtest/gtest.h>
 
 namespace relab::test::helpers::impl {
 
-using namespace relab::helpers;
+using relab::helpers::Deque;
 
 /**
  * A class storing the parameters of the deque tests.
  */
 class DequeParameters {
-public:
+ public:
   std::vector<int> elements;
   int max_size;
   int n_pops;
   int length;
 
-public:
+ public:
   /**
    * Create a structure storing the parameters of the deque tests.
    * @param elements the elements to push in the deque
@@ -33,9 +34,7 @@ public:
    * @param n_pops the number of elements to pop from the queue
    * @param length the expected length of the deque at the end of the test
    */
-  DequeParameters(
-      const std::initializer_list<int> &elements, int max_size, int n_pops, int length
-  );
+  DequeParameters(const std::initializer_list<int> &elements, int max_size, int n_pops, int length);
 
   /**
    * Create a structure storing the parameters of the deque tests.
@@ -64,11 +63,11 @@ enum class PopType {
  * A fixture class for testing the deque.
  */
 class TestDeque : public testing::TestWithParam<DequeParameters> {
-public:
+ public:
   DequeParameters params;
   std::unique_ptr<Deque<int>> queue;
 
-public:
+ public:
   /**
    * Compare the inpt queue to the expected result.
    * @param queue the input queue
@@ -83,9 +82,7 @@ public:
    * @param pop_type the type of pop performed in the test
    * @return the expected result of the test
    */
-  static std::deque<int> getResult(
-      const DequeParameters &params, const PushType &push_type, const PopType &pop_type
-  );
+  static std::deque<int> getResult(const DequeParameters &params, const PushType &push_type, const PopType &pop_type);
 
   /**
    * Setup of th fixture class before calling a unit test.
@@ -101,4 +98,4 @@ using impl::PushType;
 using impl::TestDeque;
 }  // namespace relab::test::helpers
 
-#endif  // TEST_DEQUE_HPP
+#endif  // TESTS_INC_HELPERS_TEST_DEQUE_HPP_

@@ -7,6 +7,9 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 
+#include <torch/extension.h>
+
+#include <experimental/filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -15,8 +18,6 @@
 #include "agents/memory/data_buffer.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
-#include <experimental/filesystem>
-#include <torch/extension.h>
 
 namespace relab::agents::memory {
 
@@ -28,7 +29,7 @@ namespace relab::agents::memory {
  * documentation of MDQN and PrioritizedDQN.
  */
 class ReplayBuffer {
-private:
+ private:
   // Keep in mind whether the replay buffer is prioritized.
   bool prioritized;
 
@@ -57,7 +58,7 @@ private:
   // The indices of the last sampled experiences.
   torch::Tensor indices;
 
-public:
+ public:
   /**
    * Create a replay buffer.
    * @param capacity the number of experience the buffer can store
@@ -69,20 +70,16 @@ public:
    * @param screen_size: the size of the images used by the agent to learn
    * @param type the type of compression to use
    * @param args the prioritization and multistep arguments composed of:
-   *     - initial_priority: the maximum experience priority given to new
-   * transitions
+   *     - initial_priority: the maximum experience priority given to new transitions
    *     - omega: the prioritization exponent
    *     - omega_is: the important sampling exponent
-   *     - n_children: the maximum number of children each node of the
-   * priority-tree can have
-   *     - n_steps: the number of steps for which rewards are accumulated in
-   * multistep Q-learning
+   *     - n_children: the maximum number of children each node of the priority-tree can have
+   *     - n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
    *     - gamma: the discount factor
    */
   ReplayBuffer(
-      int capacity = 10000, int batch_size = 32, int frame_skip = 1, int stack_size = 4,
-      int screen_size = 84, CompressorType type = CompressorType::ZLIB,
-      std::map<std::string, float> args = {}
+      int capacity = 10000, int batch_size = 32, int frame_skip = 1, int stack_size = 4, int screen_size = 84,
+      CompressorType type = CompressorType::ZLIB, std::map<std::string, float> args = {}
   );
 
   /**
@@ -151,9 +148,8 @@ public:
    * @param save_all: true if all replay buffer must be saved, false otherwise
    * @return the path to the file in which the replay buffer must be saved
    */
-  std::experimental::filesystem::path getCheckpointPath(
-      std::string &checkpoint_path, std::string &checkpoint_name, bool save_all
-  );
+  std::experimental::filesystem::path
+  getCheckpointPath(std::string &checkpoint_path, std::string &checkpoint_name, bool save_all);
 
   /**
    * Print the replay buffer on the standard output.

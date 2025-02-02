@@ -20,14 +20,14 @@
 
 namespace relab::agents::memory::impl {
 
-using namespace relab::helpers;
+using relab::helpers::Deque;
+using relab::helpers::ThreadPool;
 
 /**
- * @brief A buffer allowing for storage and retrieval of experience
- * observations.
+ * @brief A buffer allowing for storage and retrieval of experience observations.
  */
 class FrameBuffer {
-private:
+ private:
   // The device on which computation is performed.
   torch::Device device;
 
@@ -58,7 +58,7 @@ private:
   // A thread pool to parallelize the decompression.
   ThreadPool pool;
 
-public:
+ public:
   /**
    * Create a frame buffer.
    * @param capacity the number of experiences the buffer can store

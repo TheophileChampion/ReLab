@@ -1,12 +1,11 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "agents/memory/test_priority_tree.hpp"
+#include <torch/extension.h>
 
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <torch/extension.h>
 
 #include "relab_test.hpp"
 
@@ -14,9 +13,8 @@ using namespace relab::agents::memory;
 
 namespace relab::test::agents::memory {
 
-PriorityTreeParameters::PriorityTreeParameters(
-    const std::initializer_list<float> &elements, float result
-) : elements(elements), result(result) {}
+PriorityTreeParameters::PriorityTreeParameters(const std::initializer_list<float> &elements, float result) :
+    elements(elements), result(result) {}
 
 PriorityTreeParameters::PriorityTreeParameters() : PriorityTreeParameters({}, 0) {}
 
@@ -26,8 +24,7 @@ void TestPriorityTree::SetUp() {
   int capacity = 4;
   int initial_priority = 1.0;
   int n_children = 2;
-  this->priority_tree =
-      std::make_unique<PriorityTree>(capacity, initial_priority, n_children);
+  this->priority_tree = std::make_unique<PriorityTree>(capacity, initial_priority, n_children);
 }
 
 TEST_P(TestPriorityTree, TestSum) {
@@ -75,8 +72,7 @@ INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree,
     testing::Values(
         PriorityTreeParameters({0, 0, 0, 0}, 0), PriorityTreeParameters({0, 1}, 1),
-        PriorityTreeParameters({10, 0, 0, 0}, 10),
-        PriorityTreeParameters({1, 10, 100, 1000}, 1111),
+        PriorityTreeParameters({10, 0, 0, 0}, 10), PriorityTreeParameters({1, 10, 100, 1000}, 1111),
         PriorityTreeParameters({1, 10, 100, 1000, 2}, 1112)
     )
 );
@@ -102,18 +98,15 @@ INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree2,
     testing::Values(
         PriorityTreeParameters({0, 0, 0, 0}, 0), PriorityTreeParameters({0, 1}, 1),
-        PriorityTreeParameters({10, 0, 0, 0}, 10),
-        PriorityTreeParameters({1, 10, 100, 1000}, 1000),
+        PriorityTreeParameters({10, 0, 0, 0}, 10), PriorityTreeParameters({1, 10, 100, 1000}, 1000),
         PriorityTreeParameters({1000, 10, 100, 1, 999}, 999)
     )
 );
 
 PriorityTreeParameters4::PriorityTreeParameters4(
-    const std::initializer_list<float> &elements, const std::string &sum_result,
-    const std::string &max_result, int length_result
-) :
-    elements(elements), sum_result(sum_result), max_result(max_result),
-    length_result(length_result) {}
+    const std::initializer_list<float> &elements, const std::string &sum_result, const std::string &max_result,
+    int length_result
+) : elements(elements), sum_result(sum_result), max_result(max_result), length_result(length_result) {}
 
 TEST_P(TestPriorityTree4, TestAppend) {
   // Arrange.
@@ -137,35 +130,22 @@ TEST_P(TestPriorityTree4, TestAppend) {
 INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree4,
     testing::Values(
-        PriorityTreeParameters4(
-            {0, 0, 0, 0}, "[[0.0, 0.0], [0.0]]", "[[0.0, 0.0], [0.0]]", 4
-        ),
-        PriorityTreeParameters4(
-            {0, 1, 2, 3}, "[[1.0, 5.0], [6.0]]", "[[1.0, 3.0], [3.0]]", 4
-        ),
+        PriorityTreeParameters4({0, 0, 0, 0}, "[[0.0, 0.0], [0.0]]", "[[0.0, 0.0], [0.0]]", 4),
+        PriorityTreeParameters4({0, 1, 2, 3}, "[[1.0, 5.0], [6.0]]", "[[1.0, 3.0], [3.0]]", 4),
         PriorityTreeParameters4({0, 1}, "[[1.0, 0.0], [1.0]]", "[[1.0, 0.0], [1.0]]", 2),
-        PriorityTreeParameters4(
-            {10, 0, 0, 0}, "[[10.0, 0.0], [10.0]]", "[[10.0, 0.0], [10.0]]", 4
-        ),
-        PriorityTreeParameters4(
-            {1, 10, 100, 1000}, "[[11.0, 1100.0], [1111.0]]",
-            "[[10.0, 1000.0], [1000.0]]", 4
-        ),
-        PriorityTreeParameters4(
-            {1000, 10, 100, 1, 999}, "[[1009.0, 101.0], [1110.0]]",
-            "[[999.0, 100.0], [999.0]]", 4
-        )
+        PriorityTreeParameters4({10, 0, 0, 0}, "[[10.0, 0.0], [10.0]]", "[[10.0, 0.0], [10.0]]", 4),
+        PriorityTreeParameters4({1, 10, 100, 1000}, "[[11.0, 1100.0], [1111.0]]", "[[10.0, 1000.0], [1000.0]]", 4),
+        PriorityTreeParameters4({1000, 10, 100, 1, 999}, "[[1009.0, 101.0], [1110.0]]", "[[999.0, 100.0], [999.0]]", 4)
     )
 );
 
 PriorityTreeParameters5::PriorityTreeParameters5(
-    const std::initializer_list<float> &elements,
-    const std::initializer_list<int> &set_indices,
-    const std::initializer_list<float> &set_values, const std::string &sum_result,
-    const std::string &max_result, int length_result
+    const std::initializer_list<float> &elements, const std::initializer_list<int> &set_indices,
+    const std::initializer_list<float> &set_values, const std::string &sum_result, const std::string &max_result,
+    int length_result
 ) :
-    elements(elements), set_indices(set_indices), set_values(set_values),
-    sum_result(sum_result), max_result(max_result), length_result(length_result) {}
+    elements(elements), set_indices(set_indices), set_values(set_values), sum_result(sum_result),
+    max_result(max_result), length_result(length_result) {}
 
 TEST_P(TestPriorityTree5, TestSetItem) {
   // Arrange.
@@ -192,34 +172,21 @@ TEST_P(TestPriorityTree5, TestSetItem) {
 INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree5,
     testing::Values(
+        PriorityTreeParameters5({0, 0, 0, 0}, {2, 3}, {10, 5}, "[[0.0, 15.0], [15.0]]", "[[0.0, 10.0], [10.0]]", 4),
+        PriorityTreeParameters5({0, 1, 2, 3}, {1, 2}, {3, 0}, "[[3.0, 3.0], [6.0]]", "[[3.0, 3.0], [3.0]]", 4),
+        PriorityTreeParameters5({0, 1}, {0, 1}, {2, -1}, "[[1.0, 0.0], [1.0]]", "[[2.0, 0.0], [2.0]]", 2),
+        PriorityTreeParameters5({10, 0, 0, 0}, {0, 0}, {0, -1}, "[[-1.0, 0.0], [-1.0]]", "[[0.0, 0.0], [0.0]]", 4),
         PriorityTreeParameters5(
-            {0, 0, 0, 0}, {2, 3}, {10, 5}, "[[0.0, 15.0], [15.0]]",
-            "[[0.0, 10.0], [10.0]]", 4
+            {1, 10, 100, 1000}, {3}, {-1}, "[[11.0, 99.0], [110.0]]", "[[10.0, 100.0], [100.0]]", 4
         ),
         PriorityTreeParameters5(
-            {0, 1, 2, 3}, {1, 2}, {3, 0}, "[[3.0, 3.0], [6.0]]", "[[3.0, 3.0], [3.0]]", 4
-        ),
-        PriorityTreeParameters5(
-            {0, 1}, {0, 1}, {2, -1}, "[[1.0, 0.0], [1.0]]", "[[2.0, 0.0], [2.0]]", 2
-        ),
-        PriorityTreeParameters5(
-            {10, 0, 0, 0}, {0, 0}, {0, -1}, "[[-1.0, 0.0], [-1.0]]",
-            "[[0.0, 0.0], [0.0]]", 4
-        ),
-        PriorityTreeParameters5(
-            {1, 10, 100, 1000}, {3}, {-1}, "[[11.0, 99.0], [110.0]]",
-            "[[10.0, 100.0], [100.0]]", 4
-        ),
-        PriorityTreeParameters5(
-            {1000, 10, 100, 1, 999}, {0, 1, 2}, {0, 0, 0}, "[[999.0, 0.0], [999.0]]",
-            "[[999.0, 0.0], [999.0]]", 4
+            {1000, 10, 100, 1, 999}, {0, 1, 2}, {0, 0, 0}, "[[999.0, 0.0], [999.0]]", "[[999.0, 0.0], [999.0]]", 4
         )
     )
 );
 
 PriorityTreeParameters6::PriorityTreeParameters6(
-    const std::initializer_list<float> &elements,
-    const std::initializer_list<float> &results, int length_result
+    const std::initializer_list<float> &elements, const std::initializer_list<float> &results, int length_result
 ) : elements(elements), results(results), length_result(length_result) {}
 
 TEST_P(TestPriorityTree6, TestGetItem) {
@@ -249,12 +216,8 @@ INSTANTIATE_TEST_SUITE_P(
         PriorityTreeParameters6({0, 1, 2, 3}, {0, 1, 2, 3, 0, 1, 2, 3}, 4),
         PriorityTreeParameters6({0, 1}, {0, 1, 0, 1}, 2),
         PriorityTreeParameters6({10, 0, 0, 0}, {10, 0, 0, 0, 10, 0, 0, 0}, 4),
-        PriorityTreeParameters6(
-            {1, 10, 100, 1000}, {1, 10, 100, 1000, 1, 10, 100, 1000}, 4
-        ),
-        PriorityTreeParameters6(
-            {1000, 10, 100, 1, 999}, {10, 100, 1, 999, 10, 100, 1, 999}, 4
-        )
+        PriorityTreeParameters6({1, 10, 100, 1000}, {1, 10, 100, 1000, 1, 10, 100, 1000}, 4),
+        PriorityTreeParameters6({1000, 10, 100, 1, 999}, {10, 100, 1, 999, 10, 100, 1, 999}, 4)
     )
 );
 
@@ -275,17 +238,15 @@ TEST_P(TestPriorityTree7, TestParentIndex) {
 INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree7,
     testing::Values(
-        PriorityTreeParameters7(0, 10, 0), PriorityTreeParameters7(9, 10, 0),
-        PriorityTreeParameters7(10, 10, 1), PriorityTreeParameters7(19, 10, 1),
-        PriorityTreeParameters7(20, 10, 2), PriorityTreeParameters7(0, 5, 0),
-        PriorityTreeParameters7(4, 5, 0), PriorityTreeParameters7(5, 5, 1),
-        PriorityTreeParameters7(9, 5, 1), PriorityTreeParameters7(10, 5, 2)
+        PriorityTreeParameters7(0, 10, 0), PriorityTreeParameters7(9, 10, 0), PriorityTreeParameters7(10, 10, 1),
+        PriorityTreeParameters7(19, 10, 1), PriorityTreeParameters7(20, 10, 2), PriorityTreeParameters7(0, 5, 0),
+        PriorityTreeParameters7(4, 5, 0), PriorityTreeParameters7(5, 5, 1), PriorityTreeParameters7(9, 5, 1),
+        PriorityTreeParameters7(10, 5, 2)
     )
 );
 
 PriorityTreeParameters8::PriorityTreeParameters8(
-    const std::vector<float> &elements, int max_index,
-    const std::vector<float> &new_values, float result
+    const std::vector<float> &elements, int max_index, const std::vector<float> &new_values, float result
 ) : elements(elements), new_values(new_values), result(result) {
   this->indices.resize(max_index);
   std::iota(this->indices.begin(), this->indices.end(), 0);
@@ -317,18 +278,13 @@ INSTANTIATE_TEST_SUITE_P(
         PriorityTreeParameters8(repeat<float>(1, 8), 8, repeat<float>(0, 8), 0),
         PriorityTreeParameters8(repeat<float>(1, 8), 8, repeat<float>(0.5, 8), 4),
         PriorityTreeParameters8(repeat<float>(1, 6), 6, repeat<float>(0.5, 6), 3),
-        PriorityTreeParameters8(
-            repeat<float>(MAX_PRIORITY, 6), 6, repeat<float>(0.1232, 6), 0.1232 * 6
-        )
+        PriorityTreeParameters8(repeat<float>(MAX_PRIORITY, 6), 6, repeat<float>(0.1232, 6), 0.1232 * 6)
     )
 );
 
 PriorityTreeParameters9::PriorityTreeParameters9(
-    int capacity, int n_children, const std::vector<float> &elements, float priority,
-    float result
-) :
-    capacity(capacity), n_children(n_children), elements(elements), priority(priority),
-    result(result) {}
+    int capacity, int n_children, const std::vector<float> &elements, float priority, float result
+) : capacity(capacity), n_children(n_children), elements(elements), priority(priority), result(result) {}
 
 TEST(TestPriorityTree, TestSampleIndices) {
   // Arrange.
@@ -344,8 +300,7 @@ TEST(TestPriorityTree, TestSampleIndices) {
   auto indices = priority_tree.sampleIndices(50000);
 
   // Assert.
-  torch::Tensor probs =
-      indices.bincount(torch::ones_like(indices), capacity).to(torch::kFloat32);
+  torch::Tensor probs = indices.bincount(torch::ones_like(indices), capacity).to(torch::kFloat32);
   auto total = probs.sum();
   for (int i = 0; i < capacity; i++) {
     probs[i] /= total;
@@ -374,20 +329,13 @@ TEST_P(TestPriorityTree9, TestTowerSampling) {
 INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestPriorityTree9,
     testing::Values(
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 0.0, 0),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 0.2, 0),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 1.5, 1),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 2.3, 2),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 3.9, 3),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 4.0, 3),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 10.0, 3),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 0.0, 3),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 0.2, 3),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 1.5, 0),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 2.3, 1),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 3.9, 2),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 4.0, 2),
-        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 10.0, 2),
+        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 0.0, 0), PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 0.2, 0),
+        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 1.5, 1), PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 2.3, 2),
+        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 3.9, 3), PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 4.0, 3),
+        PriorityTreeParameters9(4, 2, {1, 1, 1, 1}, 10.0, 3), PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 0.0, 3),
+        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 0.2, 3), PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 1.5, 0),
+        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 2.3, 1), PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 3.9, 2),
+        PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 4.0, 2), PriorityTreeParameters9(4, 2, {1, 1, 1, 1, 1}, 10.0, 2),
         PriorityTreeParameters9(8, 2, {1, 2, 1, 2, 1, 2, 1, 2}, 0.0, 0),
         PriorityTreeParameters9(8, 2, {1, 2, 1, 2, 1, 2, 1, 2}, 0.2, 0),
         PriorityTreeParameters9(8, 2, {1, 2, 1, 2, 1, 2, 1, 2}, 1.5, 1),
@@ -395,20 +343,13 @@ INSTANTIATE_TEST_SUITE_P(
         PriorityTreeParameters9(8, 2, {1, 2, 1, 2, 1, 2, 1, 2}, 3.9, 2),
         PriorityTreeParameters9(8, 2, {1, 2, 1, 2, 1, 2, 1, 2}, 7.1, 5),
         PriorityTreeParameters9(8, 2, {1, 2, 1, 2, 1, 2, 1, 2}, 15.0, 7),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 0.0, 0),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 0.2, 0),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 1.5, 1),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 2.3, 2),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 3.9, 3),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 4.0, 3),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 10.0, 3),
-        PriorityTreeParameters9(4, 5, {1, 1, 1, 1, 1}, 0.0, 3),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 0.2, 3),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 1.5, 0),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 2.3, 1),
-        PriorityTreeParameters9(4, 7, {1, 1, 1, 1, 1}, 3.9, 2),
-        PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 4.0, 2),
-        PriorityTreeParameters9(4, 4, {1, 1, 1, 1, 1}, 10.0, 2),
+        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 0.0, 0), PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 0.2, 0),
+        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 1.5, 1), PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 2.3, 2),
+        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 3.9, 3), PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 4.0, 3),
+        PriorityTreeParameters9(4, 3, {1, 1, 1, 1}, 10.0, 3), PriorityTreeParameters9(4, 5, {1, 1, 1, 1, 1}, 0.0, 3),
+        PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 0.2, 3), PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 1.5, 0),
+        PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 2.3, 1), PriorityTreeParameters9(4, 7, {1, 1, 1, 1, 1}, 3.9, 2),
+        PriorityTreeParameters9(4, 3, {1, 1, 1, 1, 1}, 4.0, 2), PriorityTreeParameters9(4, 4, {1, 1, 1, 1, 1}, 10.0, 2),
         PriorityTreeParameters9(8, 3, {1, 2, 1, 2, 1, 2, 1, 2}, 0.0, 0),
         PriorityTreeParameters9(8, 3, {1, 2, 1, 2, 1, 2, 1, 2}, 0.2, 0),
         PriorityTreeParameters9(8, 3, {1, 2, 1, 2, 1, 2, 1, 2}, 1.5, 1),

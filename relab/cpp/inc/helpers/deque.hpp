@@ -17,10 +17,10 @@ namespace relab::helpers {
  * @brief A double-ended queue with a maximum length.
  */
 template <class T> class Deque : public std::deque<T> {
-private:
+ private:
   int max_size;
 
-public:
+ public:
   /**
    * Create a double ended queue.
    * @param max_size the maximum length of the queue
@@ -69,8 +69,7 @@ public:
    * @param rhs the double ended queue on the right-hand-side of the equal sign
    * @return true if the double ended queues are identical, false otherwise
    */
-  template <class Type>
-  friend bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs);
+  template <class Type> friend bool operator==(const Deque<Type> &lhs, const Deque<Type> &rhs);
 };
 
 // Explicit instantiation of double ended queue.

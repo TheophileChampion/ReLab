@@ -7,9 +7,9 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_
 
-#include <tuple>
-
 #include <torch/extension.h>
+
+#include <tuple>
 
 namespace relab::agents::memory::impl {
 
@@ -22,7 +22,7 @@ using Batch = std::tuple<Tensor, Tensor, Tensor, Tensor, Tensor>;
  * @brief Class storing an experience.
  */
 class Experience {
-public:
+ public:
   /// @var obs
   /// The observation tensor at time t.
   Tensor obs;
@@ -43,7 +43,7 @@ public:
   /// The observation tensor at time t + 1.
   Tensor next_obs;
 
-public:
+ public:
   /**
    * Create an experience.
    * @param obs the observation at time t

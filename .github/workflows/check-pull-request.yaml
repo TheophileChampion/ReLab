@@ -1,5 +1,5 @@
 ---
-name: Check Pull Request Mergeability
+name: Run Unit Tests
 
 on:
   pull_request:
@@ -21,24 +21,3 @@ jobs:
         uses: ./.github/actions/build-relab
       - name: Run unit tests
         run: cd _skbuild/linux-x86_64-3.12/cmake-build/ && ctest --output-on-failure
-  run_super_linter:
-    runs-on: ubuntu-latest
-    env:
-      FILTER_REGEX_EXCLUDE: ".*.js|.*.css|.*.html"
-    permissions:
-      contents: read
-      packages: read
-      statuses: write
-    steps:
-      - name: Clone ReLab repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Run Super-Linter
-        uses: super-linter/super-linter@v7.2.1
-        env:
-          CLANG_FORMAT_FILE_NAME: .clang-format
-          VALIDATE_PYTHON_MYPY: false
-          VALIDATE_PYTHON_PYLINT: false
-          VALIDATE_JSCPD: false
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

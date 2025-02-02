@@ -12,8 +12,7 @@ namespace relab::agents::memory {
  * Implementation of the Compressor methods.
  */
 
-std::unique_ptr<Compressor>
-Compressor::create(int height, int width, CompressorType type) {
+std::unique_ptr<Compressor> Compressor::create(int height, int width, CompressorType type) {
   if (type == CompressorType::RAW) {
     return std::make_unique<NoCompression>(height, width);
   } else {
@@ -31,9 +30,7 @@ int Compressor::size_of(const torch::Tensor &tensor) const {
  * Implementation of the NoCompressor methods.
  */
 
-NoCompression::NoCompression(int height, int width) {
-  this->uncompressed_size = height * width * sizeof(float);
-}
+NoCompression::NoCompression(int height, int width) { this->uncompressed_size = height * width * sizeof(float); }
 
 NoCompression::~NoCompression() {}
 
@@ -81,9 +78,7 @@ torch::Tensor ZCompressor::encode(const torch::Tensor &input) {
   deflateEnd(&this->deflate_stream);
 
   // Return the compressed tensor.
-  int compressed_size =
-      ((char *)this->deflate_stream.next_out - (char *)this->compressed_output.data()) /
-      sizeof(int);
+  int compressed_size = ((char *)this->deflate_stream.next_out - (char *)this->compressed_output.data()) / sizeof(int);
   return torch::from_blob(this->compressed_output.data(), {compressed_size}).clone();
 }
 
@@ -111,5 +106,4 @@ void ZCompressor::decode(const torch::Tensor &input, float *output) {
   inflate(&inflate_stream, Z_NO_FLUSH);
   inflateEnd(&inflate_stream);
 }
-
 }  // namespace relab::agents::memory

@@ -7,10 +7,10 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_
 
+#include <torch/extension.h>
+
 #include <string>
 #include <vector>
-
-#include <torch/extension.h>
 
 namespace relab::agents::memory::impl {
 
@@ -24,7 +24,7 @@ using MaxTree = std::vector<torch::Tensor>;
  * @brief A class storing the experience priorities.
  */
 class PriorityTree {
-private:
+ private:
   // Store the priority tree parameters.
   float initial_priority;
   int capacity;
@@ -42,7 +42,7 @@ private:
   SumTree sum_tree;
   MaxTree max_tree;
 
-public:
+ public:
   /**
    * Create a priority tree.
    * @param capacity the tree's capacity
@@ -179,9 +179,7 @@ public:
    * @param new_priority the new priority
    * @return the maximum value
    */
-  float maxChildValue(
-      int depth, int parent_index, int index, float old_priority, float new_priority
-  );
+  float maxChildValue(int depth, int parent_index, int index, float old_priority, float new_priority);
 
   /**
    * Create a string representation of the max-tree.
@@ -211,9 +209,7 @@ public:
    * @return a string representing the tree
    */
   template <class Tree, class T>
-  std::string treeToStr(
-      Tree tree, T (*get)(Tree, int, int), int max_n_elements = -1, int precision = 1
-  );
+  std::string treeToStr(Tree tree, T (*get)(Tree, int, int), int max_n_elements = -1, int precision = 1);
 
   /**
    * Load the priority tree from the checkpoint.

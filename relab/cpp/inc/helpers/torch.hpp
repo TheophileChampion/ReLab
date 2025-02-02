@@ -7,9 +7,9 @@
 #ifndef RELAB_CPP_INC_HELPERS_TORCH_HPP_
 #define RELAB_CPP_INC_HELPERS_TORCH_HPP_
 
-#include <vector>
-
 #include <torch/extension.h>
+
+#include <vector>
 
 namespace relab::helpers {
 

@@ -1,7 +1,9 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
-#ifndef TEST_REPLAY_BUFFER_HPP
-#define TEST_REPLAY_BUFFER_HPP
+#ifndef TESTS_INC_AGENTS_MEMORY_TEST_REPLAY_BUFFER_HPP_
+#define TESTS_INC_AGENTS_MEMORY_TEST_REPLAY_BUFFER_HPP_
+
+#include <gtest/gtest.h>
 
 #include <map>
 #include <memory>
@@ -11,17 +13,18 @@
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/replay_buffer.hpp"
-#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 
-using namespace relab::agents::memory;
+using relab::agents::memory::ReplayBuffer;
+using relab::agents::memory::CompressorType;
+using relab::agents::memory::Experience;
 
 /**
  * A class storing the parameters of the replay buffer tests.
  */
 class ReplayBufferParameters {
-public:
+ public:
   int prioritized;
   int capacity;
   int batch_size;
@@ -33,7 +36,7 @@ public:
   CompressorType comp_type;
   std::map<std::string, float> args;
 
-public:
+ public:
   /**
    * Create a structure storing the parameters of the replay buffer tests.
    * @param capacity the number of experiences the buffer can store
@@ -48,7 +51,7 @@ public:
    * @param prioritized true if the buffer is prioritized, false otherwise
    * @param batch_size the size of batches to sample
    */
-  ReplayBufferParameters(bool prioritized, int batch_size = 32);
+  explicit ReplayBufferParameters(bool prioritized, int batch_size = 32);
 
   /**
    * Create a structure storing the parameters of the replay buffer tests.
@@ -60,12 +63,12 @@ public:
  * A fixture class for testing the replay buffer.
  */
 class TestReplayBuffer : public testing::TestWithParam<ReplayBufferParameters> {
-public:
+ public:
   ReplayBufferParameters params;
   std::unique_ptr<ReplayBuffer> buffer;
   std::vector<torch::Tensor> observations;
 
-public:
+ public:
   /**
    * Setup of th fixture class before calling a unit test.
    */
@@ -81,11 +84,11 @@ class TestReplayBuffer2 : public testing::TestWithParam<ReplayBufferParameters> 
  * A fixture class for testing the replay buffer.
  */
 class TestReplayBuffer3 : public testing::TestWithParam<int> {
-public:
+ public:
   std::unique_ptr<ReplayBuffer> buffer;
   std::vector<Experience> experiences;
 
-public:
+ public:
   /**
    * Setup of th fixture class before calling a unit test.
    */
@@ -100,4 +103,4 @@ using impl::TestReplayBuffer2;
 using impl::TestReplayBuffer3;
 }  // namespace relab::test::agents::memory
 
-#endif  // TEST_REPLAY_BUFFER_HPP
+#endif  // TESTS_INC_AGENTS_MEMORY_TEST_REPLAY_BUFFER_HPP_

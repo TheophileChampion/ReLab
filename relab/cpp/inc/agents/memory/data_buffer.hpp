@@ -17,14 +17,14 @@
 
 namespace relab::agents::memory::impl {
 
-using namespace relab::helpers;
+using relab::helpers::Deque;
 
 /**
  * @brief A buffer allowing for storage and retrieval of experience actions,
  * rewards, dones, and priorities.
  */
 class DataBuffer {
-private:
+ private:
   // Store the data buffer's parameters.
   int capacity;
   int n_steps;
@@ -47,7 +47,7 @@ private:
   // The index of the next datum to add in the buffer.
   int current_id;
 
-public:
+ public:
   /**
    * Create a data buffer.
    * @param capacity the number of experiences the buffer can store
@@ -57,9 +57,7 @@ public:
    * @param initial_priority the initial priority given to first elements
    * @param n_children the number of children each node has
    */
-  DataBuffer(
-      int capacity, int n_steps, float gamma, float initial_priority, int n_children
-  );
+  DataBuffer(int capacity, int n_steps, float gamma, float initial_priority, int n_children);
 
   /**
    * Add the datum of the next experience to the buffer.
@@ -74,8 +72,7 @@ public:
    * @return the data (i.e., action at time t, n-steps return at time t, and
    * done at time t + n_steps)
    */
-  std::tuple<torch::Tensor, torch::Tensor, torch::Tensor>
-  operator[](torch::Tensor &indices);
+  std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> operator[](torch::Tensor &indices);
 
   /**
    * Retrieve the number of experiences stored in the buffer.

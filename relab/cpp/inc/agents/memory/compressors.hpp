@@ -7,11 +7,11 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
 
-#include <memory>
-#include <vector>
+#include <torch/extension.h>
 #include <zlib.h>
 
-#include <torch/extension.h>
+#include <memory>
+#include <vector>
 
 namespace relab::agents::memory {
 
@@ -27,7 +27,7 @@ enum class CompressorType {
  * @brief A class that all compressors must implement.
  */
 class Compressor {
-public:
+ public:
   /**
    * Create the requested compressor.
    * @param height the height of the uncompressed images
@@ -35,8 +35,7 @@ public:
    * @param type the type of compression to use
    * @return the requested compressor
    */
-  static std::unique_ptr<Compressor>
-  create(int height, int width, CompressorType type = CompressorType::ZLIB);
+  static std::unique_ptr<Compressor> create(int height, int width, CompressorType type = CompressorType::ZLIB);
 
   /**
    * Ensure the destructor of child classes are called.
@@ -64,7 +63,7 @@ public:
    */
   virtual void decode(const torch::Tensor &input, float *output) = 0;
 
-protected:
+ protected:
   /**
    * Compute the size of the tensor in bytes.
    * @param tensor the tensor whose size must be returned
@@ -77,10 +76,10 @@ protected:
  * @brief A class that does not compress the tensors.
  */
 class NoCompression : public Compressor {
-private:
+ private:
   int uncompressed_size;
 
-public:
+ public:
   /**
    * Create an identity compressor, i.e., no compression of the tensors is
    * actually performed.
@@ -121,7 +120,7 @@ public:
  * float.
  */
 class ZCompressor : public Compressor {
-private:
+ private:
   // The deflate zlib stream.
   z_stream deflate_stream;
 
@@ -132,7 +131,7 @@ private:
   std::vector<float> compressed_output;
   std::vector<int64_t> shape;
 
-public:
+ public:
   /**
    * Create a zlib compressor.
    * @param height the height of the uncompressed images

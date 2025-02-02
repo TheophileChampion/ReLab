@@ -7,11 +7,11 @@
 #ifndef RELAB_CPP_INC_HELPERS_DEBUG_HPP_
 #define RELAB_CPP_INC_HELPERS_DEBUG_HPP_
 
+#include <torch/extension.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include <torch/extension.h>
 
 namespace relab::helpers {
 
@@ -21,10 +21,7 @@ namespace relab::helpers {
  * @param max_n_elements the maximum number of tensor elements to display, by
  * default all elements are displayed
  */
-template <class T>
-void print_tensor(
-    const torch::Tensor &tensor, int max_n_elements = -1, bool new_line = true
-);
+template <class T> void print_tensor(const torch::Tensor &tensor, int max_n_elements = -1, bool new_line = true);
 
 /**
  * Print a vector on the standard output.
@@ -32,8 +29,7 @@ void print_tensor(
  * @param max_n_elements the maximum number of vector elements to display, by
  * default all elements are displayed
  */
-template <class T>
-void print_vector(const std::vector<T> &vector, int max_n_elements = -1);
+template <class T> void print_vector(const std::vector<T> &vector, int max_n_elements = -1);
 
 /**
  * Print a vector of tensors on the standard output.
@@ -43,9 +39,7 @@ void print_vector(const std::vector<T> &vector, int max_n_elements = -1);
  * default all elements are displayed
  */
 template <class TensorType, class DataType>
-void print_vector(
-    const std::vector<TensorType> &vector, int start = 0, int max_n_elements = -1
-);
+void print_vector(const std::vector<TensorType> &vector, int start = 0, int max_n_elements = -1);
 
 /**
  * Print a boolean on the standard output.
@@ -63,20 +57,13 @@ void print_ellipse(int max_n_elements, int size);
 /**
  * Enumeration representing log levels..
  */
-enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARNING = 2,
-  ERROR = 3,
-  CRITICAL = 4,
-  NO_LOGGING = 5
-};
+enum LogLevel { DEBUG = 0, INFO = 1, WARNING = 2, ERROR = 3, CRITICAL = 4, NO_LOGGING = 5 };
 
 /**
  * @brief Class allowing the user to log messages of various levels.
  */
 class Logger {
-private:
+ private:
   // The current logging level and the logger's name.
   LogLevel level;
   std::string logger_name;
@@ -88,7 +75,7 @@ private:
    */
   std::string levelToString(LogLevel level);
 
-public:
+ public:
   /**
    * Create a logger.
    * @params level the minimum level required for a message to be displayed

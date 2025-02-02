@@ -29,7 +29,6 @@ template <class T> void Deque<T>::push_front(T element) {
 template <class T> T Deque<T>::get(int index) { return (*this)[index]; }
 
 template <class T> void Deque<T>::load(std::istream &checkpoint) {
-
   // Load the deque from the checkpoint.
   this->max_size = load_value<int>(checkpoint);
   int size = load_value<int>(checkpoint);
@@ -39,7 +38,6 @@ template <class T> void Deque<T>::load(std::istream &checkpoint) {
 }
 
 template <class T> void Deque<T>::save(std::ostream &checkpoint) {
-
   // Save the deque in the checkpoint.
   save_value(this->max_size, checkpoint);
   save_value(static_cast<int>(this->size()), checkpoint);

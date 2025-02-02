@@ -3,28 +3,30 @@
 #ifndef TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_
 #define TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_
 
+#include <gtest/gtest.h>
+
 #include <memory>
+#include <vector>
 
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
-#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 
-using namespace relab::agents::memory;
+using relab::agents::memory::FrameBuffer;
 
 /**
  * A class storing the parameters of the frame buffer tests.
  */
 class FrameBufferParameters {
-public:
+ public:
   int capacity;
   int frame_skip;
   int n_steps;
   int stack_size;
   float gamma;
 
-public:
+ public:
   /**
    * Create a structure storing the parameters of the frame buffer tests.
    * @param capacity the number of experiences the buffer can store
@@ -46,12 +48,12 @@ public:
  * A fixture class for testing the frame buffer.
  */
 class TestFrameBuffer : public testing::TestWithParam<FrameBufferParameters> {
-public:
+ public:
   FrameBufferParameters params;
   std::unique_ptr<FrameBuffer> buffer;
   std::vector<torch::Tensor> observations;
 
-public:
+ public:
   /**
    * Setup of th fixture class before calling a unit test.
    */

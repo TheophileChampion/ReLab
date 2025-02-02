@@ -1,5 +1,7 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
+#include <torch/extension.h>
+
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -7,7 +9,6 @@
 
 #include "agents/memory/experience.hpp"
 #include "agents/memory/replay_buffer.hpp"
-#include <torch/extension.h>
 
 using namespace relab::agents::memory;
 

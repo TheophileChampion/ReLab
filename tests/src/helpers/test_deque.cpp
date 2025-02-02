@@ -1,13 +1,13 @@
 // Copyright 2025 Theophile Champion. No Rights Reserved.
 
 #include "helpers/test_deque.hpp"
+#include <gtest/gtest.h>
+#include <torch/extension.h>
 
 #include <deque>
 #include <memory>
 
 #include "helpers/deque.hpp"
-#include <gtest/gtest.h>
-#include <torch/extension.h>
 
 #include "relab_test.hpp"
 
@@ -15,9 +15,8 @@ using namespace relab::helpers;
 
 namespace relab::test::helpers {
 
-DequeParameters::DequeParameters(
-    const std::initializer_list<int> &elements, int max_size, int n_pops, int length
-) : elements(elements), max_size(max_size), n_pops(n_pops), length(length) {}
+DequeParameters::DequeParameters(const std::initializer_list<int> &elements, int max_size, int n_pops, int length) :
+    elements(elements), max_size(max_size), n_pops(n_pops), length(length) {}
 
 DequeParameters::DequeParameters() : DequeParameters({}, 0, 0, 0) {}
 
@@ -28,9 +27,8 @@ void TestDeque::compare(Deque<int> &queue, const std::deque<int> &result) {
   }
 }
 
-std::deque<int> TestDeque::getResult(
-    const DequeParameters &params, const PushType &push_type, const PopType &pop_type
-) {
+std::deque<int>
+TestDeque::getResult(const DequeParameters &params, const PushType &push_type, const PopType &pop_type) {
   // Create the result deque.
   std::deque<int> result;
 
@@ -172,8 +170,8 @@ TEST_P(TestDeque, TestSaveAndLoad) {
 INSTANTIATE_TEST_SUITE_P(
     UnitTests, TestDeque,
     testing::Values(
-        DequeParameters({5, 1, 1}, 2, 1, 2), DequeParameters({}, 4, 0, 0),
-        DequeParameters({1, 2, 3, 4}, 4, 3, 4), DequeParameters({10, 2}, 4, 2, 2)
+        DequeParameters({5, 1, 1}, 2, 1, 2), DequeParameters({}, 4, 0, 0), DequeParameters({1, 2, 3, 4}, 4, 3, 4),
+        DequeParameters({10, 2}, 4, 2, 2)
     )
 );
 
