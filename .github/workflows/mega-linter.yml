@@ -38,7 +38,7 @@ env:
   PYTHON_FLAKE8_ARGUMENTS: --max-line-length 120
 
   # Pass some arguments to cpplinter.
-  CPP_CPPLINT_ARGUMENTS: --linelength=80 --filter=-whitespace/parens
+  CPP_CPPLINT_ARGUMENTS: --linelength=120 --filter=-whitespace/parens
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
