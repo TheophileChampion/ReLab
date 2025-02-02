@@ -93,7 +93,7 @@ void PriorityTree::append(float priority) {
   this->updateSumTree(idx, old_priority);
 
   // Check if the full sum tree must be refreshed.
-  if (this->max() != this->initial_priority and this->need_refresh_all == true) {
+  if (this->max() != this->initial_priority && this->need_refresh_all == true) {
     this->refreshAllSumTree();
     this->need_refresh_all = false;
   }
@@ -111,7 +111,7 @@ void PriorityTree::set(int index, float priority) {
   this->updateSumTree(idx, old_priority);
 
   // Check if the full sum tree must be refreshed.
-  if (this->max() != this->initial_priority and this->need_refresh_all == true) {
+  if (this->max() != this->initial_priority && this->need_refresh_all == true) {
     this->refreshAllSumTree();
     this->need_refresh_all = false;
   }
@@ -141,14 +141,13 @@ torch::Tensor PriorityTree::sampleIndices(int n) {
   torch::Tensor indices = torch::zeros({n}, torch::kInt64);
   for (auto i = 0; i < n; i++) {
     float priority = sampled_priorities.index({i}).item<float>();
-    indices.index_put_({i}, static_cast<long>(this->towerSampling(priority)));
+    indices.index_put_({i}, static_cast<int64_t>(this->towerSampling(priority)));
   }
   return indices;
 }
 
 int PriorityTree::towerSampling(float priority) {
-  // If the priority is larger than the sum of priorities, return the index of
-  // the last element.
+  // If the priority is larger than the sum of priorities, return the index of the last element.
   if (priority > this->sum()) {
     return this->externalIndex(this->size() - 1);
   }
@@ -157,12 +156,9 @@ int PriorityTree::towerSampling(float priority) {
   float new_priority = 0;
   int index = 0;
   for (int level = this->depth - 2; level >= -1; level--) {
-
-    // Iterate over the children of the current node, keeping track of the sum
-    // of priorities.
+    // Iterate over the children of the current node, keeping track of the sum of priorities.
     float total = 0;
     for (auto i = 0; i < this->n_children; i++) {
-
       // Get the priority of the next child.
       int child_index = this->n_children * index + i;
       if (level == -1) {
@@ -171,8 +167,7 @@ int PriorityTree::towerSampling(float priority) {
         new_priority = this->sum_tree[level][child_index];
       }
 
-      // If the priority is about to be superior to the total, stop iterating
-      // over the children.
+      // If the priority is about to be superior to the total, stop iterating over the children.
       if (priority <= total + new_priority) {
         index = child_index;
         priority -= total;
@@ -198,7 +193,6 @@ void PriorityTree::updateSumTree(int index, float old_priority) {
   int depth = 0;
   float new_priority = this->priorities[index].item<float>();
   while (depth < this->depth) {
-
     // Update the sums in the sum-tree.
     this->sum_tree[depth][parent_index] += new_priority - old_priority;
 
@@ -214,7 +208,6 @@ void PriorityTree::refreshAllSumTree() {
 
   // Iterate over all the priorities.
   for (auto index = 0; index < this->size(); index++) {
-
     // Compute the parent index and current priority.
     int parent_index = this->parentIndex(index);
     float priority = this->priorities[index].item<float>();
@@ -241,7 +234,6 @@ void PriorityTree::updateMaxTree(int index, float old_priority) {
   // Go up the tree until the root node is reached.
   int depth = 0;
   while (depth < this->depth) {
-
     // Update the maximum values in the max-tree.
     float parent_value = this->max_tree[depth][parent_index].item<float>();
     if (parent_value == old_priority) {
@@ -294,7 +286,6 @@ std::string PriorityTree::treeToStr(Tree tree, T (*get)(Tree, int, int), int max
 
   // Iterate over all sub-lists.
   for (auto i = 0; i < n; i++) {
-
     // Open the bracket in the string.
     out << ((i != 0) ? ", [" : "[");
 

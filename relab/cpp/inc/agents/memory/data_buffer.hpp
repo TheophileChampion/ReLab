@@ -17,7 +17,7 @@
 
 namespace relab::agents::memory::impl {
 
-using relab::helpers::PriorityTree;
+using relab::helpers::Deque;
 
 /**
  * @brief A buffer allowing for storage and retrieval of experience actions,

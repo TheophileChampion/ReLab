@@ -9,6 +9,7 @@
 
 #include <torch/extension.h>
 
+#include <experimental/filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -17,7 +18,6 @@
 #include "agents/memory/data_buffer.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
-#include <experimental/filesystem>
 
 namespace relab::agents::memory {
 
@@ -70,14 +70,11 @@ class ReplayBuffer {
    * @param screen_size: the size of the images used by the agent to learn
    * @param type the type of compression to use
    * @param args the prioritization and multistep arguments composed of:
-   *     - initial_priority: the maximum experience priority given to new
-   * transitions
+   *     - initial_priority: the maximum experience priority given to new transitions
    *     - omega: the prioritization exponent
    *     - omega_is: the important sampling exponent
-   *     - n_children: the maximum number of children each node of the
-   * priority-tree can have
-   *     - n_steps: the number of steps for which rewards are accumulated in
-   * multistep Q-learning
+   *     - n_children: the maximum number of children each node of the priority-tree can have
+   *     - n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
    *     - gamma: the discount factor
    */
   ReplayBuffer(

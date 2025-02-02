@@ -101,7 +101,7 @@ std::tuple<torch::Tensor, torch::Tensor> FrameBuffer::operator[](const torch::Te
   int frame_size = this->screen_size * this->screen_size;
   float *obs_batch_ptr = obs_batch.data_ptr<float>();
   float *next_obs_batch_ptr = next_obs_batch.data_ptr<float>();
-  long *indices_ptr = indices.data_ptr<long>();
+  int64_t *indices_ptr = indices.data_ptr<int64_t>();
   for (auto i = 0; i < n_elements; i++) {
     // Retrieve the index of first frame for the requested observations.
     int idx = (*indices_ptr + this->firstReference()) % this->capacity;

@@ -10,8 +10,10 @@
 #include "agents/memory/replay_buffer.hpp"
 
 namespace py = pybind11;
-using namespace pybind11::literals;
-using namespace relab::agents::memory;
+using namespace pybind11::literals;  // NOLINT
+using relab::agents::memory::CompressorType;
+using relab::agents::memory::Experience;
+using relab::agents::memory::ReplayBuffer;
 
 PYBIND11_MODULE(cpp, m) {
   m.doc() = "A module providing C++ acceleration for ReLab.";
