@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/replay_buffer.hpp"
 

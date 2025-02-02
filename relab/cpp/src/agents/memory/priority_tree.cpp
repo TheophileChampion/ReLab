@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #include "agents/memory/priority_tree.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"

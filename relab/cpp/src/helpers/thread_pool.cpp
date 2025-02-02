@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #include "helpers/thread_pool.hpp"
 
 using namespace std;

@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #include "agents/memory/frame_storage.hpp"
 #include "helpers/serialize.hpp"
 #include "helpers/debug.hpp"

@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #include "agents/memory/experience.hpp"
 
 namespace relab::agents::memory {
