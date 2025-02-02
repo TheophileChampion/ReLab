@@ -137,10 +137,10 @@ class DataBuffer {
      */
     friend bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs);
 };
-}  // relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
 
 namespace relab::agents::memory {
 using impl::DataBuffer;
-}  // relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif  //RELAB_CPP_INC_AGENTS_MEMORY_DATA_BUFFER_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_DATA_BUFFER_HPP_

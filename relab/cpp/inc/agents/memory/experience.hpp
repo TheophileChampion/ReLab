@@ -63,6 +63,6 @@ class Experience {
         torch::Tensor next_obs
     );
 };
-}  // relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif  //RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_

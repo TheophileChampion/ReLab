@@ -164,6 +164,6 @@ class ZCompressor : public Compressor {
      */
     void decode(const torch::Tensor &input, float *output);
 };
-}  // relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif  //RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_

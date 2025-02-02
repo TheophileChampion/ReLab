@@ -25,7 +25,7 @@ class Timer {
      * Create a timer.
      * @param name the code whose runtime must be measured
      */
-    Timer(std::string name="");
+    Timer(std::string name = "");
 
     /**
      * Start the timer.
@@ -37,6 +37,6 @@ class Timer {
      */
     void stop();
 };
-}  // relab::helpers
+}  // namespace relab::helpers
 
-#endif  //RELAB_CPP_INC_HELPERS_TIMER_HPP_
+#endif  // RELAB_CPP_INC_HELPERS_TIMER_HPP_

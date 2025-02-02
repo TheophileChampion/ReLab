@@ -54,7 +54,7 @@ class FrameStorage {
      * @param capacity the initial number of frames the storage can contain
      * @param capacity_incr the number by which the capacity is increased when no space is left in the tensor
      */
-    FrameStorage(int capacity, int capacity_incr=100000);
+    FrameStorage(int capacity, int capacity_incr = 100000);
 
     /**
      * Add a frame to the storage.
@@ -114,7 +114,7 @@ class FrameStorage {
      * @param verbose true if the full frame storage should be displayed, false otherwise
      * @param prefix the prefix to add an front of the optional information
      */
-    void print(bool verbose=false, const std::string &prefix="");
+    void print(bool verbose=false, const std::string &prefix = "");
 
     /**
      * Compare two frame storages.
@@ -124,6 +124,6 @@ class FrameStorage {
      */
     friend bool operator==(const FrameStorage &lhs, const FrameStorage &rhs);
 };
-}  // relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif  //RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_

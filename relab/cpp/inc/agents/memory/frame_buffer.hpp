@@ -152,7 +152,7 @@ class FrameBuffer {
      * @param verbose true if the full frame buffer should be displayed, false otherwise
      * @param prefix the prefix to add an front of the optional information
      */
-    void print(bool verbose=false, const std::string &prefix="");
+    void print(bool verbose=false, const std::string &prefix = "");
 
     /**
      * Check if two frame buffers are identical.
@@ -170,10 +170,10 @@ class FrameBuffer {
      */
     friend bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs);
 };
-}  // relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
 
 namespace relab::agents::memory {
     using impl::FrameBuffer;
-}  // relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif  //RELAB_CPP_INC_AGENTS_MEMORY_FRAME_BUFFER_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_FRAME_BUFFER_HPP_

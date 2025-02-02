@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #ifndef TEST_FRAME_BUFFER_HPP
 #define TEST_FRAME_BUFFER_HPP
 
@@ -14,17 +16,14 @@ using namespace relab::agents::memory;
  * A class storing the parameters of the frame buffer tests.
  */
 class FrameBufferParameters {
-
-public:
-
+ public:
     int capacity;
     int frame_skip;
     int n_steps;
     int stack_size;
     float gamma;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the frame buffer tests.
      * @param capacity the number of experiences the buffer can store
@@ -32,7 +31,12 @@ public:
      * @param n_steps the number of steps for which rewards are accumulated in multistep Q-learning
      * @param stack_size the number of frames per observation
      */
-    FrameBufferParameters(int capacity, int frame_skip, int n_steps, int stack_size);
+    FrameBufferParameters(
+        int capacity,
+        int frame_skip,
+        int n_steps,
+        int stack_size
+    );
 
     /**
      * Create a structure storing the parameters of the frame buffer tests.
@@ -44,25 +48,22 @@ public:
  * A fixture class for testing the frame buffer.
  */
 class TestFrameBuffer : public testing::TestWithParam<FrameBufferParameters> {
-
-public:
-
+ public:
     FrameBufferParameters params;
     std::unique_ptr<FrameBuffer> buffer;
     std::vector<torch::Tensor> observations;
 
-public:
-
+ public:
     /**
      * Setup of th fixture class before calling a unit test.
      */
     void SetUp();
 };
-}
+}  // namespace relab::test::agents::memory::impl
 
 namespace relab::test::agents::memory {
 using impl::TestFrameBuffer;
 using impl::FrameBufferParameters;
-}
+}  // namespace relab::test::agents::memory
 
-#endif //TEST_FRAME_BUFFER_HPP
+#endif  // TEST_FRAME_BUFFER_HPP

@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #ifndef TEST_DATA_BUFFER_HPP
 #define TEST_DATA_BUFFER_HPP
 
@@ -14,17 +16,14 @@ using namespace relab::agents::memory;
  * A class storing the parameters of the data buffer tests.
  */
 class DataBufferParameters {
-
-public:
-
+ public:
     int capacity;
     int n_steps;
     float gamma;
     float initial_priority;
     int n_children;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the data buffer tests.
      * @param capacity the number of experiences the buffer can store
@@ -33,7 +32,13 @@ public:
      * @param initial_priority the initial priority given to first elements
      * @param n_children the number of children each node has
      */
-    DataBufferParameters(int capacity, int n_steps, float gamma, float initial_priority=1, int n_children=10);
+    DataBufferParameters(
+        int capacity,
+        int n_steps,
+        float gamma,
+        float initial_priority = 1,
+        int n_children = 10
+    );
 
     /**
      * Create a structure storing the parameters of the data buffer tests.
@@ -45,25 +50,22 @@ public:
  * A fixture class for testing the data buffer.
  */
 class TestDataBuffer : public testing::TestWithParam<DataBufferParameters> {
-
-public:
-
+ public:
     DataBufferParameters params;
     std::unique_ptr<DataBuffer> buffer;
     std::vector<torch::Tensor> observations;
 
-public:
-
+ public:
     /**
      * Setup of th fixture class before calling a unit test.
      */
     void SetUp();
 };
-}
+}  // namespace relab::test::agents::memory::impl
 
 namespace relab::test::agents::memory {
 using impl::DataBufferParameters;
 using impl::TestDataBuffer;
-}
+}  // namespace relab::test::agents::memory
 
-#endif //TEST_DATA_BUFFER_HPP
+#endif  // TEST_DATA_BUFFER_HPP

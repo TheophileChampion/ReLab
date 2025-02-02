@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #ifndef TEST_PRIORITY_TREE_HPP
 #define TEST_PRIORITY_TREE_HPP
 
@@ -12,20 +14,20 @@ using namespace relab::agents::memory;
  * A class storing the parameters of the priority tree tests.
  */
 class PriorityTreeParameters {
-
-public:
-
+ public:
     std::vector<float> elements;
     float result;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the priority tree tests.
      * @param elements the priorities to append to the queue
      * @param result the test result
      */
-    PriorityTreeParameters(const std::initializer_list<float> &elements, float result=0);
+    PriorityTreeParameters(
+        const std::initializer_list<float> &elements,
+        float result = 0
+    );
 
     /**
      * Create a structure storing the parameters of the priority tree tests.
@@ -37,14 +39,11 @@ public:
  * A fixture class for testing the priority tree.
  */
 class TestPriorityTree : public testing::TestWithParam<PriorityTreeParameters> {
-
-public:
-
+ public:
     PriorityTreeParameters params;
     std::unique_ptr<PriorityTree> priority_tree;
 
-public:
-
+ public:
     /**
      * Setup of th fixture class before calling a unit test.
      */
@@ -60,16 +59,13 @@ class TestPriorityTree2 : public testing::TestWithParam<PriorityTreeParameters> 
  * A class storing the parameters of the priority tree tests.
  */
 class PriorityTreeParameters4 {
-
-public:
-
+ public:
     std::vector<float> elements;
     std::string sum_result;
     std::string max_result;
     float length_result;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the priority tree tests.
      * @param elements the priorities to append to the queue
@@ -78,8 +74,10 @@ public:
      * @param length_result the expected size of the priority tree
      */
     PriorityTreeParameters4(
-        const std::initializer_list<float> &elements, const std::string &sum_result,
-        const std::string &max_result, int length_result
+        const std::initializer_list<float> &elements,
+        const std::string &sum_result,
+        const std::string &max_result,
+        int length_result
     );
 };
 
@@ -92,9 +90,7 @@ class TestPriorityTree4 : public testing::TestWithParam<PriorityTreeParameters4>
  * A class storing the parameters of the priority tree tests.
  */
 class PriorityTreeParameters5 {
-
-public:
-
+ public:
     std::vector<float> elements;
     std::vector<int> set_indices;
     std::vector<float> set_values;
@@ -102,8 +98,7 @@ public:
     std::string max_result;
     float length_result;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the priority tree tests.
      * @param elements the priorities to append to the queue
@@ -117,7 +112,9 @@ public:
         const std::initializer_list<float> &elements,
         const std::initializer_list<int> &set_indices,
         const std::initializer_list<float> &set_values,
-        const std::string &sum_result, const std::string &max_result, int length_result
+        const std::string &sum_result,
+        const std::string &max_result,
+        int length_result
     );
 };
 
@@ -130,15 +127,12 @@ class TestPriorityTree5 : public testing::TestWithParam<PriorityTreeParameters5>
  * A class storing the parameters of the priority tree tests.
  */
 class PriorityTreeParameters6 {
-
-public:
-
+ public:
     std::vector<float> elements;
     std::vector<float> results;
     float length_result;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the priority tree tests.
      * @param elements the priorities to append to the queue
@@ -161,15 +155,12 @@ class TestPriorityTree6 : public testing::TestWithParam<PriorityTreeParameters6>
  * A class storing the parameters of the priority tree tests.
  */
 class PriorityTreeParameters7 {
-
-public:
-
+ public:
     int index;
     int n_children;
     int result;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the priority tree tests.
      * @param index the index of the node whose parent index must be computed
@@ -188,16 +179,13 @@ class TestPriorityTree7 : public testing::TestWithParam<PriorityTreeParameters7>
  * A class storing the parameters of the priority tree tests.
  */
 class PriorityTreeParameters8 {
-
-public:
-
+ public:
     std::vector<float> elements;
     std::vector<int> indices;
     std::vector<float> new_values;
     float result;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the priority tree tests.
      * @param elements the priorities to append to the queue
@@ -222,17 +210,14 @@ class TestPriorityTree8 : public testing::TestWithParam<PriorityTreeParameters8>
  * A class storing the parameters of the priority tree tests.
  */
 class PriorityTreeParameters9 {
-
-public:
-
+ public:
     int capacity;
     int n_children;
     std::vector<float> elements;
     float priority;
     float result;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the priority tree tests.
      * @param capacity the capacity of the priority tree
@@ -242,7 +227,11 @@ public:
      * @param result the test result
      */
     PriorityTreeParameters9(
-        int capacity, int n_children, const std::vector<float> &elements, float priority, float result
+        int capacity,
+        int n_children,
+        const std::vector<float> &elements,
+        float priority,
+        float result
     );
 };
 
@@ -250,7 +239,7 @@ public:
  * A fixture class for testing the priority tree.
  */
 class TestPriorityTree9 : public testing::TestWithParam<PriorityTreeParameters9> {};
-}
+}  // namespace relab::test::agents::memory::impl
 
 namespace relab::test::agents::memory {
 using impl::PriorityTreeParameters;
@@ -268,8 +257,6 @@ using impl::PriorityTreeParameters8;
 using impl::TestPriorityTree8;
 using impl::PriorityTreeParameters9;
 using impl::TestPriorityTree9;
-}
+}  // namespace relab::test::agents::memory
 
-#endif //TEST_PRIORITY_TREE_HPP
-
-
+#endif  // TEST_PRIORITY_TREE_HPP

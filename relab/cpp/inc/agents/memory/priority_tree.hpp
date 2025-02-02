@@ -173,21 +173,27 @@ class PriorityTree {
      * @param new_priority the new priority
      * @return the maximum value
      */
-    float maxChildValue(int depth, int parent_index, int index, float old_priority, float new_priority);
+    float maxChildValue(
+        int depth,
+        int parent_index,
+        int index,
+        float old_priority,
+        float new_priority
+    );
 
     /**
      * Create a string representation of the max-tree.
      * @param max_n_elements the maximum number of elements to display, by default all elements are displayed
      * @return a string representing the tree
      */
-    std::string maxTreeToStr(int max_n_elements=-1);
+    std::string maxTreeToStr(int max_n_elements = -1);
 
     /**
      * Create a string representation of the sum-tree.
      * @param max_n_elements the maximum number of elements to display, by default all elements are displayed
      * @return a string representing the tree
      */
-    std::string sumTreeToStr(int max_n_elements=-1);
+    std::string sumTreeToStr(int max_n_elements = -1);
 
     /**
      * Create a string representation of a tree.
@@ -198,7 +204,12 @@ class PriorityTree {
      * @return a string representing the tree
      */
     template<class Tree, class T>
-    std::string treeToStr(Tree tree, T (*get)(Tree, int, int), int max_n_elements=-1, int precision=1);
+    std::string treeToStr(
+        Tree tree,
+        T (*get)(Tree, int, int),
+        int max_n_elements = -1,
+        int precision = 1
+    );
 
     /**
      * Load the priority tree from the checkpoint.
@@ -217,7 +228,7 @@ class PriorityTree {
      * @param verbose true if the full priority tree should be displayed, false otherwise
      * @param prefix the prefix to add an front of the optional information
      */
-    void print(bool verbose=false, const std::string &prefix="");
+    void print(bool verbose=false, const std::string &prefix = "");
 
     /**
      * Compare two priority trees.
@@ -227,10 +238,10 @@ class PriorityTree {
      */
     friend bool operator==(const PriorityTree &lhs, const PriorityTree &rhs);
 };
-}  // relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
 
 namespace relab::agents::memory {
 using impl::PriorityTree;
-}  // relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif  //RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_

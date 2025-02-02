@@ -1,3 +1,5 @@
+// Copyright 2025 Theophile Champion. No Rights Reserved.
+
 #ifndef TEST_REPLAY_BUFFER_HPP
 #define TEST_REPLAY_BUFFER_HPP
 
@@ -14,9 +16,7 @@ using namespace relab::agents::memory;
  * A class storing the parameters of the replay buffer tests.
  */
 class ReplayBufferParameters {
-
-public:
-
+ public:
     int prioritized;
     int capacity;
     int batch_size;
@@ -28,8 +28,7 @@ public:
     CompressorType comp_type;
     std::map<std::string, float> args;
 
-public:
-
+ public:
     /**
      * Create a structure storing the parameters of the replay buffer tests.
      * @param capacity the number of experiences the buffer can store
@@ -43,7 +42,7 @@ public:
      * @param prioritized true if the buffer is prioritized, false otherwise
      * @param batch_size the size of batches to sample
      */
-    ReplayBufferParameters(bool prioritized, int batch_size=32);
+    ReplayBufferParameters(bool prioritized, int batch_size = 32);
 
     /**
      * Create a structure storing the parameters of the replay buffer tests.
@@ -51,20 +50,16 @@ public:
     ReplayBufferParameters();
 };
 
-
 /**
  * A fixture class for testing the replay buffer.
  */
 class TestReplayBuffer : public testing::TestWithParam<ReplayBufferParameters> {
-
-public:
-
+ public:
     ReplayBufferParameters params;
     std::unique_ptr<ReplayBuffer> buffer;
     std::vector<torch::Tensor> observations;
 
-public:
-
+ public:
     /**
      * Setup of th fixture class before calling a unit test.
      */
@@ -80,27 +75,23 @@ class TestReplayBuffer2 : public testing::TestWithParam<ReplayBufferParameters> 
  * A fixture class for testing the replay buffer.
  */
 class TestReplayBuffer3 : public testing::TestWithParam<int> {
-
-public:
-
+ public:
     std::unique_ptr<ReplayBuffer> buffer;
     std::vector<Experience> experiences;
 
-public:
-
+ public:
     /**
      * Setup of th fixture class before calling a unit test.
      */
     void SetUp();
 };
-}
+}  // namespace relab::test::agents::memory::impl
 
 namespace relab::test::agents::memory {
 using impl::ReplayBufferParameters;
 using impl::TestReplayBuffer;
 using impl::TestReplayBuffer2;
 using impl::TestReplayBuffer3;
-}
+}  // namespace relab::test::agents::memory
 
-
-#endif //TEST_REPLAY_BUFFER_HPP
+#endif  // TEST_REPLAY_BUFFER_HPP

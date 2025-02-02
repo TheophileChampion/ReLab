@@ -69,9 +69,13 @@ class ReplayBuffer {
      *     - gamma: the discount factor
      */
     ReplayBuffer(
-        int capacity=10000, int batch_size=32, int frame_skip=1, int stack_size=4,
-        int screen_size=84, CompressorType type=CompressorType::ZLIB,
-        std::map<std::string, float> args={}
+        int capacity = 10000,
+        int batch_size = 32,
+        int frame_skip = 1,
+        int stack_size = 4,
+        int screen_size = 84,
+        CompressorType type = CompressorType::ZLIB,
+        std::map<std::string, float> args = {}
     );
 
     /**
@@ -104,7 +108,11 @@ class ReplayBuffer {
      * @param checkpoint_name: the name of the checkpoint from which the replay buffer must be loaded ("" for default name)
      * @param save_all: true if all replay buffer must be saved, false otherwise
      */
-    void load(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
+    void load(
+        std::string checkpoint_path,
+        std::string checkpoint_name,
+        bool save_all
+    );
 
     /**
      * Load a replay buffer from the filesystem.
@@ -188,6 +196,6 @@ class ReplayBuffer {
      */
     friend bool operator==(const ReplayBuffer &lhs, const ReplayBuffer &rhs);
 };
-}  // relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif  //RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_

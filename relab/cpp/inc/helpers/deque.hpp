@@ -26,7 +26,7 @@ class Deque : public std::deque<T> {
      * Create a double ended queue.
      * @param max_size the maximum length of the queue
      */
-    Deque(int max_size=-1);
+    Deque(int max_size = -1);
 
     /**
      * Add an element at the end of the queue.
@@ -78,6 +78,6 @@ class Deque : public std::deque<T> {
 template class Deque<int>;
 template class Deque<float>;
 template class Deque<bool>;
-}  // namespace relab::helpers
+}  // namespace namespace relab::helpers
 
-#endif  //RELAB_CPP_INC_HELPERS_DEQUE_HPP_
+#endif  // RELAB_CPP_INC_HELPERS_DEQUE_HPP_
