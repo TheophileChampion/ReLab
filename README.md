@@ -84,7 +84,9 @@ As the agent is learning, you can visualize its performance using the following 
 tensorboard --logdir=./data/runs/
 ```
 
+<!-- markdown-link-check-disable -->
 This will open a graphical interface at <http://localhost:6006/>, allowing you to monitor:
+<!-- markdown-link-check-enable -->
 
 - the agent's mean episodic reward,
 - the training speed (in milliseconds per training iteration), and
