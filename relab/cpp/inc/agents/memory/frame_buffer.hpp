@@ -11,6 +11,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_storage.hpp"
@@ -26,7 +27,7 @@ using namespace relab::helpers;
  * observations.
  */
 class FrameBuffer {
- private:
+private:
   // The device on which computation is performed.
   torch::Device device;
 
@@ -57,7 +58,7 @@ class FrameBuffer {
   // A thread pool to parallelize the decompression.
   ThreadPool pool;
 
- public:
+public:
   /**
    * Create a frame buffer.
    * @param capacity the number of experiences the buffer can store
@@ -71,9 +72,10 @@ class FrameBuffer {
    * @param n_threads the number of threads to use for speeding up the
    * decompression of tensors
    */
-  FrameBuffer(int capacity, int frame_skip, int n_steps, int stack_size,
-              int screen_size = 84, CompressorType type = CompressorType::ZLIB,
-              int n_threads = 1);
+  FrameBuffer(
+      int capacity, int frame_skip, int n_steps, int stack_size, int screen_size = 84,
+      CompressorType type = CompressorType::ZLIB, int n_threads = 1
+  );
 
   /**
    * Add the frames of the next experience to the buffer.
@@ -88,8 +90,7 @@ class FrameBuffer {
    * retrieved
    * @return the observations at time t and t + n_steps
    */
-  std::tuple<torch::Tensor, torch::Tensor>
-  operator[](const torch::Tensor &indices);
+  std::tuple<torch::Tensor, torch::Tensor> operator[](const torch::Tensor &indices);
 
   /**
    * Retrieve the number of experiences stored in the buffer.

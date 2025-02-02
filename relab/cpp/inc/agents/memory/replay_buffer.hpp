@@ -7,15 +7,16 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 
-#include <torch/extension.h>
-#include <experimental/filesystem>
 #include <map>
 #include <memory>
 #include <string>
+
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/data_buffer.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
+#include <experimental/filesystem>
+#include <torch/extension.h>
 
 namespace relab::agents::memory {
 
@@ -27,7 +28,7 @@ namespace relab::agents::memory {
  * documentation of MDQN and PrioritizedDQN.
  */
 class ReplayBuffer {
- private:
+private:
   // Keep in mind whether the replay buffer is prioritized.
   bool prioritized;
 
@@ -56,7 +57,7 @@ class ReplayBuffer {
   // The indices of the last sampled experiences.
   torch::Tensor indices;
 
- public:
+public:
   /**
    * Create a replay buffer.
    * @param capacity the number of experience the buffer can store
@@ -78,10 +79,11 @@ class ReplayBuffer {
    * multistep Q-learning
    *     - gamma: the discount factor
    */
-  ReplayBuffer(int capacity = 10000, int batch_size = 32, int frame_skip = 1,
-               int stack_size = 4, int screen_size = 84,
-               CompressorType type = CompressorType::ZLIB,
-               std::map<std::string, float> args = {});
+  ReplayBuffer(
+      int capacity = 10000, int batch_size = 32, int frame_skip = 1, int stack_size = 4,
+      int screen_size = 84, CompressorType type = CompressorType::ZLIB,
+      std::map<std::string, float> args = {}
+  );
 
   /**
    * Add a new experience to the buffer.
@@ -116,8 +118,7 @@ class ReplayBuffer {
    * buffer must be loaded ("" for default name)
    * @param save_all: true if all replay buffer must be saved, false otherwise
    */
-  void load(std::string checkpoint_path, std::string checkpoint_name,
-            bool save_all);
+  void load(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
   /**
    * Load a replay buffer from the filesystem.
@@ -133,8 +134,7 @@ class ReplayBuffer {
    * buffer must be saved ("" for default name)
    * @param save_all: true if all replay buffer must be saved, false otherwise
    */
-  void save(std::string checkpoint_path, std::string checkpoint_name,
-            bool save_all);
+  void save(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
   /**
    * Save the replay buffer on the filesystem.
@@ -151,10 +151,9 @@ class ReplayBuffer {
    * @param save_all: true if all replay buffer must be saved, false otherwise
    * @return the path to the file in which the replay buffer must be saved
    */
-  std::experimental::filesystem::path
-  getCheckpointPath(std::string &checkpoint_path,
-                    std::string &checkpoint_name,
-                    bool save_all);
+  std::experimental::filesystem::path getCheckpointPath(
+      std::string &checkpoint_path, std::string &checkpoint_name, bool save_all
+  );
 
   /**
    * Print the replay buffer on the standard output.

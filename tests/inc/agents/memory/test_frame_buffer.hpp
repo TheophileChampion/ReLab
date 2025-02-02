@@ -3,10 +3,11 @@
 #ifndef TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_
 #define TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_
 
-#include <gtest/gtest.h>
 #include <memory>
+
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_buffer.hpp"
+#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 
@@ -33,8 +34,7 @@ public:
    * multistep Q-learning
    * @param stack_size the number of frames per observation
    */
-  FrameBufferParameters(int capacity, int frame_skip, int n_steps,
-                        int stack_size);
+  FrameBufferParameters(int capacity, int frame_skip, int n_steps, int stack_size);
 
   /**
    * Create a structure storing the parameters of the frame buffer tests.
@@ -57,11 +57,11 @@ public:
    */
   void SetUp();
 };
-} // namespace relab::test::agents::memory::impl
+}  // namespace relab::test::agents::memory::impl
 
 namespace relab::test::agents::memory {
 using impl::FrameBufferParameters;
 using impl::TestFrameBuffer;
-} // namespace relab::test::agents::memory
+}  // namespace relab::test::agents::memory
 
-#endif // TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_
+#endif  // TESTS_INC_AGENTS_MEMORY_TEST_FRAME_BUFFER_HPP_

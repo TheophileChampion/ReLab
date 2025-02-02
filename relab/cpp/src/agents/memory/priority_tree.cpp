@@ -395,33 +395,27 @@ bool operator==(const PriorityTree &lhs, const PriorityTree &rhs) {
   }
 
   // Compare the priorities.
-  if (!tensorsAreEqual(lhs.priorities, rhs.priorities)) {
+  if (!tensorsAreEqual(lhs.priorities, rhs.priorities))
     return false;
-  }
 
   // Compare the sum-trees.
-  if (lhs.sum_tree.size() != rhs.sum_tree.size()) {
-    return false
-  }
+  if (lhs.sum_tree.size() != rhs.sum_tree.size())
+    return false;
   for (size_t i = 0; i < lhs.sum_tree.size(); i++) {
-    if (lhs.sum_tree[i].size() != rhs.sum_tree[i].size()) {
+    if (lhs.sum_tree[i].size() != rhs.sum_tree[i].size())
       return false;
-    }
     for (size_t j = 0; j < lhs.sum_tree[i].size(); j++) {
-      if (lhs.sum_tree[i][j] != rhs.sum_tree[i][j]) {
+      if (lhs.sum_tree[i][j] != rhs.sum_tree[i][j])
         return false;
-      }
     }
   }
 
   // Compare the max-trees.
-  if (lhs.max_tree.size() != rhs.max_tree.size()) {
-    return false
-  }
+  if (lhs.max_tree.size() != rhs.max_tree.size())
+    return false;
   for (size_t i = 0; i < lhs.max_tree.size(); i++) {
-    if (!tensorsAreEqual(lhs.max_tree[i], rhs.max_tree[i])) {
+    if (!tensorsAreEqual(lhs.max_tree[i], rhs.max_tree[i]))
       return false;
-    }
   }
   return true;
 }

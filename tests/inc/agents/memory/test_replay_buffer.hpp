@@ -3,14 +3,15 @@
 #ifndef TEST_REPLAY_BUFFER_HPP
 #define TEST_REPLAY_BUFFER_HPP
 
-#include <gtest/gtest.h>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/replay_buffer.hpp"
+#include <gtest/gtest.h>
 
 namespace relab::test::agents::memory::impl {
 
@@ -74,8 +75,7 @@ public:
 /**
  * A fixture class for testing the replay buffer.
  */
-class TestReplayBuffer2
-    : public testing::TestWithParam<ReplayBufferParameters> {};
+class TestReplayBuffer2 : public testing::TestWithParam<ReplayBufferParameters> {};
 
 /**
  * A fixture class for testing the replay buffer.
@@ -91,13 +91,13 @@ public:
    */
   void SetUp();
 };
-} // namespace relab::test::agents::memory::impl
+}  // namespace relab::test::agents::memory::impl
 
 namespace relab::test::agents::memory {
 using impl::ReplayBufferParameters;
 using impl::TestReplayBuffer;
 using impl::TestReplayBuffer2;
 using impl::TestReplayBuffer3;
-} // namespace relab::test::agents::memory
+}  // namespace relab::test::agents::memory
 
-#endif // TEST_REPLAY_BUFFER_HPP
+#endif  // TEST_REPLAY_BUFFER_HPP

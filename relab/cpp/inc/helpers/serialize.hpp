@@ -7,8 +7,9 @@
 #ifndef RELAB_CPP_INC_HELPERS_SERIALIZE_HPP_
 #define RELAB_CPP_INC_HELPERS_SERIALIZE_HPP_
 
-#include <torch/extension.h>
 #include <vector>
+
+#include <torch/extension.h>
 
 namespace relab::helpers {
 
@@ -41,8 +42,7 @@ std::vector<TensorType> load_vector(std::istream &checkpoint);
  * @param checkpoint the stream writing into the checkpoint file
  */
 template <class TensorType, class DataType>
-void save_vector(const std::vector<TensorType> &vector,
-                 std::ostream &checkpoint);
+void save_vector(const std::vector<TensorType> &vector, std::ostream &checkpoint);
 
 /**
  * Load a value from a stream.

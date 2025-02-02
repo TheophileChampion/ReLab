@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+
 #include "agents/memory/experience.hpp"
 #include "agents/memory/priority_tree.hpp"
 #include "helpers/deque.hpp"
@@ -23,7 +24,7 @@ using namespace relab::helpers;
  * rewards, dones, and priorities.
  */
 class DataBuffer {
- private:
+private:
   // Store the data buffer's parameters.
   int capacity;
   int n_steps;
@@ -46,7 +47,7 @@ class DataBuffer {
   // The index of the next datum to add in the buffer.
   int current_id;
 
- public:
+public:
   /**
    * Create a data buffer.
    * @param capacity the number of experiences the buffer can store
@@ -56,8 +57,9 @@ class DataBuffer {
    * @param initial_priority the initial priority given to first elements
    * @param n_children the number of children each node has
    */
-  DataBuffer(int capacity, int n_steps, float gamma, float initial_priority,
-             int n_children);
+  DataBuffer(
+      int capacity, int n_steps, float gamma, float initial_priority, int n_children
+  );
 
   /**
    * Add the datum of the next experience to the buffer.
