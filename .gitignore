@@ -183,8 +183,9 @@ docs/README.md
 # Ignore testing directory.
 Testing/
 
-# Output files.
+# Output files and poetry lock file.
 *.out
+*.lock
 
 # SKbuild
 _skbuild
