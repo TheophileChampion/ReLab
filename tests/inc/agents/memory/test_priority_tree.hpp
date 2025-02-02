@@ -29,9 +29,7 @@ class PriorityTreeParameters {
    * @param elements the priorities to append to the queue
    * @param result the test result
    */
-  PriorityTreeParameters(
-      const std::initializer_list<float> &elements, float result = 0
-  );
+  PriorityTreeParameters(const std::initializer_list<float> &elements, float result = 0);
 
   /**
    * Create a structure storing the parameters of the priority tree tests.
@@ -57,8 +55,7 @@ class TestPriorityTree : public testing::TestWithParam<PriorityTreeParameters> {
 /**
  * A fixture class for testing the priority tree.
  */
-class TestPriorityTree2
-    : public testing::TestWithParam<PriorityTreeParameters> {};
+class TestPriorityTree2 : public testing::TestWithParam<PriorityTreeParameters> {};
 
 /**
  * A class storing the parameters of the priority tree tests.
@@ -79,8 +76,7 @@ class PriorityTreeParameters4 {
    * @param length_result the expected size of the priority tree
    */
   PriorityTreeParameters4(
-      const std::initializer_list<float> &elements,
-      const std::string &sum_result, const std::string &max_result,
+      const std::initializer_list<float> &elements, const std::string &sum_result, const std::string &max_result,
       int length_result
   );
 };
@@ -88,8 +84,7 @@ class PriorityTreeParameters4 {
 /**
  * A fixture class for testing the priority tree.
  */
-class TestPriorityTree4
-    : public testing::TestWithParam<PriorityTreeParameters4> {};
+class TestPriorityTree4 : public testing::TestWithParam<PriorityTreeParameters4> {};
 
 /**
  * A class storing the parameters of the priority tree tests.
@@ -114,10 +109,8 @@ class PriorityTreeParameters5 {
    * @param length_result the expected size of the priority tree
    */
   PriorityTreeParameters5(
-      const std::initializer_list<float> &elements,
-      const std::initializer_list<int> &set_indices,
-      const std::initializer_list<float> &set_values,
-      const std::string &sum_result, const std::string &max_result,
+      const std::initializer_list<float> &elements, const std::initializer_list<int> &set_indices,
+      const std::initializer_list<float> &set_values, const std::string &sum_result, const std::string &max_result,
       int length_result
   );
 };
@@ -125,8 +118,7 @@ class PriorityTreeParameters5 {
 /**
  * A fixture class for testing the priority tree.
  */
-class TestPriorityTree5
-    : public testing::TestWithParam<PriorityTreeParameters5> {};
+class TestPriorityTree5 : public testing::TestWithParam<PriorityTreeParameters5> {};
 
 /**
  * A class storing the parameters of the priority tree tests.
@@ -145,16 +137,14 @@ class PriorityTreeParameters6 {
    * @param length_result the expected size of the priority tree
    */
   PriorityTreeParameters6(
-      const std::initializer_list<float> &elements,
-      const std::initializer_list<float> &results, int length_result
+      const std::initializer_list<float> &elements, const std::initializer_list<float> &results, int length_result
   );
 };
 
 /**
  * A fixture class for testing the priority tree.
  */
-class TestPriorityTree6
-    : public testing::TestWithParam<PriorityTreeParameters6> {};
+class TestPriorityTree6 : public testing::TestWithParam<PriorityTreeParameters6> {};
 
 /**
  * A class storing the parameters of the priority tree tests.
@@ -178,8 +168,7 @@ class PriorityTreeParameters7 {
 /**
  * A fixture class for testing the priority tree.
  */
-class TestPriorityTree7
-    : public testing::TestWithParam<PriorityTreeParameters7> {};
+class TestPriorityTree7 : public testing::TestWithParam<PriorityTreeParameters7> {};
 
 /**
  * A class storing the parameters of the priority tree tests.
@@ -201,16 +190,14 @@ class PriorityTreeParameters8 {
    * @param result the test result
    */
   PriorityTreeParameters8(
-      const std::vector<float> &elements, int max_index,
-      const std::vector<float> &new_values, float result
+      const std::vector<float> &elements, int max_index, const std::vector<float> &new_values, float result
   );
 };
 
 /**
  * A fixture class for testing the priority tree.
  */
-class TestPriorityTree8
-    : public testing::TestWithParam<PriorityTreeParameters8> {};
+class TestPriorityTree8 : public testing::TestWithParam<PriorityTreeParameters8> {};
 
 /**
  * A class storing the parameters of the priority tree tests.
@@ -234,16 +221,14 @@ class PriorityTreeParameters9 {
    * @param result the test result
    */
   PriorityTreeParameters9(
-      int capacity, int n_children, const std::vector<float> &elements,
-      float priority, float result
+      int capacity, int n_children, const std::vector<float> &elements, float priority, float result
   );
 };
 
 /**
  * A fixture class for testing the priority tree.
  */
-class TestPriorityTree9
-    : public testing::TestWithParam<PriorityTreeParameters9> {};
+class TestPriorityTree9 : public testing::TestWithParam<PriorityTreeParameters9> {};
 }  // namespace relab::test::agents::memory::impl
 
 namespace relab::test::agents::memory {

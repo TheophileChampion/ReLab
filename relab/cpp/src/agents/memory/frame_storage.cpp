@@ -15,9 +15,8 @@ using namespace relab::helpers;
 namespace relab::agents::memory {
 
 FrameStorage::FrameStorage(int capacity, int capacity_incr) :
-    initial_capacity(capacity), capacity(capacity),
-    capacity_incr(capacity_incr), first_frame_index(0), last_frame_index(-1),
-    first_frame(0), last_frame(-1) {
+    initial_capacity(capacity), capacity(capacity), capacity_incr(capacity_incr), first_frame_index(0),
+    last_frame_index(-1), first_frame(0), last_frame(-1) {
   // Allocate enough memory to store a number of frames equal to the storage
   // capacity.
   this->frames.reserve(capacity);
@@ -119,12 +118,9 @@ void FrameStorage::save(std::ostream &checkpoint) {
 
 void FrameStorage::print(bool verbose, const std::string &prefix) {
   // Display the most important information about the frame storage.
-  std::cout << "FrameStorage[initial_capacity: " << this->initial_capacity
-            << ", capacity: " << this->capacity
-            << ", capacity_incr: " << this->capacity_incr
-            << ", first_frame_index: " << this->first_frame_index
-            << ", last_frame_index: " << this->last_frame_index
-            << ", first_frame: " << this->first_frame
+  std::cout << "FrameStorage[initial_capacity: " << this->initial_capacity << ", capacity: " << this->capacity
+            << ", capacity_incr: " << this->capacity_incr << ", first_frame_index: " << this->first_frame_index
+            << ", last_frame_index: " << this->last_frame_index << ", first_frame: " << this->first_frame
             << ", last_frame: " << this->last_frame << "]" << std::endl;
 
   // Display optional information about the frame storage.
@@ -137,12 +133,10 @@ void FrameStorage::print(bool verbose, const std::string &prefix) {
 bool operator==(const FrameStorage &lhs, const FrameStorage &rhs) {
   // Check that all attributes of standard types and container sizes are
   // identical.
-  if (lhs.initial_capacity != rhs.initial_capacity ||
-      lhs.capacity != rhs.capacity || lhs.capacity_incr != rhs.capacity_incr ||
-      lhs.first_frame_index != rhs.first_frame_index ||
-      lhs.last_frame_index != rhs.last_frame_index ||
-      lhs.first_frame != rhs.first_frame || lhs.last_frame != rhs.last_frame ||
-      lhs.frames.size() != rhs.frames.size()) {
+  if (lhs.initial_capacity != rhs.initial_capacity || lhs.capacity != rhs.capacity ||
+      lhs.capacity_incr != rhs.capacity_incr || lhs.first_frame_index != rhs.first_frame_index ||
+      lhs.last_frame_index != rhs.last_frame_index || lhs.first_frame != rhs.first_frame ||
+      lhs.last_frame != rhs.last_frame || lhs.frames.size() != rhs.frames.size()) {
     return false;
   }
 

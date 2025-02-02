@@ -179,10 +179,7 @@ class PriorityTree {
    * @param new_priority the new priority
    * @return the maximum value
    */
-  float maxChildValue(
-      int depth, int parent_index, int index, float old_priority,
-      float new_priority
-  );
+  float maxChildValue(int depth, int parent_index, int index, float old_priority, float new_priority);
 
   /**
    * Create a string representation of the max-tree.
@@ -212,10 +209,7 @@ class PriorityTree {
    * @return a string representing the tree
    */
   template <class Tree, class T>
-  std::string treeToStr(
-      Tree tree, T (*get)(Tree, int, int), int max_n_elements = -1,
-      int precision = 1
-  );
+  std::string treeToStr(Tree tree, T (*get)(Tree, int, int), int max_n_elements = -1, int precision = 1);
 
   /**
    * Load the priority tree from the checkpoint.

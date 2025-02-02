@@ -21,8 +21,8 @@ using namespace std::experimental::filesystem;
 namespace relab::agents::memory {
 
 ReplayBuffer::ReplayBuffer(
-    int capacity, int batch_size, int frame_skip, int stack_size,
-    int screen_size, CompressorType type, std::map<std::string, float> args
+    int capacity, int batch_size, int frame_skip, int stack_size, int screen_size, CompressorType type,
+    std::map<std::string, float> args
 ) : device(getDevice()) {
   // Keep in mind whether the replay buffer is prioritized.
   this->prioritized = false;
@@ -34,10 +34,8 @@ ReplayBuffer::ReplayBuffer(
   }
 
   // Default values of the prioritization and multistep arguments.
-  std::map<std::string, float> default_args = {
-      {"initial_priority", 1.0}, {"omega", 1.0},   {"omega_is", 1.0},
-      {"n_children", 10},        {"n_steps", 1.0}, {"gamma", 0.99}
-  };
+  std::map<std::string, float> default_args = {{"initial_priority", 1.0}, {"omega", 1.0},   {"omega_is", 1.0},
+                                               {"n_children", 10},        {"n_steps", 1.0}, {"gamma", 0.99}};
 
   // Complete arguments with default values.
   args.insert(default_args.begin(), default_args.end());
@@ -55,19 +53,15 @@ ReplayBuffer::ReplayBuffer(
   this->omega_is = args["omega_is"];
 
   // The buffer storing the frames of all experiences.
-  int n_threads = std::min(
-      static_cast<int>(std::thread::hardware_concurrency()), batch_size
-  );
+  int n_threads = std::min(static_cast<int>(std::thread::hardware_concurrency()), batch_size);
   this->observations = std::make_unique<FrameBuffer>(
-      this->capacity, this->frame_skip, this->n_steps, this->stack_size,
-      screen_size, type, n_threads
+      this->capacity, this->frame_skip, this->n_steps, this->stack_size, screen_size, type, n_threads
   );
 
   // The buffer storing the data (i.e., actions, rewards, dones and priorities)
   // of all experiences.
   this->data = std::make_unique<DataBuffer>(
-      this->capacity, this->n_steps, this->gamma, this->initial_priority,
-      this->n_children
+      this->capacity, this->n_steps, this->gamma, this->initial_priority, this->n_children
   );
 }
 
@@ -79,8 +73,7 @@ void ReplayBuffer::append(const Experience &experience) {
 Batch ReplayBuffer::sample() {
   // Sample a batch from the replay buffer.
   if (this->prioritized == true) {
-    this->indices =
-        this->data->getPriorities()->sampleIndices(this->batch_size);
+    this->indices = this->data->getPriorities()->sampleIndices(this->batch_size);
   } else {
     this->indices = torch::randint(0, this->size(), {this->batch_size});
   }
@@ -122,18 +115,14 @@ torch::Tensor ReplayBuffer::report(torch::Tensor &loss) {
   }
 
   // Update the priorities and compute the importance sampling weights.
-  torch::Tensor weights =
-      this->size() * priorities.to(this->device) / sum_priorities;
+  torch::Tensor weights = this->size() * priorities.to(this->device) / sum_priorities;
   weights = torch::pow(weights, -this->omega_is);
   return loss * weights / weights.max();
 }
 
-void ReplayBuffer::load(
-    std::string checkpoint_path, std::string checkpoint_name, bool save_all
-) {
+void ReplayBuffer::load(std::string checkpoint_path, std::string checkpoint_name, bool save_all) {
   // Check that the replay buffer checkpoint exist.
-  auto path =
-      this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
+  auto path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
   if (!exists(path) || !path.has_filename()) {
     logging.info("Could not load the replay buffer from: " + path.string());
     return;
@@ -163,13 +152,10 @@ void ReplayBuffer::loadFromFile(std::istream &checkpoint) {
   this->indices = load_tensor<long>(checkpoint);
 }
 
-void ReplayBuffer::save(
-    std::string checkpoint_path, std::string checkpoint_name, bool save_all
-) {
+void ReplayBuffer::save(std::string checkpoint_path, std::string checkpoint_name, bool save_all) {
   // Create the replay buffer checkpoint directory and file, if they do not
   // exist.
-  auto path =
-      this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
+  auto path = this->getCheckpointPath(checkpoint_path, checkpoint_name, save_all);
 
   auto directory_name = (path.has_filename()) ? path.parent_path() : path;
   if (!exists(directory_name)) {
@@ -200,9 +186,7 @@ void ReplayBuffer::saveToFile(std::ostream &checkpoint) {
   save_tensor<long>(this->indices, checkpoint);
 }
 
-path ReplayBuffer::getCheckpointPath(
-    std::string &checkpoint_path, std::string &checkpoint_name, bool save_all
-) {
+path ReplayBuffer::getCheckpointPath(std::string &checkpoint_path, std::string &checkpoint_name, bool save_all) {
   // If all replay buffer must be saved and checkpoint name was not provided,
   // replace "model" by "buffer" in the checkpoint path.
   if (checkpoint_name == "" && save_all == true) {
@@ -221,15 +205,11 @@ void ReplayBuffer::print(bool verbose) {
   // Display the most important information about the replay buffer.
   std::cout << "ReplayBuffer[prioritized: ";
   print_bool(this->prioritized);
-  std::cout << ", capacity: " << this->capacity
-            << ", batch_size: " << this->batch_size
-            << ", stack_size: " << this->stack_size
-            << ", frame_skip: " << this->frame_skip
+  std::cout << ", capacity: " << this->capacity << ", batch_size: " << this->batch_size
+            << ", stack_size: " << this->stack_size << ", frame_skip: " << this->frame_skip
             << ", gamma: " << this->gamma << ", n_steps: " << this->n_steps
-            << ", initial_priority: " << this->initial_priority
-            << ", n_children: " << this->n_children
-            << ", omega: " << this->omega << ", omega_is: " << this->omega_is
-            << "]" << std::endl;
+            << ", initial_priority: " << this->initial_priority << ", n_children: " << this->n_children
+            << ", omega: " << this->omega << ", omega_is: " << this->omega_is << "]" << std::endl;
 
   // Display optional information about the replay buffer.
   if (verbose == true) {
@@ -246,8 +226,7 @@ Batch ReplayBuffer::getExperiences(torch::Tensor &indices) {
   auto observations = (*this->observations)[indices];
   auto data = (*this->data)[indices];
   return std::make_tuple(
-      std::get<0>(observations).to(this->device), std::get<0>(data),
-      std::get<1>(data), std::get<2>(data),
+      std::get<0>(observations).to(this->device), std::get<0>(data), std::get<1>(data), std::get<2>(data),
       std::get<1>(observations).to(this->device)
   );
 }
@@ -264,19 +243,14 @@ bool ReplayBuffer::getPrioritized() { return this->prioritized; }
 
 torch::Tensor ReplayBuffer::getLastIndices() { return this->indices; }
 
-float ReplayBuffer::getPriority(int index) {
-  return this->data->getPriorities()->get(index);
-}
+float ReplayBuffer::getPriority(int index) { return this->data->getPriorities()->get(index); }
 
 bool operator==(const ReplayBuffer &lhs, const ReplayBuffer &rhs) {
   // Check that all attributes of standard types are identical.
-  if (lhs.prioritized != rhs.prioritized || lhs.capacity != rhs.capacity ||
-      lhs.batch_size != rhs.batch_size || lhs.stack_size != rhs.stack_size ||
-      lhs.frame_skip != rhs.frame_skip || lhs.gamma != rhs.gamma ||
-      lhs.n_steps != rhs.n_steps ||
-      lhs.initial_priority != rhs.initial_priority ||
-      lhs.n_children != rhs.n_children || lhs.omega != rhs.omega ||
-      lhs.omega_is != rhs.omega_is) {
+  if (lhs.prioritized != rhs.prioritized || lhs.capacity != rhs.capacity || lhs.batch_size != rhs.batch_size ||
+      lhs.stack_size != rhs.stack_size || lhs.frame_skip != rhs.frame_skip || lhs.gamma != rhs.gamma ||
+      lhs.n_steps != rhs.n_steps || lhs.initial_priority != rhs.initial_priority || lhs.n_children != rhs.n_children ||
+      lhs.omega != rhs.omega || lhs.omega_is != rhs.omega_is) {
     return false;
   }
 

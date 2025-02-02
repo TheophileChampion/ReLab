@@ -10,8 +10,7 @@
 #define TEST_EPSILON 1e-5
 #define MAX_PRIORITY 1e9
 
-#define EXPECT_EQ_TENSOR(x, y)                                                 \
-  EXPECT_TRUE(torch::all(torch::eq(x.cpu(), y.cpu())).item<bool>())
+#define EXPECT_EQ_TENSOR(x, y) EXPECT_TRUE(torch::all(torch::eq(x.cpu(), y.cpu())).item<bool>())
 
 namespace relab::test::impl {
 
@@ -44,8 +43,7 @@ torch::Tensor getObservation(int t, int frame_skip = 1, int stack_size = 4);
  * environment
  * @param stack_size the number of frames per observation
  */
-std::vector<torch::Tensor>
-getObservations(int n, int frame_skip = 1, int stack_size = 4);
+std::vector<torch::Tensor> getObservations(int n, int frame_skip = 1, int stack_size = 4);
 
 /**
  * Retrieve the first n experiences.
@@ -53,10 +51,7 @@ getObservations(int n, int frame_skip = 1, int stack_size = 4);
  * @param n the number of experiences
  * @param episode_length the length of an episode
  */
-std::vector<Experience> getExperiences(
-    const std::vector<torch::Tensor> &observations, int n,
-    int episode_length = -1
-);
+std::vector<Experience> getExperiences(const std::vector<torch::Tensor> &observations, int n, int episode_length = -1);
 
 /**
  * Retrieve the multistep experiences at time t (experiences expected to be
@@ -68,8 +63,7 @@ std::vector<Experience> getExperiences(
  * @param episode_length the length of an episode
  */
 std::vector<Experience> getResultExperiences(
-    const std::vector<torch::Tensor> &observations, float gamma, int n_steps,
-    int n, int episode_length = -1
+    const std::vector<torch::Tensor> &observations, float gamma, int n_steps, int n, int episode_length = -1
 );
 
 /**
@@ -78,10 +72,7 @@ std::vector<Experience> getResultExperiences(
  * @param experiences_it an iterator pointing to the first expected experience
  * @param n_experiences the number of experiences to compare
  */
-void compareExperiences(
-    Batch batch, std::vector<Experience>::iterator experiences_it,
-    int n_experiences
-);
+void compareExperiences(Batch batch, std::vector<Experience>::iterator experiences_it, int n_experiences);
 
 /**
  * Create a vector filled with a specific value.

@@ -35,9 +35,7 @@ class FrameBufferParameters {
    * multistep Q-learning
    * @param stack_size the number of frames per observation
    */
-  FrameBufferParameters(
-      int capacity, int frame_skip, int n_steps, int stack_size
-  );
+  FrameBufferParameters(int capacity, int frame_skip, int n_steps, int stack_size);
 
   /**
    * Create a structure storing the parameters of the frame buffer tests.

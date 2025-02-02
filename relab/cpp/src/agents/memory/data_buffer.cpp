@@ -18,12 +18,8 @@ using namespace relab::helpers;
 
 namespace relab::agents::memory::impl {
 
-DataBuffer::DataBuffer(
-    int capacity, int n_steps, float gamma, float initial_priority,
-    int n_children
-) :
-    past_actions(n_steps), past_rewards(n_steps), past_dones(n_steps),
-    device(getDevice()) {
+DataBuffer::DataBuffer(int capacity, int n_steps, float gamma, float initial_priority, int n_children) :
+    past_actions(n_steps), past_rewards(n_steps), past_dones(n_steps), device(getDevice()) {
   // Store the data buffer's parameters.
   this->capacity = capacity;
   this->n_steps = n_steps;
@@ -35,8 +31,7 @@ DataBuffer::DataBuffer(
   this->dones = torch::zeros({capacity}, at::kBool).to(this->device);
 
   // The priorities associated with all experiences in the replay buffer.
-  this->priorities =
-      std::make_unique<PriorityTree>(capacity, initial_priority, n_children);
+  this->priorities = std::make_unique<PriorityTree>(capacity, initial_priority, n_children);
 
   // The index of the next datum to add in the buffer.
   this->current_id = 0;
@@ -57,10 +52,7 @@ void DataBuffer::append(const Experience &experience) {
   if (experience.done == true) {
     // If the current episode has ended, keep track of all valid data.
     while (this->past_rewards.size() != 0) {
-      this->addDatum(
-          this->past_actions.back(), this->past_rewards.back(),
-          this->past_dones[0]
-      );
+      this->addDatum(this->past_actions.back(), this->past_rewards.back(), this->past_dones[0]);
       this->past_actions.pop_back();
       this->past_rewards.pop_back();
     }
@@ -73,22 +65,15 @@ void DataBuffer::append(const Experience &experience) {
   } else if (static_cast<int>(this->past_rewards.size()) == this->n_steps) {
     // If the current episode has not ended, but the queues are full, then keep
     // track of next valid datum.
-    this->addDatum(
-        this->past_actions.back(), this->past_rewards.back(),
-        this->past_dones[0]
-    );
+    this->addDatum(this->past_actions.back(), this->past_rewards.back(), this->past_dones[0]);
   }
 }
 
-std::tuple<torch::Tensor, torch::Tensor, torch::Tensor>
-DataBuffer::operator[](torch::Tensor &indices) {
+std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> DataBuffer::operator[](torch::Tensor &indices) {
   if (this->current_id >= this->capacity) {
     indices = torch::remainder(indices + this->current_id, this->capacity);
   }
-  return std::make_tuple(
-      this->actions.index({indices}), this->rewards.index({indices}),
-      this->dones.index({indices})
-  );
+  return std::make_tuple(this->actions.index({indices}), this->rewards.index({indices}), this->dones.index({indices}));
 }
 
 int DataBuffer::size() { return std::min(this->current_id, this->capacity); }
@@ -113,9 +98,7 @@ void DataBuffer::addDatum(int action, float reward, bool done) {
   this->current_id += 1;
 }
 
-std::unique_ptr<PriorityTree> &DataBuffer::getPriorities() {
-  return this->priorities;
-}
+std::unique_ptr<PriorityTree> &DataBuffer::getPriorities() { return this->priorities; }
 
 void DataBuffer::load(std::istream &checkpoint) {
   // Load the data buffer from the checkpoint.
@@ -149,8 +132,7 @@ void DataBuffer::save(std::ostream &checkpoint) {
 
 void DataBuffer::print(bool verbose, const std::string &prefix) {
   // Display the most important information about the data buffer.
-  std::cout << "DataBuffer[capacity: " << this->capacity
-            << ", n_steps: " << this->n_steps << ", gamma: " << this->gamma
+  std::cout << "DataBuffer[capacity: " << this->capacity << ", n_steps: " << this->n_steps << ", gamma: " << this->gamma
             << ", current_id: " << this->current_id << "]" << std::endl;
 
   // Display optional information about the data buffer.
@@ -174,21 +156,19 @@ void DataBuffer::print(bool verbose, const std::string &prefix) {
 
 bool operator==(const DataBuffer &lhs, const DataBuffer &rhs) {
   // Check that all attributes of standard types are identical.
-  if (lhs.capacity != rhs.capacity || lhs.n_steps != rhs.n_steps ||
-      lhs.gamma != rhs.gamma || lhs.current_id != rhs.current_id) {
+  if (lhs.capacity != rhs.capacity || lhs.n_steps != rhs.n_steps || lhs.gamma != rhs.gamma ||
+      lhs.current_id != rhs.current_id) {
     return false;
   }
 
   // Compare the double ended queues.
-  if (lhs.past_actions != rhs.past_actions ||
-      lhs.past_rewards != rhs.past_rewards ||
+  if (lhs.past_actions != rhs.past_actions || lhs.past_rewards != rhs.past_rewards ||
       lhs.past_dones != rhs.past_dones) {
     return false;
   }
 
   // Compare the tensors.
-  if (!tensorsAreEqual(lhs.actions, rhs.actions) ||
-      !tensorsAreEqual(lhs.rewards, rhs.rewards) ||
+  if (!tensorsAreEqual(lhs.actions, rhs.actions) || !tensorsAreEqual(lhs.rewards, rhs.rewards) ||
       !tensorsAreEqual(lhs.dones, rhs.dones)) {
     return false;
   }
@@ -197,7 +177,5 @@ bool operator==(const DataBuffer &lhs, const DataBuffer &rhs) {
   return *lhs.priorities == *rhs.priorities;
 }
 
-bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs) {
-  return !(lhs == rhs);
-}
+bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs) { return !(lhs == rhs); }
 }  // namespace relab::agents::memory::impl

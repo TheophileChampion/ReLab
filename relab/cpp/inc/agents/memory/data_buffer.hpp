@@ -17,7 +17,7 @@
 
 namespace relab::agents::memory::impl {
 
-using namespace relab::helpers;
+using relab::helpers::PriorityTree;
 
 /**
  * @brief A buffer allowing for storage and retrieval of experience actions,
@@ -57,10 +57,7 @@ class DataBuffer {
    * @param initial_priority the initial priority given to first elements
    * @param n_children the number of children each node has
    */
-  DataBuffer(
-      int capacity, int n_steps, float gamma, float initial_priority,
-      int n_children
-  );
+  DataBuffer(int capacity, int n_steps, float gamma, float initial_priority, int n_children);
 
   /**
    * Add the datum of the next experience to the buffer.
@@ -75,8 +72,7 @@ class DataBuffer {
    * @return the data (i.e., action at time t, n-steps return at time t, and
    * done at time t + n_steps)
    */
-  std::tuple<torch::Tensor, torch::Tensor, torch::Tensor>
-  operator[](torch::Tensor &indices);
+  std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> operator[](torch::Tensor &indices);
 
   /**
    * Retrieve the number of experiences stored in the buffer.

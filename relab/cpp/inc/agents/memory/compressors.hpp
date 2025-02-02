@@ -35,8 +35,7 @@ class Compressor {
    * @param type the type of compression to use
    * @return the requested compressor
    */
-  static std::unique_ptr<Compressor>
-  create(int height, int width, CompressorType type = CompressorType::ZLIB);
+  static std::unique_ptr<Compressor> create(int height, int width, CompressorType type = CompressorType::ZLIB);
 
   /**
    * Ensure the destructor of child classes are called.

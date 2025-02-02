@@ -25,16 +25,14 @@ template <class T> std::vector<T> load_vector(std::istream &checkpoint);
  * @param vector the vector of integers
  * @param checkpoint the stream writing into the checkpoint file
  */
-template <class T>
-void save_vector(const std::vector<T> &vector, std::ostream &checkpoint);
+template <class T> void save_vector(const std::vector<T> &vector, std::ostream &checkpoint);
 
 /**
  * Load a vector of tensors from a stream.
  * @param checkpoint the stream reading from the checkpoint file
  * @return the vector of tensors
  */
-template <class TensorType, class DataType>
-std::vector<TensorType> load_vector(std::istream &checkpoint);
+template <class TensorType, class DataType> std::vector<TensorType> load_vector(std::istream &checkpoint);
 
 /**
  * Save a vector of tensors into a stream.
@@ -42,9 +40,7 @@ std::vector<TensorType> load_vector(std::istream &checkpoint);
  * @param checkpoint the stream writing into the checkpoint file
  */
 template <class TensorType, class DataType>
-void save_vector(
-    const std::vector<TensorType> &vector, std::ostream &checkpoint
-);
+void save_vector(const std::vector<TensorType> &vector, std::ostream &checkpoint);
 
 /**
  * Load a value from a stream.
@@ -72,8 +68,7 @@ template <class T> torch::Tensor load_tensor(std::istream &checkpoint);
  * @param tensor the tensor to save
  * @param checkpoint the stream writing into the checkpoint file
  */
-template <class T>
-void save_tensor(const torch::Tensor &tensor, std::ostream &checkpoint);
+template <class T> void save_tensor(const torch::Tensor &tensor, std::ostream &checkpoint);
 }  // namespace relab::helpers
 
 #endif  // RELAB_CPP_INC_HELPERS_SERIALIZE_HPP_

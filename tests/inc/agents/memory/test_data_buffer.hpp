@@ -36,10 +36,7 @@ class DataBufferParameters {
    * @param initial_priority the initial priority given to first elements
    * @param n_children the number of children each node has
    */
-  DataBufferParameters(
-      int capacity, int n_steps, float gamma, float initial_priority = 1,
-      int n_children = 10
-  );
+  DataBufferParameters(int capacity, int n_steps, float gamma, float initial_priority = 1, int n_children = 10);
 
   /**
    * Create a structure storing the parameters of the data buffer tests.

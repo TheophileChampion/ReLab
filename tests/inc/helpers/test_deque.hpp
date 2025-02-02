@@ -34,10 +34,7 @@ class DequeParameters {
    * @param n_pops the number of elements to pop from the queue
    * @param length the expected length of the deque at the end of the test
    */
-  DequeParameters(
-      const std::initializer_list<int> &elements, int max_size, int n_pops,
-      int length
-  );
+  DequeParameters(const std::initializer_list<int> &elements, int max_size, int n_pops, int length);
 
   /**
    * Create a structure storing the parameters of the deque tests.
@@ -85,10 +82,7 @@ class TestDeque : public testing::TestWithParam<DequeParameters> {
    * @param pop_type the type of pop performed in the test
    * @return the expected result of the test
    */
-  static std::deque<int> getResult(
-      const DequeParameters &params, const PushType &push_type,
-      const PopType &pop_type
-  );
+  static std::deque<int> getResult(const DequeParameters &params, const PushType &push_type, const PopType &pop_type);
 
   /**
    * Setup of th fixture class before calling a unit test.

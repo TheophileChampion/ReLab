@@ -81,10 +81,8 @@ class ReplayBuffer {
    *     - gamma: the discount factor
    */
   ReplayBuffer(
-      int capacity = 10000, int batch_size = 32, int frame_skip = 1,
-      int stack_size = 4, int screen_size = 84,
-      CompressorType type = CompressorType::ZLIB,
-      std::map<std::string, float> args = {}
+      int capacity = 10000, int batch_size = 32, int frame_skip = 1, int stack_size = 4, int screen_size = 84,
+      CompressorType type = CompressorType::ZLIB, std::map<std::string, float> args = {}
   );
 
   /**
@@ -120,8 +118,7 @@ class ReplayBuffer {
    * buffer must be loaded ("" for default name)
    * @param save_all: true if all replay buffer must be saved, false otherwise
    */
-  void
-  load(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
+  void load(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
   /**
    * Load a replay buffer from the filesystem.
@@ -137,8 +134,7 @@ class ReplayBuffer {
    * buffer must be saved ("" for default name)
    * @param save_all: true if all replay buffer must be saved, false otherwise
    */
-  void
-  save(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
+  void save(std::string checkpoint_path, std::string checkpoint_name, bool save_all);
 
   /**
    * Save the replay buffer on the filesystem.
@@ -155,9 +151,8 @@ class ReplayBuffer {
    * @param save_all: true if all replay buffer must be saved, false otherwise
    * @return the path to the file in which the replay buffer must be saved
    */
-  std::experimental::filesystem::path getCheckpointPath(
-      std::string &checkpoint_path, std::string &checkpoint_name, bool save_all
-  );
+  std::experimental::filesystem::path
+  getCheckpointPath(std::string &checkpoint_path, std::string &checkpoint_name, bool save_all);
 
   /**
    * Print the replay buffer on the standard output.
