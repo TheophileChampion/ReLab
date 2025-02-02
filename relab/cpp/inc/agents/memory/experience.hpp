@@ -21,7 +21,7 @@ using Batch = std::tuple<Tensor, Tensor, Tensor, Tensor, Tensor>;
  * @brief Class storing an experience.
  */
 class Experience {
-public:
+ public:
   /// @var obs
   /// The observation tensor at time t.
   Tensor obs;
@@ -42,7 +42,7 @@ public:
   /// The observation tensor at time t + 1.
   Tensor next_obs;
 
-public:
+ public:
   /**
    * Create an experience.
    * @param obs the observation at time t
@@ -53,11 +53,11 @@ public:
    */
   Experience(Tensor obs, int action, float reward, bool done, Tensor next_obs);
 };
-} // namespace relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
 
 namespace relab::agents::memory {
 using impl::Batch;
 using impl::Experience;
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif // RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_EXPERIENCE_HPP_

@@ -21,7 +21,7 @@ namespace relab::helpers {
  * @brief Class implementing a thread pool.
  */
 class ThreadPool {
-private:
+ private:
   // Vector to store worker threads.
   std::vector<std::thread> threads;
 
@@ -42,7 +42,7 @@ private:
   int tasks_pushed = 0;
   int tasks_finished = 0;
 
-public:
+ public:
   /**
    * Creates a thread pool.
    * @param num_threads the number of thread threads in the pool

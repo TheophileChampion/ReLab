@@ -7,12 +7,12 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_DATA_BUFFER_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_DATA_BUFFER_HPP_
 
-#include "agents/memory/experience.hpp"
-#include "agents/memory/priority_tree.hpp"
-#include "helpers/deque.hpp"
 #include <memory>
 #include <string>
 #include <tuple>
+#include "agents/memory/experience.hpp"
+#include "agents/memory/priority_tree.hpp"
+#include "helpers/deque.hpp"
 
 namespace relab::agents::memory::impl {
 
@@ -23,7 +23,7 @@ using namespace relab::helpers;
  * rewards, dones, and priorities.
  */
 class DataBuffer {
-private:
+ private:
   // Store the data buffer's parameters.
   int capacity;
   int n_steps;
@@ -46,7 +46,7 @@ private:
   // The index of the next datum to add in the buffer.
   int current_id;
 
-public:
+ public:
   /**
    * Create a data buffer.
    * @param capacity the number of experiences the buffer can store
@@ -136,10 +136,10 @@ public:
    */
   friend bool operator!=(const DataBuffer &lhs, const DataBuffer &rhs);
 };
-} // namespace relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
 
 namespace relab::agents::memory {
 using impl::DataBuffer;
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif // RELAB_CPP_INC_AGENTS_MEMORY_DATA_BUFFER_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_DATA_BUFFER_HPP_

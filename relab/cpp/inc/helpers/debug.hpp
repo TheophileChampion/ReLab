@@ -7,9 +7,9 @@
 #ifndef RELAB_CPP_INC_HELPERS_DEBUG_HPP_
 #define RELAB_CPP_INC_HELPERS_DEBUG_HPP_
 
+#include <torch/extension.h>
 #include <iostream>
 #include <string>
-#include <torch/extension.h>
 #include <vector>
 
 namespace relab::helpers {
@@ -73,7 +73,7 @@ enum LogLevel {
  * @brief Class allowing the user to log messages of various levels.
  */
 class Logger {
-private:
+ private:
   // The current logging level and the logger's name.
   LogLevel level;
   std::string logger_name;
@@ -85,13 +85,13 @@ private:
    */
   std::string levelToString(LogLevel level);
 
-public:
+ public:
   /**
    * Create a logger.
    * @params level the minimum level required for a message to be displayed
    * @params logger_name the logger's name
    */
-  Logger(LogLevel level = INFO, const std::string &logger_name = "root");
+  explicit Logger(LogLevel level = INFO, const std::string &logger_name = "root");
 
   /**
    * Log a debugging message.
@@ -126,6 +126,6 @@ public:
 
 // Root logger.
 static Logger logging = Logger();
-} // namespace relab::helpers
+}  // namespace relab::helpers
 
-#endif // RELAB_CPP_INC_HELPERS_DEBUG_HPP_
+#endif  // RELAB_CPP_INC_HELPERS_DEBUG_HPP_

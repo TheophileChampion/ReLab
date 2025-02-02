@@ -7,15 +7,15 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
 
-#include "agents/memory/compressors.hpp"
-#include "agents/memory/data_buffer.hpp"
-#include "agents/memory/experience.hpp"
-#include "agents/memory/frame_buffer.hpp"
+#include <torch/extension.h>
 #include <experimental/filesystem>
 #include <map>
 #include <memory>
 #include <string>
-#include <torch/extension.h>
+#include "agents/memory/compressors.hpp"
+#include "agents/memory/data_buffer.hpp"
+#include "agents/memory/experience.hpp"
+#include "agents/memory/frame_buffer.hpp"
 
 namespace relab::agents::memory {
 
@@ -27,7 +27,7 @@ namespace relab::agents::memory {
  * documentation of MDQN and PrioritizedDQN.
  */
 class ReplayBuffer {
-private:
+ private:
   // Keep in mind whether the replay buffer is prioritized.
   bool prioritized;
 
@@ -56,7 +56,7 @@ private:
   // The indices of the last sampled experiences.
   torch::Tensor indices;
 
-public:
+ public:
   /**
    * Create a replay buffer.
    * @param capacity the number of experience the buffer can store
@@ -207,6 +207,6 @@ public:
    */
   friend bool operator==(const ReplayBuffer &lhs, const ReplayBuffer &rhs);
 };
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif // RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_REPLAY_BUFFER_HPP_

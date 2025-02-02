@@ -17,15 +17,15 @@ namespace relab::helpers {
  * @brief A double-ended queue with a maximum length.
  */
 template <class T> class Deque : public std::deque<T> {
-private:
+ private:
   int max_size;
 
-public:
+ public:
   /**
    * Create a double ended queue.
    * @param max_size the maximum length of the queue
    */
-  Deque(int max_size = -1);
+  explicit Deque(int max_size = -1);
 
   /**
    * Add an element at the end of the queue.
@@ -77,6 +77,6 @@ public:
 template class Deque<int>;
 template class Deque<float>;
 template class Deque<bool>;
-} // namespace relab::helpers
+}  // namespace relab::helpers
 
-#endif // RELAB_CPP_INC_HELPERS_DEQUE_HPP_
+#endif  // RELAB_CPP_INC_HELPERS_DEQUE_HPP_

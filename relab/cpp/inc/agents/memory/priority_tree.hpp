@@ -7,8 +7,8 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_
 
-#include <string>
 #include <torch/extension.h>
+#include <string>
 #include <vector>
 
 namespace relab::agents::memory::impl {
@@ -23,7 +23,7 @@ using MaxTree = std::vector<torch::Tensor>;
  * @brief A class storing the experience priorities.
  */
 class PriorityTree {
-private:
+ private:
   // Store the priority tree parameters.
   float initial_priority;
   int capacity;
@@ -41,7 +41,7 @@ private:
   SumTree sum_tree;
   MaxTree max_tree;
 
-public:
+ public:
   /**
    * Create a priority tree.
    * @param capacity the tree's capacity
@@ -240,10 +240,10 @@ public:
    */
   friend bool operator==(const PriorityTree &lhs, const PriorityTree &rhs);
 };
-} // namespace relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
 
 namespace relab::agents::memory {
 using impl::PriorityTree;
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif // RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_PRIORITY_TREE_HPP_

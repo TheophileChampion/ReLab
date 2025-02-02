@@ -7,15 +7,15 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_FRAME_BUFFER_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_FRAME_BUFFER_HPP_
 
+#include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
 #include "agents/memory/compressors.hpp"
 #include "agents/memory/experience.hpp"
 #include "agents/memory/frame_storage.hpp"
 #include "helpers/deque.hpp"
 #include "helpers/thread_pool.hpp"
-#include <memory>
-#include <string>
-#include <tuple>
-#include <vector>
 
 namespace relab::agents::memory::impl {
 
@@ -26,7 +26,7 @@ using namespace relab::helpers;
  * observations.
  */
 class FrameBuffer {
-private:
+ private:
   // The device on which computation is performed.
   torch::Device device;
 
@@ -57,7 +57,7 @@ private:
   // A thread pool to parallelize the decompression.
   ThreadPool pool;
 
-public:
+ public:
   /**
    * Create a frame buffer.
    * @param capacity the number of experiences the buffer can store
@@ -172,10 +172,10 @@ public:
    */
   friend bool operator!=(const FrameBuffer &lhs, const FrameBuffer &rhs);
 };
-} // namespace relab::agents::memory::impl
+}  // namespace relab::agents::memory::impl
 
 namespace relab::agents::memory {
 using impl::FrameBuffer;
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif // RELAB_CPP_INC_AGENTS_MEMORY_FRAME_BUFFER_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_FRAME_BUFFER_HPP_

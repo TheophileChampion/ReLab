@@ -7,10 +7,10 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
 
-#include <memory>
-#include <torch/extension.h>
-#include <vector>
 #include <zlib.h>
+#include <memory>
+#include <vector>
+#include <torch/extension.h>
 
 namespace relab::agents::memory {
 
@@ -18,15 +18,15 @@ namespace relab::agents::memory {
  * Enumeration of all supported compression types.
  */
 enum class CompressorType {
-  RAW = 0, // No compression.
-  ZLIB = 1 // Compression using the zlib deflate format.
+  RAW = 0,  // No compression.
+  ZLIB = 1  // Compression using the zlib deflate format.
 };
 
 /**
  * @brief A class that all compressors must implement.
  */
 class Compressor {
-public:
+ public:
   /**
    * Create the requested compressor.
    * @param height the height of the uncompressed images
@@ -63,7 +63,7 @@ public:
    */
   virtual void decode(const torch::Tensor &input, float *output) = 0;
 
-protected:
+ protected:
   /**
    * Compute the size of the tensor in bytes.
    * @param tensor the tensor whose size must be returned
@@ -76,10 +76,10 @@ protected:
  * @brief A class that does not compress the tensors.
  */
 class NoCompression : public Compressor {
-private:
+ private:
   int uncompressed_size;
 
-public:
+ public:
   /**
    * Create an identity compressor, i.e., no compression of the tensors is
    * actually performed.
@@ -120,7 +120,7 @@ public:
  * float.
  */
 class ZCompressor : public Compressor {
-private:
+ private:
   // The deflate zlib stream.
   z_stream deflate_stream;
 
@@ -129,9 +129,9 @@ private:
   int n_dims;
   int max_compressed_size;
   std::vector<float> compressed_output;
-  std::vector<long> shape;
+  std::vector<int64_t> shape;
 
-public:
+ public:
   /**
    * Create a zlib compressor.
    * @param height the height of the uncompressed images
@@ -165,6 +165,6 @@ public:
    */
   void decode(const torch::Tensor &input, float *output);
 };
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif // RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_COMPRESSORS_HPP_

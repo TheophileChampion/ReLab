@@ -7,8 +7,8 @@
 #ifndef RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_
 #define RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_
 
-#include <string>
 #include <torch/extension.h>
+#include <string>
 #include <vector>
 
 namespace relab::agents::memory {
@@ -17,7 +17,7 @@ namespace relab::agents::memory {
  * @brief Class storing a list of frames inside a vector of tensors.
  */
 class FrameStorage {
-public:
+ public:
   /// @var initial_capacity
   /// The initial number of frames that can be stored in the vector.
   int initial_capacity;
@@ -50,14 +50,14 @@ public:
   /// The storage index of the last frame (always less than capacity).
   int last_frame;
 
-public:
+ public:
   /**
    * Create a frame storage.
    * @param capacity the initial number of frames the storage can contain
    * @param capacity_incr the number by which the capacity is increased when no
    * space is left in the tensor
    */
-  FrameStorage(int capacity, int capacity_incr = 100000);
+  explicit FrameStorage(int capacity, int capacity_incr = 100000);
 
   /**
    * Add a frame to the storage.
@@ -129,6 +129,6 @@ public:
    */
   friend bool operator==(const FrameStorage &lhs, const FrameStorage &rhs);
 };
-} // namespace relab::agents::memory
+}  // namespace relab::agents::memory
 
-#endif // RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_
+#endif  // RELAB_CPP_INC_AGENTS_MEMORY_FRAME_STORAGE_HPP_

@@ -72,6 +72,6 @@ template <class T> torch::Tensor load_tensor(std::istream &checkpoint);
  */
 template <class T>
 void save_tensor(const torch::Tensor &tensor, std::ostream &checkpoint);
-} // namespace relab::helpers
+}  // namespace relab::helpers
 
-#endif // RELAB_CPP_INC_HELPERS_SERIALIZE_HPP_
+#endif  // RELAB_CPP_INC_HELPERS_SERIALIZE_HPP_
