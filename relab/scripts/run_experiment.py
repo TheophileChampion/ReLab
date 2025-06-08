@@ -71,7 +71,7 @@ def run_experiment(
                 "metric": "mean_episodic_reward",
             },
             dependencies=job_indices,
-        )
+        )  # TODO is there a bug with the dependencies upon restarting the script?
         job_indices.clear()
 
     # Wait for all job to terminate.

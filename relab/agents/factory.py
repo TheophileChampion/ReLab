@@ -18,7 +18,6 @@ from relab.agents.MDQN import MDQN
 from relab.agents.NoisyCDQN import NoisyCDQN
 from relab.agents.NoisyDDQN import NoisyDDQN
 from relab.agents.NoisyDQN import NoisyDQN
-from relab.agents.OldVAE import VAE as OldVAE  # TODO
 from relab.agents.PrioritizedDDQN import PrioritizedDDQN
 from relab.agents.PrioritizedDQN import PrioritizedDQN
 from relab.agents.PrioritizedMDQN import PrioritizedMDQN
@@ -64,7 +63,6 @@ def make(agent_name: str, **kwargs: Any) -> AgentInterface:
         "JointHMM": JointHMM,
         "BetaHMM": BetaHMM,
         "HMM": HMM,
-        "OldVAE": OldVAE,  # TODO
     }
 
     # Check if the agent is supported, raise an error if it isn't.

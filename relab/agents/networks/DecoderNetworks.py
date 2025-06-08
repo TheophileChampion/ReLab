@@ -100,13 +100,13 @@ class DiscreteDecoderNetwork(nn.Module):
         # @var up_conv_net
         # Transposed convolution layers predicting the reconstructed image.
         self.up_conv_net = nn.Sequential(
-            nn.ConvTranspose2d(64, 64, 3, 2, output_padding=(0, 0)),
+            nn.ConvTranspose2d(64, 64, 3, 2, output_padding=0),
             nn.ReLU(),
             nn.ConvTranspose2d(64, 64, 3, 2, 1, 0),
             nn.ReLU(),
             nn.ConvTranspose2d(64, 32, 3, 2, 2, 1),
             nn.ReLU(),
-            nn.ConvTranspose2d(32, self.stack_size, 3, 2, 3, 0),
+            nn.ConvTranspose2d(32, self.stack_size, 3, 1, 3, 0),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -162,7 +162,7 @@ class MixedDecoderNetwork(nn.Module):
         # @var up_conv_net
         # Transposed convolution layers predicting the reconstructed image.
         self.up_conv_net = nn.Sequential(
-            nn.ConvTranspose2d(64, 64, 3, 2, output_padding=(0, 0)),
+            nn.ConvTranspose2d(64, 64, 3, 2, output_padding=0),
             nn.ReLU(),
             nn.ConvTranspose2d(64, 64, 3, 2, 1, 0),
             nn.ReLU(),

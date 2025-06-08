@@ -112,20 +112,11 @@ def gaussian_reparameterization(mean: Tensor, log_var: Tensor) -> Tensor:
     return epsilon * torch.exp(0.5 * log_var) + mean
 
 
-def concrete_reparameterization(log_alpha: Tensor, tau: float) -> Tensor:
-    """!
-    Implement the reparameterization trick for a categorical distribution using the concrete distribution.
-    @param log_alpha: the log-probabilities of the categorical
-    @param tau: the temperature of the Gumbel-softmax
-    @return the sampled state
-    """
-    return gumbel_softmax(log_alpha, tau)
-
-
-def continuous_reparameterization(gaussian_params: Tuple[Tensor, Tensor]) -> Tensor:
+def continuous_reparameterization(gaussian_params: Tuple[Tensor, Tensor], tau: float) -> Tensor:
     """!
     Implement the reparameterization trick for a continuous latent space.
     @param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution
+    @param tau: unused
     @return the sampled state
     """
     mean, log_var = gaussian_params
@@ -134,26 +125,23 @@ def continuous_reparameterization(gaussian_params: Tuple[Tensor, Tensor]) -> Ten
 
 def discrete_reparameterization(log_alphas: List[Tensor], tau: float) -> Tensor:
     """!
-    Implement the reparameterization trick for a discrete latent space.
-    @param log_alphas: the log-probabilities of the categorical distributions
-    @param tau: the temperature of the Gumbel-softmax
-    @return the sampled state
-    """
-    states = [concrete_reparameterization(log_alpha, tau) for log_alpha in log_alphas]
-    return torch.cat(states)
-
-
-def mixed_reparameterization(
-    gaussian_params: Tuple[Tensor, Tensor], log_alphas: List[Tensor], tau: float
-) -> Tensor:
-    """!
     Implement the reparameterization trick for a categorical distribution using the concrete distribution.
-    @param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution
     @param log_alphas: the log-probabilities of the categorical distributions
     @param tau: the temperature of the Gumbel-softmax
     @return the sampled state
     """
-    mean, log_var = gaussian_params
-    states = [concrete_reparameterization(log_alpha, tau) for log_alpha in log_alphas]
+    states = [gumbel_softmax(log_alpha, tau, hard=True) for log_alpha in log_alphas]
+    return torch.cat(states, dim=1)
+
+
+def mixed_reparameterization(params: Tuple[Tensor, Tensor, Tensor], tau: float) -> Tensor:
+    """!
+    Implement the reparameterization trick for a mixed latent space.
+    @param params: the parameters of the distribution over the latent space
+    @param tau: the temperature of the Gumbel-softmax
+    @return the sampled state
+    """
+    mean, log_var, log_alphas = params
+    states = [gumbel_softmax(log_alpha, tau, hard=True) for log_alpha in log_alphas]
     states.append(gaussian_reparameterization(mean, log_var))
-    return torch.cat(states)
+    return torch.cat(states, dim=1)

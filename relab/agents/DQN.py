@@ -1,14 +1,9 @@
-"""
-Module implementing a highly parameterizable Deep Q-Network.
-"""
-
 import logging
 import math
 from datetime import datetime
 from enum import IntEnum
 from functools import partial
-from os.path import join
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional
 
 import numpy as np
 import relab
@@ -34,9 +29,8 @@ from relab.agents.networks.RainbowDeepQNetwork import (
 )
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
-from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Serialization import get_optimizer, safe_load, safe_load_state_dict
-from relab.helpers.Typing import ActionType, Checkpoint, Loss, ObservationType
+from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
+from relab.helpers.Typing import ActionType, Checkpoint, Loss, ObservationType, Config, AttributeNames
 from torch import Tensor, nn
 from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
@@ -204,7 +198,8 @@ class DQN(AgentInterface):
         """
 
         # Call the parent constructor.
-        super().__init__(training=training)
+        buffer = partial(self.get_replay_buffer, buffer_size, batch_size, replay_type, omega, omega_is, n_steps, gamma)
+        super().__init__(get_buffer=buffer, n_actions=n_actions, training=training)
 
         # @var gamma
         # Discount factor for future rewards (between 0 and 1).
@@ -249,10 +244,6 @@ class DQN(AgentInterface):
         # @var v_max
         # Maximum value for the return distribution support.
         self.v_max = v_max
-
-        # @var n_actions
-        # Number of possible actions in the environment.
-        self.n_actions = n_actions
 
         # @var n_steps
         # Number of steps for multi-step learning.
@@ -309,17 +300,8 @@ class DQN(AgentInterface):
         # @var optimizer
         # Adam optimizer for training the value network.
         self.optimizer = get_optimizer(
-            [self.value_net],
-            self.learning_rate,
-            self.adam_eps,
+            [self.value_net], self.learning_rate, self.adam_eps,
         )
-
-        # @var buffer
-        # Experience replay buffer for storing transitions.
-        buffer = self.get_replay_buffer(
-            self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma
-        )
-        self.buffer = buffer(capacity=self.buffer_size, batch_size=self.batch_size)
 
     def get_loss(self, loss_type: LossType) -> Callable:
         """!
@@ -823,50 +805,22 @@ class DQN(AgentInterface):
         # @endcond
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
-    ) -> Tuple[str, Checkpoint]:
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+    ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load ("" for default name)
-        @return a tuple containing the checkpoint path and the checkpoint object
+        @param attr_names: a list of attribute names to load from the checkpoint (load all attributes by default)
+        @return the loaded checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = super().load(
-                checkpoint_name, buffer_checkpoint_name
-            )
+            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
 
-            # Update the agent's parameters using the checkpoint.
-            # TODO add new function + all other classes
-            attributes_names = [
-                "gamma",
-                "learning_rate",
-                "buffer_size",
-                "batch_size",
-                "kappa",
-                "target_update_rate",
-                "learning_starts",
-                "adam_eps",
-                "n_steps",
-                "v_min",
-                "v_max",
-                "n_atoms",
-                "n_actions",
-                "omega",
-                "omega_is",
-                "replay_type",
-                "loss_type",
-                "network_type",
-                "epsilon_schedule",
-            ]
-            for name in attributes_names:
-                setattr(self, name, safe_load(checkpoint, name))
-
+            # Load the epsilon scheduler and update the loss function using the checkpoint.
             self.epsilon = PiecewiseLinearSchedule(self.epsilon_schedule)
-
-            # Update the loss function using the checkpoint.
             self.loss = self.get_loss(self.loss_type)
 
             # Update the agent's networks using the checkpoint.
@@ -878,31 +832,22 @@ class DQN(AgentInterface):
             for param in self.target_net.parameters():
                 param.requires_grad = False
 
-            # Update the optimizer and replay buffer.
-            buffer = self.get_replay_buffer(
-                self.replay_type, self.omega, self.omega_is, self.n_steps, self.gamma
-            )
-            self.buffer = buffer(
-                capacity=self.buffer_size, batch_size=self.batch_size
-            )  # TODO can this be added to the get_replay_buffer?
-            # TODO can self.replay be handled at the AgentInterface level?
-            self.buffer.load(checkpoint_path, buffer_checkpoint_name)
+            # Update the optimizer.
             self.optimizer = get_optimizer(
                 [self.value_net], self.learning_rate, self.adam_eps, checkpoint
             )
-            return checkpoint_path, checkpoint
+            return checkpoint
 
         # Catch the exception raise if the checkpoint could not be located.
         except FileNotFoundError:
-            return "", None
+            return None
         # @endcond
 
-    def as_dict(self):
+    def as_dict(self) -> Config:
         """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
-        # TODO add to function similar to load + all classes
         return {
             "gamma": self.gamma,
             "learning_rate": self.learning_rate,
@@ -926,23 +871,13 @@ class DQN(AgentInterface):
             "value_net": self.value_net.state_dict(),
             "target_net": self.target_net.state_dict(),
             "optimizer": self.optimizer.state_dict(),
-        } | super().as_dict()
+        }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer ("" for default name)
+        @param agent_conf: a dictionary representing the agent's attributes to be saved (for internal use only)
         """
-        # @cond IGNORED_BY_DOXYGEN
-        # Create the agent checkpoint directory and file, if they do not exist.
-        checkpoint_path = join(self.checkpoint_dir, checkpoint_name)
-        FileSystem.create_directory_and_file(checkpoint_path)
-
-        # Save the model.
-        logging.info(f"Saving agent to the following file: {checkpoint_path}")
-        torch.save(self.as_dict(), checkpoint_path)
-
-        # Save the replay buffer.
-        self.buffer.save(checkpoint_path, buffer_checkpoint_name)
-        # @endcond
+        super().save(checkpoint_name, buffer_checkpoint_name, self.as_dict())

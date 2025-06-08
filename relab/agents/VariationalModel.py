@@ -33,8 +33,7 @@ from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.MatPlotLib import MatPlotLib
-from relab.helpers.Serialization import safe_load
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
+from relab.helpers.Typing import ActionType, Checkpoint, ObservationType, Config, AttributeNames
 from relab.helpers.VariationalInference import (
     bernoulli_log_likelihood,
     continuous_reparameterization,
@@ -127,7 +126,8 @@ class VariationalModel(AgentInterface):
         """
 
         # Call the parent constructor.
-        super().__init__(training=training)
+        get_buffer = partial(self.get_replay_buffer, buffer_size, batch_size, replay_type, omega, omega_is, n_steps)
+        super().__init__(get_buffer=get_buffer, n_actions=n_actions, training=training)
 
         # @var likelihood_type
         # The type of likelihood function used in the world model (Gaussian or
@@ -141,10 +141,6 @@ class VariationalModel(AgentInterface):
         # @var learning_starts
         # The step count at which learning begins.
         self.learning_starts = learning_starts
-
-        # @var n_actions
-        # Number of possible actions in the environment.
-        self.n_actions = n_actions
 
         # @var replay_type
         # Type of experience replay buffer being used.
@@ -217,15 +213,6 @@ class VariationalModel(AgentInterface):
         # @var reparameterize
         # Function for sampling latent states from the latent distribution.
         self.reparam = self.get_reparameterization(self.latent_type)
-
-        # @var buffer
-        # Experience replay buffer for storing transitions.
-        replay_buffer = self.get_replay_buffer(
-            self.replay_type, self.omega, self.omega_is, self.n_steps
-        )
-        self.buffer = (
-            replay_buffer(self.buffer_size, self.batch_size) if self.training else None
-        )
 
     @abc.abstractmethod
     def learn(self) -> Optional[Dict[str, Any]]:
@@ -514,59 +501,26 @@ class VariationalModel(AgentInterface):
         return function(decoder_output)
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
-    ) -> Tuple[str, Checkpoint]:
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+    ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
-        @return a tuple containing the checkpoint path and the checkpoint object
+        @param attr_names: a list of attribute names to load from the checkpoint (load all attributes by default)
+        @return the loaded checkpoint object
         """
 
         # Call the parent load function.
-        checkpoint_path, checkpoint = super().load(
-            checkpoint_name, buffer_checkpoint_name
-        )
-
-        # Load the class attributes from the checkpoint.
-        self.buffer_size = safe_load(checkpoint, "buffer_size")
-        self.batch_size = safe_load(checkpoint, "batch_size")
-        self.learning_starts = safe_load(checkpoint, "learning_starts")
-        self.n_actions = safe_load(checkpoint, "n_actions")
-        self.n_steps = safe_load(checkpoint, "n_steps")
-        self.omega = safe_load(checkpoint, "omega")
-        self.omega_is = safe_load(checkpoint, "omega_is")
-        self.replay_type = safe_load(checkpoint, "replay_type")
-        self.learning_rate = safe_load(checkpoint, "learning_rate")
-        self.adam_eps = safe_load(checkpoint, "adam_eps")
-        self.likelihood_type = safe_load(checkpoint, "likelihood_type")
-        self.likelihood_loss = self.get_likelihood_loss(self.likelihood_type)
-        self.latent_type = safe_load(checkpoint, "latent_type")
-        self.model_loss = self.get_model_loss(self.latent_type)
-        self.beta_schedule = safe_load(checkpoint, "beta_schedule")
-        self.beta = PiecewiseLinearSchedule(self.beta_schedule)
-        self.tau_schedule = safe_load(checkpoint, "tau_schedule")
-        self.tau = ExponentialSchedule(self.tau_schedule)
-        self.n_cont_vars = safe_load(checkpoint, "n_cont_vars")
-        self.n_discrete_vars = safe_load(checkpoint, "n_discrete_vars")
-        self.n_discrete_vals = safe_load(checkpoint, "n_discrete_vals")
-
-        # Update the replay buffer.
-        replay_buffer = self.get_replay_buffer(
-            self.replay_type, self.omega, self.omega_is, self.n_steps
-        )
-        self.buffer = (
-            replay_buffer(capacity=self.buffer_size, batch_size=self.batch_size)
-            if self.training
-            else None
-        )
-        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
+        attr_names = [] if attr_names is None else list(attr_names)
+        attr_names += list(VariationalModel.as_dict(self).keys())
+        checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, attr_names)
 
         # Get the reparameterization function to use with the world model.
         self.reparam = self.get_reparameterization(self.latent_type)
-        return checkpoint_path, checkpoint
+        return checkpoint
 
-    def as_dict(self):
+    def as_dict(self) -> Config:
         """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
@@ -589,4 +543,13 @@ class VariationalModel(AgentInterface):
             "n_cont_vars": self.n_cont_vars,
             "n_discrete_vars": self.n_discrete_vars,
             "n_discrete_vals": self.n_discrete_vals,
-        } | super().as_dict()
+        }
+
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+        """!
+        Save the agent on the filesystem.
+        @param checkpoint_name: the name of the checkpoint in which to save the agent
+        @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        @param agent_conf: a dictionary representing the agent's attributes to be saved (for internal use only)
+        """
+        super().save(checkpoint_name, buffer_checkpoint_name, agent_conf | VariationalModel.as_dict(self))

@@ -40,11 +40,11 @@ def get_optimizer(
     checkpoint: Checkpoint = None,
 ) -> Optimizer:
     """!
-    Load the Adam optimizer from the checkpoint safely.
-    @param checkpoint: the checkpoint
+    Create an Adam optimizer and try to load its internal states from the checkpoint.
     @param modules: the modules whose parameters must be optimized
     @param learning_rate: the learning rate
     @param adam_eps: the epsilon parameter of the Adam optimizer
+    @param checkpoint: the checkpoint (None if the optimizer must only be created but not loaded)
     @return the loaded Adam optimizer
     """
 

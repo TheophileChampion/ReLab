@@ -10,7 +10,7 @@ from collections import deque
 from enum import IntEnum
 from functools import partial
 from os.path import exists, isdir, isfile, join
-from typing import Any, Callable, Dict, Optional, SupportsFloat, Tuple
+from typing import Any, Callable, Dict, Optional, SupportsFloat
 
 import imageio
 import numpy as np
@@ -22,7 +22,7 @@ from PIL import Image
 from relab.agents.memory.ReplayBuffer import ReplayBuffer
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.Serialization import safe_load
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
+from relab.helpers.Typing import ActionType, Checkpoint, ObservationType, Config, AttributeNames
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -54,11 +54,17 @@ class AgentInterface(ABC):
     @brief The interface that all agents must implement.
     """
 
-    def __init__(self, training: bool = True) -> None:
+    def __init__(self, get_buffer: Optional[Callable] = None, n_actions: int = 18, training: bool = True) -> None:
         """!
         Create an agent.
+        @param get_buffer: a function returning the replay buffer used to store the agent's experiences
+        @param n_actions: the number of actions available to the agent
         @param training: True if the agent is being training, False otherwise
         """
+
+        # @var n_actions
+        # Number of possible actions available to the agent.
+        self.n_actions = n_actions
 
         # @var training
         # Flag indicating whether the agent is in training mode.
@@ -137,6 +143,14 @@ class AgentInterface(ABC):
         # TensorBoard summary writer for logging training metrics.
         self.writer = SummaryWriter(self.tensorboard_dir) if training else None
 
+        # @var get_buffer
+        # A function that creates a new instance of the replay buffer.
+        self.get_buffer = get_buffer
+
+        # @var buffer
+        # Experience replay buffer for storing transitions.
+        self.buffer = None if get_buffer is None or training is False else get_buffer()
+
     @abc.abstractmethod
     def step(self, obs: ObservationType) -> ActionType:
         """!
@@ -155,13 +169,14 @@ class AgentInterface(ABC):
         ...
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
-    ) -> Tuple[str, Checkpoint]:
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+    ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
-        @return a tuple containing the checkpoint path and the checkpoint object
+        @param attr_names: a list of attribute names to load from the checkpoint (load all attributes by default)
+        @return the loaded checkpoint object
         """
 
         # Retrieve the full agent checkpoint path.
@@ -173,36 +188,35 @@ class AgentInterface(ABC):
         # Check if the checkpoint can be loaded.
         if checkpoint_path is None:
             logging.info("Could not load the agent from the file system.")
-            raise FileNotFoundError(
-                errno.ENOENT, os.strerror(errno.ENOENT), "checkpoint.pt"
-            )
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "checkpoint.pt")
 
         # Load the checkpoint from the file system.
         logging.info(f"Loading agent from: {checkpoint_path}")
-        checkpoint = torch.load(
-            checkpoint_path, map_location=self.device, weights_only=False
-        )
+        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+
+        # Retrieve the full list of attribute names.
+        attr_names = [] if attr_names is None else list(attr_names)
+        attr_names = list(AgentInterface.as_dict(self).keys()) + attr_names
 
         # Load the class attributes from the checkpoint.
-        self.training = safe_load(checkpoint, "training")
-        self.current_step = safe_load(checkpoint, "current_step")
-        self.max_queue_len = safe_load(checkpoint, "max_queue_len")
-        self.curr_ep_reward = safe_load(checkpoint, "curr_ep_reward")
-        self.last_time = -1
-        self.curr_ep_length = safe_load(checkpoint, "curr_ep_length")
-        self.vfe_losses = safe_load(checkpoint, "vfe_losses")
-        self.betas = safe_load(checkpoint, "betas")
-        self.log_likelihoods = safe_load(checkpoint, "log_likelihoods")
-        self.kl_divergences = safe_load(checkpoint, "kl_divergences")
-        self.residential_mem = safe_load(checkpoint, "residential_mem")
-        self.episodic_rewards = safe_load(checkpoint, "episodic_rewards")
-        self.time_elapsed = safe_load(checkpoint, "time_elapsed")
-        self.episode_lengths = safe_load(checkpoint, "episode_lengths")
-        self.checkpoint_dir = safe_load(checkpoint, "checkpoint_dir")
-        self.tensorboard_dir = safe_load(checkpoint, "tensorboard_dir")
-        return checkpoint_path, checkpoint
+        exclude_names = ["optimizer", "encoder", "decoder", "transition_net", "value_net", "target_net"]
+        for name in attr_names:
+            if name not in exclude_names:
+                setattr(self, name, safe_load(checkpoint, name))
 
-    def as_dict(self):
+        # Initialize the last time to minus one to signal that the buffer was reloaded.
+        self.last_time = -1
+
+        # Load the replay buffer from the checkpoint.
+        self.buffer = (
+            self.get_buffer()
+            if self.get_buffer is not None and self.training is True
+            else None
+        )
+        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
+        return checkpoint
+
+    def as_dict(self) -> Config:
         """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
@@ -225,14 +239,25 @@ class AgentInterface(ABC):
             "tensorboard_dir": self.tensorboard_dir,
         }
 
-    @abc.abstractmethod
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        @param agent_conf: a dictionary representing the agent's attributes to be saved (for internal use only)
         """
-        ...
+
+        # Create the checkpoint directory and file, if they do not exist.
+        checkpoint_path = join(self.checkpoint_dir, checkpoint_name)
+        FileSystem.create_directory_and_file(checkpoint_path)
+
+        # Save the model.
+        logging.info(f"Saving agent to the following file: {checkpoint_path}")
+        torch.save(agent_conf | AgentInterface.as_dict(self), checkpoint_path)
+
+        # Save the replay buffer.
+        if self.buffer is not None:
+            self.buffer.save(checkpoint_path, buffer_checkpoint_name)
 
     def demo(self, env: Env, gif_name: str, max_frames: int = 10000) -> None:
         """!
@@ -395,14 +420,18 @@ class AgentInterface(ABC):
 
     @staticmethod
     def get_replay_buffer(
+        capacity: int,
+        batch_size: int,
         replay_type: ReplayType,
         omega: float,
         omega_is: float,
         n_steps: int,
         gamma: float = 1.0,
-    ) -> Callable:
+    ) -> ReplayBuffer:
         """!
         Retrieve the constructor of the replay buffer requested as parameters.
+        @param capacity: the number of experiences the replay buffer can store
+        @param batch_size: the size of the batches sampled from the replay buffer
         @param replay_type: the type of replay buffer
         @param omega: the prioritization exponent
         @param omega_is: the important sampling exponent
@@ -413,9 +442,10 @@ class AgentInterface(ABC):
         m_args = {"n_steps": n_steps, "gamma": gamma}
         p_args = {"initial_priority": 1e9, "omega": omega, "omega_is": omega_is}
         args = m_args | p_args
-        return {
+        buffer = {
             ReplayType.DEFAULT: ReplayBuffer,
             ReplayType.PRIORITIZED: partial(ReplayBuffer, args=p_args),
             ReplayType.MULTISTEP: partial(ReplayBuffer, args=m_args),
             ReplayType.MULTISTEP_PRIORITIZED: partial(ReplayBuffer, args=args),
         }[replay_type]
+        return buffer(capacity=capacity, batch_size=batch_size)

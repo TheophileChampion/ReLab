@@ -164,7 +164,7 @@ class DiscreteEncoderNetwork(nn.Module):
         """!
         Perform the forward pass through the network.
         @param x: the observation
-        @return the mean and the log of the variance of the diagonal Gaussian
+        @return the log-probabilities of the categorical distributions.
         """
         if len(x.shape) == 3:
             x = x.unsqueeze(dim=0)
@@ -255,13 +255,15 @@ class MixedEncoderNetwork(nn.Module):
         input_image = torch.zeros(image_shape)
         return self.conv_net(input_image).shape
 
-    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Perform the forward pass through the network.
         @param x: the observation
-        @return the mean and the log of the variance of the diagonal Gaussian
+        @return the mean and log-variance of the diagonal Gaussian,
+            and the log-probabilities of the categorical distribution
         """
         if len(x.shape) == 3:
             x = x.unsqueeze(dim=0)
         x = self.net(x)
-        return self.gaussian_head(x), self.categorical_head(x)
+        mean, log_var = self.gaussian_head(x)
+        return mean, log_var, self.categorical_head(x)

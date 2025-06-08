@@ -1,24 +1,29 @@
 import logging
-from os.path import join
 from typing import Any, Dict, Optional, Tuple
+import numpy as np
+import os
+import re
+from datetime import datetime
+from os.path import join
 
 import matplotlib.pyplot as plt
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
+from relab.cpp.agents.memory import Experience
+
+from relab import relab
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import (
     LatentSpaceType,
-    LikelihoodType,
-    VariationalModel,
+    LikelihoodType, VariationalModel,
 )
-from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
-from relab.helpers.Typing import Checkpoint
-from relab.helpers.VariationalInference import gaussian_kl_divergence as gauss_kl
+from relab.helpers.Typing import Checkpoint, Config, AttributeNames, ObservationType, ActionType
 from relab.helpers.VariationalInference import (
     sum_categorical_kl_divergences as sum_cat_kl,
+    gaussian_kl_divergence as gauss_kl
 )
 from torch import Tensor
 
@@ -44,21 +49,21 @@ class VAE(VariationalModel):
 
     def __init__(
         self,
-        learning_starts: int = 200000,
+        learning_starts: int = 50000,
         n_actions: int = 18,
         training: bool = True,
         likelihood_type: LikelihoodType = LikelihoodType.BERNOULLI,
-        latent_space_type: LatentSpaceType = LatentSpaceType.CONTINUOUS,
+        latent_space_type: LatentSpaceType = LatentSpaceType.DISCRETE,
         n_continuous_vars: int = 15,
-        n_discrete_vars: int = 20,
-        n_discrete_vals: int = 10,
+        n_discrete_vars: int = 10,
+        n_discrete_vals: int = 32,
         learning_rate: float = 0.0001,
         adam_eps: float = 1e-8,
         beta_schedule: Any = None,
         tau_schedule: Any = None,
         replay_type: ReplayType = ReplayType.PRIORITIZED,
         buffer_size: int = 1000000,
-        batch_size: int = 32,
+        batch_size: int = 50,
         n_steps: int = 1,
         omega: float = 1.0,
         omega_is: float = 1.0,
@@ -123,6 +128,69 @@ class VAE(VariationalModel):
         self.optimizer = get_optimizer(
             [self.encoder, self.decoder], self.learning_rate, self.adam_eps
         )
+
+    def step(self, obs: ObservationType) -> ActionType:
+        """!
+        Select the next action to perform in the environment.
+        @param obs: the observation available to make the decision
+        @return the next action to perform
+        """
+        return np.random.choice(self.n_actions)
+
+    def train(self, env: Env) -> None:
+        """!
+        Train the agent in the gym environment passed as parameters
+        @param env: the gym environment
+        """
+        # @cond IGNORED_BY_DOXYGEN
+
+        # Retrieve the initial observation from the environment.
+        obs, _ = env.reset()
+
+        # Train the agent.
+        config = relab.config()
+        logging.info(f"Start the training at {datetime.now()}")
+        while self.current_step < config["max_n_steps"]:
+
+            # Select an action.
+            action = self.step(obs.to(self.device))
+
+            # Execute the action in the environment.
+            old_obs = obs
+            obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+
+            # Add the experience to the replay buffer.
+            if self.training is True:
+                self.buffer.append(Experience(old_obs, action, reward, done, obs))
+
+            # Perform one iteration of training (if needed).
+            losses = None
+            if self.training is True and self.current_step >= self.learning_starts:
+                losses = self.learn()
+
+            # Save the agent (if needed).
+            if self.current_step % config["checkpoint_frequency"] == 0:
+                self.save(f"model_{self.current_step}.pt")
+
+            # Log the mean episodic reward in tensorboard (if needed).
+            self.report(reward, done, model_losses=losses)
+            if self.current_step % config["tensorboard_log_interval"] == 0:
+                self.log_performance_in_tensorboard()
+
+            # Reset the environment when a trial ends.
+            if done:
+                obs, _ = env.reset()
+
+            # Increase the number of training steps done.
+            self.current_step += 1
+
+        # Save the final version of the model.
+        self.save(f"model_{config['max_n_steps']}.pt")
+
+        # Close the environment.
+        env.close()
+        # @endcond
 
     def learn(self) -> Optional[Dict[str, Any]]:
         """!
@@ -189,8 +257,8 @@ class VAE(VariationalModel):
         """!
         Compute the variational free energy for a discrete latent space.
         @param obs: the observations at time t
-        @param actions: the actions at time t (unused)
-        @param next_obs: the observations at time t + 1 (unused)
+        @param actions: the actions at time t
+        @param next_obs: the observations at time t + 1
         @return a tuple containing the variational free energy, log-likelihood and KL-divergence
         """
         # @cond IGNORED_BY_DOXYGEN
@@ -204,7 +272,7 @@ class VAE(VariationalModel):
         # Compute the variational free energy.
         kl_div = sum_cat_kl(logit_hats)
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
-        vfe_loss = self.beta(self.current_step) * kl_div - log_likelihood
+        vfe_loss = - log_likelihood  # TODO self.beta(self.current_step) * kl_div - log_likelihood
         return vfe_loss, log_likelihood, kl_div
         # @endcond
 
@@ -214,16 +282,16 @@ class VAE(VariationalModel):
         """!
         Compute the variational free energy for a mixed latent space.
         @param obs: the observations at time t
-        @param actions: the actions at time t (unused)
-        @param next_obs: the observations at time t + 1 (unused)
+        @param actions: the actions at time t
+        @param next_obs: the observations at time t + 1
         @return a tuple containing the variational free energy, log-likelihood and KL-divergence
         """
         # @cond IGNORED_BY_DOXYGEN
 
         # Compute required tensors.
         tau = self.tau(self.current_step)
-        (mean_hat, log_var_hat), logit_hats = self.encoder(obs)
-        states = self.reparam((mean_hat, log_var_hat), logit_hats, tau)
+        mean_hat, log_var_hat, logit_hats = self.encoder(obs)
+        states = self.reparam((mean_hat, log_var_hat, logit_hats), tau)
         reconstructed_obs = self.decoder(states)
 
         # Compute the variational free energy.
@@ -233,9 +301,7 @@ class VAE(VariationalModel):
         return vfe_loss, log_likelihood, kl_div_hs
         # @endcond
 
-    def draw_reconstructed_images(
-        self, env: Env, model_index: int, grid_size: Tuple[int, int]
-    ) -> Figure:
+    def draw_reconstructed_images(self, env: Env, model_index: int, grid_size: Tuple[int, int]) -> Figure:
         """!
         Draw the ground truth and reconstructed images.
         @param env: the gym environment
@@ -243,7 +309,6 @@ class VAE(VariationalModel):
         @param grid_size: the size of the image grid to generate
         @return the figure containing the images
         """
-        # @cond IGNORED_BY_DOXYGEN
 
         # Create the figure and the grid specification.
         height, width = grid_size
@@ -291,21 +356,40 @@ class VAE(VariationalModel):
         return fig
         # @endcond
 
+    def demo(self, env: Env, gif_name: str, max_frames: int = 10000) -> None:
+        """!
+        Demonstrate the agent policy in the gym environment passed as parameters
+        @param env: the gym environment
+        @param gif_name: the name of the GIF file in which to save the demo
+        @param max_frames: the maximum number of frames to include in the GIF file
+        """
+
+        # Create the GIF file containing a demonstration of the agent's policy.
+        super().demo(env, gif_name, max_frames)
+
+        # Create a graph containing images generated by the world model.
+        model_index = int(re.findall(r"\d+", gif_name)[0])
+        fig = self.draw_reconstructed_images(env, model_index, grid_size=(6, 6))
+
+        # Save the figure containing the ground truth and reconstructed images.
+        file_name = gif_name.replace(".gif", "") + "_reconstructed_images.pdf"
+        fig.savefig(join(os.environ["DEMO_DIRECTORY"], file_name))
+        MatPlotLib.close()
+
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
-    ) -> Tuple[str, Checkpoint]:
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+    ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
-        @return a tuple containing the checkpoint path and the checkpoint object
+        @param attr_names: a list of attribute names to load from the checkpoint (load all attributes by default)
+        @return the loaded checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = super().load(
-                checkpoint_name, buffer_checkpoint_name
-            )
+            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
 
             # Update the world model using the checkpoint.
             self.encoder = self.get_encoder_network(self.latent_type)
@@ -320,14 +404,14 @@ class VAE(VariationalModel):
                 self.adam_eps,
                 checkpoint,
             )
-            return checkpoint_path, checkpoint
+            return checkpoint
 
         # Catch the exception raise if the checkpoint could not be located.
         except FileNotFoundError:
-            return "", None
+            return None
         # @endcond
 
-    def as_dict(self):
+    def as_dict(self) -> Config:
         """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
@@ -336,23 +420,13 @@ class VAE(VariationalModel):
             "encoder": self.encoder.state_dict(),
             "decoder": self.decoder.state_dict(),
             "optimizer": self.optimizer.state_dict(),
-        } | super().as_dict()
+        }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        @param agent_conf: a dictionary representing the agent's attributes to be saved (for internal use only)
         """
-        # @cond IGNORED_BY_DOXYGEN
-        # Create the checkpoint directory and file, if they do not exist.
-        checkpoint_path = join(self.checkpoint_dir, checkpoint_name)
-        FileSystem.create_directory_and_file(checkpoint_path)
-
-        # Save the model.
-        logging.info(f"Saving agent to the following file: {checkpoint_path}")
-        torch.save(self.as_dict(), checkpoint_path)
-
-        # Save the replay buffer.
-        self.buffer.save(checkpoint_path, buffer_checkpoint_name)
-        # @endcond
+        super().save(checkpoint_name, buffer_checkpoint_name, self.as_dict())

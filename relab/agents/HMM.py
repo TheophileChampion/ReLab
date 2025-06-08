@@ -1,5 +1,3 @@
-import logging
-from os.path import join
 from typing import Any, Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
@@ -12,10 +10,9 @@ from relab.agents.VariationalModel import (
     LikelihoodType,
     VariationalModel,
 )
-from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
-from relab.helpers.Typing import Checkpoint
+from relab.helpers.Typing import Checkpoint, Config, AttributeNames
 from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss
 from relab.helpers.VariationalInference import (
     sum_categorical_kl_divergences as sum_cat_kl,
@@ -118,13 +115,12 @@ class HMM(VariationalModel):
 
         # @var transition
         # Neural network that models the transition dynamics in latent space.
-        self.transition = self.get_transition_network(self.latent_type)
+        self.transition_net = self.get_transition_network(self.latent_type)
 
         # @var optimizer
-        # Adam optimizer for training the encoder, decoder, and transition
-        # networks.
+        # Adam optimizer for training the encoder, decoder, and transition networks.
         self.optimizer = get_optimizer(
-            [self.encoder, self.decoder, self.transition],
+            [self.encoder, self.decoder, self.transition_net],
             self.learning_rate,
             self.adam_eps,
         )
@@ -182,7 +178,7 @@ class HMM(VariationalModel):
         next_mean_hat, next_log_var_hat = self.encoder(next_obs)
         next_states = self.reparam((next_mean_hat, next_log_var_hat))
         next_reconstructed_obs = self.decoder(next_states)
-        mean, log_var = self.transition(states, actions)
+        mean, log_var = self.transition_net(states, actions)
 
         # Compute the variational free energy.
         kl_div_hs = kl_gauss(mean_hat, log_var_hat)
@@ -212,7 +208,7 @@ class HMM(VariationalModel):
         next_logit_hats = self.encoder(next_obs)
         next_states = self.reparam(next_logit_hats, tau)
         next_reconstructed_obs = self.decoder(next_states)
-        logits = self.transition(states, actions)
+        logits = self.transition_net(states, actions)
 
         # Compute the variational free energy.
         kl_div = sum_cat_kl(logit_hats) + sum_cat_kl(next_logit_hats, logits)
@@ -243,7 +239,7 @@ class HMM(VariationalModel):
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
 
         # Add the KL-divergence and log-likelihood at time step t + 1.
-        (mean, log_var), logits = self.transition(states, actions)
+        (mean, log_var), logits = self.transition_net(states, actions)
         (mean_hat, log_var_hat), logit_hats = self.encoder(next_obs)
         states = self.reparam((mean_hat, log_var_hat), logit_hats, tau)
         reconstructed_obs = self.decoder(states)
@@ -318,7 +314,7 @@ class HMM(VariationalModel):
 
                 # Simulate the agent's action to obtain the next reconstructed
                 # observation.
-                parameters = self.transition(states, action)
+                parameters = self.transition_net(states, action)
                 states = self.reparam(parameters, tau=tau)
                 reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
 
@@ -336,44 +332,43 @@ class HMM(VariationalModel):
         return fig
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
-    ) -> Tuple[str, Checkpoint]:
+        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+    ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
-        @return a tuple containing the checkpoint path and the checkpoint object
+        @param attr_names: a list of attribute names to load from the checkpoint (load all attributes by default)
+        @return the loaded checkpoint object
         """
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = super().load(
-                checkpoint_name, buffer_checkpoint_name
-            )
+            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
 
             # Update the world model using the checkpoint.
             self.encoder = self.get_encoder_network(self.latent_type)
             safe_load_state_dict(self.encoder, checkpoint, "encoder")
             self.decoder = self.get_decoder_network(self.latent_type)
             safe_load_state_dict(self.decoder, checkpoint, "decoder")
-            self.transition = self.get_transition_network(self.latent_type)
-            safe_load_state_dict(self.transition, checkpoint, "transition")
+            self.transition_net = self.get_transition_network(self.latent_type)
+            safe_load_state_dict(self.transition_net, checkpoint, "transition_net")
 
             # Update the optimizer.
             self.optimizer = get_optimizer(
-                [self.encoder, self.decoder, self.transition],
+                [self.encoder, self.decoder, self.transition_net],
                 self.learning_rate,
                 self.adam_eps,
                 checkpoint,
             )
-            return checkpoint_path, checkpoint
+            return checkpoint
 
         # Catch the exception raise if the checkpoint could not be located.
         except FileNotFoundError:
-            return "", None
+            return None
         # @endcond
 
-    def as_dict(self):
+    def as_dict(self) -> Config:
         """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
@@ -381,25 +376,15 @@ class HMM(VariationalModel):
         return {
             "encoder": self.encoder.state_dict(),
             "decoder": self.decoder.state_dict(),
-            "transition": self.transition.state_dict(),
+            "transition_net": self.transition_net.state_dict(),
             "optimizer": self.optimizer.state_dict(),
-        } | super().as_dict()
+        }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
+    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        @param agent_conf: a dictionary representing the agent's attributes to be saved (for internal use only)
         """
-        # @cond IGNORED_BY_DOXYGEN
-        # Create the checkpoint directory and file, if they do not exist.
-        checkpoint_path = join(self.checkpoint_dir, checkpoint_name)
-        FileSystem.create_directory_and_file(checkpoint_path)
-
-        # Save the model.
-        logging.info(f"Saving agent to the following file: {checkpoint_path}")
-        torch.save(self.as_dict(), checkpoint_path)
-
-        # Save the replay buffer.
-        self.buffer.save(checkpoint_path, buffer_checkpoint_name)
-        # @endcond
+        super().save(checkpoint_name, buffer_checkpoint_name, self.as_dict())
