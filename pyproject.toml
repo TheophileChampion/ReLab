@@ -1,6 +1,6 @@
 [project]
 name="relab"
-version="0.5.1"
+version="0.5.3"
 description="Reinforcement learning made easy with prebuilt agents, Gym integration, and performance visualization."
 license= { file="LICENSE.md" }
 authors=[{ name="Théophile Champion", email="theoph.champion@gmail.com" }]
