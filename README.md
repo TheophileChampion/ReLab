@@ -1,4 +1,4 @@
-# ![ReLab Logo](./relab-logo.png)
+# ![ReLab Logo](https://github.com/TheophileChampion/ReLab/blob/main/relab-logo.png)
 
 ---
 

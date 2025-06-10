@@ -1,7 +1,11 @@
 # Specify the C++ and CUDA compilers.
 set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 set(CMAKE_CUDA_ARCHITECTURES "native")
-set(CMAKE_CUDA_COMPILER "/usr/local/cuda-12.6/bin/nvcc")
+IF(EXISTS "/usr/local/cuda/bin/nvcc")
+    set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+else()
+    set(CMAKE_CUDA_COMPILER "/opt/cuda/bin/nvcc")
+endif()
 
 # Specify the version of C++ to use.
 set(CMAKE_CXX_STANDARD 17)
