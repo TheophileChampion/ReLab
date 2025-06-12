@@ -1,4 +1,4 @@
-# ![](./relab-logo.png)
+# ![ReLab](./relab-logo.png)
 
 ---
 
