@@ -6,17 +6,13 @@ from gymnasium import Env
 from matplotlib.figure import Figure
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import (
-    LatentSpaceType,
     LikelihoodType,
     VariationalModel,
 )
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
 from relab.helpers.Typing import Checkpoint, Config, AttributeNames
-from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss
-from relab.helpers.VariationalInference import (
-    sum_categorical_kl_divergences as sum_cat_kl,
-)
+from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss, gaussian_reparameterization
 from torch import Tensor
 
 
@@ -41,21 +37,18 @@ class HMM(VariationalModel):
 
     def __init__(
         self,
-        learning_starts: int = 200000,
+        learning_starts: int = 50000,
         n_actions: int = 18,
         training: bool = True,
         likelihood_type: LikelihoodType = LikelihoodType.BERNOULLI,
-        latent_space_type: LatentSpaceType = LatentSpaceType.CONTINUOUS,
-        n_continuous_vars: int = 10,
-        n_discrete_vars: int = 20,
-        n_discrete_vals: int = 10,
-        learning_rate: float = 0.00001,
-        adam_eps: float = 1.5e-4,
+        n_continuous_vars: int = 15,
+        learning_rate: float = 0.0001,
+        adam_eps: float = 1e-8,
         beta_schedule: Any = None,
         tau_schedule: Any = None,
-        replay_type: ReplayType = ReplayType.DEFAULT,
+        replay_type: ReplayType = ReplayType.PRIORITIZED,
         buffer_size: int = 1000000,
-        batch_size: int = 32,
+        batch_size: int = 50,
         n_steps: int = 1,
         omega: float = 1.0,
         omega_is: float = 1.0,
@@ -66,11 +59,7 @@ class HMM(VariationalModel):
         @param n_actions: the number of actions available to the agent
         @param training: True if the agent is being trained, False otherwise
         @param likelihood_type: the type of likelihood used by the world model
-        @param latent_space_type: the type of latent space used by the world model
         @param n_continuous_vars: the number of continuous latent variables
-        @param n_discrete_vars: the number of discrete latent variables
-        @param n_discrete_vals: the number of values taken by all the discrete latent variables,
-            or a list describing the number of values taken by each discrete latent variable
         @param learning_rate: the learning rate
         @param adam_eps: the epsilon parameter of the Adam optimizer
         @param beta_schedule: the piecewise linear schedule of the KL-divergence weight of beta-VAE
@@ -90,15 +79,12 @@ class HMM(VariationalModel):
             training=training,
             replay_type=replay_type,
             likelihood_type=likelihood_type,
-            latent_space_type=latent_space_type,
             buffer_size=buffer_size,
             batch_size=batch_size,
             n_steps=n_steps,
             omega=omega,
             omega_is=omega_is,
             n_continuous_vars=n_continuous_vars,
-            n_discrete_vars=n_discrete_vars,
-            n_discrete_vals=n_discrete_vals,
             learning_rate=learning_rate,
             adam_eps=adam_eps,
             beta_schedule=beta_schedule,
@@ -107,15 +93,15 @@ class HMM(VariationalModel):
 
         # @var encoder
         # Neural network that encodes observations into latent states.
-        self.encoder = self.get_encoder_network(self.latent_type)
+        self.encoder = self.get_encoder_network()
 
         # @var decoder
         # Neural network that decodes latent states into observations.
-        self.decoder = self.get_decoder_network(self.latent_type)
+        self.decoder = self.get_decoder_network()
 
         # @var transition
         # Neural network that models the transition dynamics in latent space.
-        self.transition_net = self.get_transition_network(self.latent_type)
+        self.transition_net = self.get_transition_network()
 
         # @var optimizer
         # Adam optimizer for training the encoder, decoder, and transition networks.
@@ -136,7 +122,7 @@ class HMM(VariationalModel):
         obs, actions, _, _, next_obs = self.buffer.sample()
 
         # Compute the model loss.
-        loss, log_likelihood, kl_div = self.model_loss(obs, actions, next_obs)
+        loss, log_likelihood, kl_div = self.vfe(obs, actions, next_obs)
 
         # Report the loss obtained for each sampled transition for potential
         # prioritization.
@@ -160,7 +146,7 @@ class HMM(VariationalModel):
         }
         # @endcond
 
-    def continuous_vfe(
+    def vfe(
         self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
@@ -173,10 +159,10 @@ class HMM(VariationalModel):
 
         # Compute required vectors.
         mean_hat, log_var_hat = self.encoder(obs)
-        states = self.reparam((mean_hat, log_var_hat))
+        states = gaussian_reparameterization(mean_hat, log_var_hat)
         reconstructed_obs = self.decoder(states)
         next_mean_hat, next_log_var_hat = self.encoder(next_obs)
-        next_states = self.reparam((next_mean_hat, next_log_var_hat))
+        next_states = gaussian_reparameterization(next_mean_hat, next_log_var_hat)
         next_reconstructed_obs = self.decoder(next_states)
         mean, log_var = self.transition_net(states, actions)
 
@@ -187,70 +173,6 @@ class HMM(VariationalModel):
         log_likelihood += self.likelihood_loss(next_obs, next_reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
-
-    def discrete_vfe(
-        self, obs: Tensor, actions: Tensor, next_obs: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        """!
-        Compute the variational free energy for a discrete latent space.
-        @param obs: the observations at time t
-        @param actions: the actions at time t
-        @param next_obs: the observations at time t + 1
-        @return the variational free energy
-        """
-        # @cond IGNORED_BY_DOXYGEN
-
-        # Compute required vectors.
-        tau = self.tau(self.current_step)
-        logit_hats = self.encoder(obs)
-        states = self.reparam(logit_hats, tau)
-        reconstructed_obs = self.decoder(states)
-        next_logit_hats = self.encoder(next_obs)
-        next_states = self.reparam(next_logit_hats, tau)
-        next_reconstructed_obs = self.decoder(next_states)
-        logits = self.transition_net(states, actions)
-
-        # Compute the variational free energy.
-        kl_div = sum_cat_kl(logit_hats) + sum_cat_kl(next_logit_hats, logits)
-        log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
-        log_likelihood += self.likelihood_loss(next_obs, next_reconstructed_obs)
-        vfe_loss = self.beta(self.current_step) * kl_div - log_likelihood
-        return vfe_loss, log_likelihood, kl_div
-        # @endcond
-
-    def mixed_vfe(
-        self, obs: Tensor, actions: Tensor, next_obs: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        """!
-        Compute the variational free energy for a mixed latent space.
-        @param obs: the observations at time t
-        @param actions: the actions at time t
-        @param next_obs: the observations at time t + 1
-        @return the variational free energy
-        """
-        # @cond IGNORED_BY_DOXYGEN
-
-        # Compute the KL-divergence and log-likelihood at time step t.
-        tau = self.tau(self.current_step)
-        (mean_hat, log_var_hat), logit_hats = self.encoder(obs)
-        states = self.reparam((mean_hat, log_var_hat), logit_hats, tau)
-        reconstructed_obs = self.decoder(states)
-        kl_div = sum_cat_kl(logit_hats) + kl_gauss(mean_hat, log_var_hat)
-        log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
-
-        # Add the KL-divergence and log-likelihood at time step t + 1.
-        (mean, log_var), logits = self.transition_net(states, actions)
-        (mean_hat, log_var_hat), logit_hats = self.encoder(next_obs)
-        states = self.reparam((mean_hat, log_var_hat), logit_hats, tau)
-        reconstructed_obs = self.decoder(states)
-        kl_div += sum_cat_kl(logit_hats, logits)
-        kl_div += kl_gauss(mean_hat, log_var_hat, mean, log_var)
-        log_likelihood += self.likelihood_loss(next_obs, reconstructed_obs)
-
-        # Compute the variational free energy.
-        vfe_loss = self.beta(self.current_step) * kl_div - log_likelihood
-        return vfe_loss, log_likelihood, kl_div
-        # @endcond
 
     def draw_reconstructed_images(
         self, env: Env, model_index: int, grid_size: Tuple[int, int]
@@ -287,8 +209,8 @@ class HMM(VariationalModel):
             # Retrieve the initial ground truth and reconstructed images.
             obs, _ = env.reset()
             obs = torch.unsqueeze(obs, dim=0)
-            parameters = self.encoder(obs)
-            states = self.reparam(parameters, tau=tau)
+            mean, log_var = self.encoder(obs)
+            states = gaussian_reparameterization(mean, log_var)
             reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
 
             # Iterate over the grid's columns.
@@ -314,8 +236,8 @@ class HMM(VariationalModel):
 
                 # Simulate the agent's action to obtain the next reconstructed
                 # observation.
-                parameters = self.transition_net(states, action)
-                states = self.reparam(parameters, tau=tau)
+                mean, log_var = self.transition_net(states, action)
+                states = gaussian_reparameterization(mean, log_var)
                 reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
 
                 # Increase row index.
@@ -347,11 +269,11 @@ class HMM(VariationalModel):
             checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
 
             # Update the world model using the checkpoint.
-            self.encoder = self.get_encoder_network(self.latent_type)
+            self.encoder = self.get_encoder_network()
             safe_load_state_dict(self.encoder, checkpoint, "encoder")
-            self.decoder = self.get_decoder_network(self.latent_type)
+            self.decoder = self.get_decoder_network()
             safe_load_state_dict(self.decoder, checkpoint, "decoder")
-            self.transition_net = self.get_transition_network(self.latent_type)
+            self.transition_net = self.get_transition_network()
             safe_load_state_dict(self.transition_net, checkpoint, "transition_net")
 
             # Update the optimizer.

@@ -275,7 +275,7 @@ class AgentInterface(ABC):
         for t in range(max_frames):
 
             # Record the frame associated to the current environment state.
-            frames.append(Image.fromarray(env.render()))
+            frames.append(Image.fromarray(env.render().numpy()))
 
             # Execute an action in the environment.
             action = self.step(obs.to(self.device))

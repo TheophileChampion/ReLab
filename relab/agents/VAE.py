@@ -14,16 +14,13 @@ from relab.cpp.agents.memory import Experience
 
 from relab import relab
 from relab.agents.AgentInterface import ReplayType
-from relab.agents.VariationalModel import (
-    LatentSpaceType,
-    LikelihoodType, VariationalModel,
-)
+from relab.agents.VariationalModel import LikelihoodType, VariationalModel
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
 from relab.helpers.Typing import Checkpoint, Config, AttributeNames, ObservationType, ActionType
 from relab.helpers.VariationalInference import (
-    sum_categorical_kl_divergences as sum_cat_kl,
-    gaussian_kl_divergence as gauss_kl
+    gaussian_kl_divergence as gauss_kl,
+    gaussian_reparameterization
 )
 from torch import Tensor
 
@@ -53,10 +50,7 @@ class VAE(VariationalModel):
         n_actions: int = 18,
         training: bool = True,
         likelihood_type: LikelihoodType = LikelihoodType.BERNOULLI,
-        latent_space_type: LatentSpaceType = LatentSpaceType.DISCRETE,
         n_continuous_vars: int = 15,
-        n_discrete_vars: int = 10,
-        n_discrete_vals: int = 32,
         learning_rate: float = 0.0001,
         adam_eps: float = 1e-8,
         beta_schedule: Any = None,
@@ -74,11 +68,7 @@ class VAE(VariationalModel):
         @param n_actions: the number of actions available to the agent
         @param training: True if the agent is being trained, False otherwise
         @param likelihood_type: the type of likelihood used by the world model
-        @param latent_space_type: the type of latent space used by the world model
         @param n_continuous_vars: the number of continuous latent variables
-        @param n_discrete_vars: the number of discrete latent variables
-        @param n_discrete_vals: the number of values taken by all the discrete latent variables,
-            or a list describing the number of values taken by each discrete latent variable
         @param learning_rate: the learning rate
         @param adam_eps: the epsilon parameter of the Adam optimizer
         @param beta_schedule: the piecewise linear schedule of the KL-divergence weight of beta-VAE
@@ -98,15 +88,12 @@ class VAE(VariationalModel):
             training=training,
             replay_type=replay_type,
             likelihood_type=likelihood_type,
-            latent_space_type=latent_space_type,
             buffer_size=buffer_size,
             batch_size=batch_size,
             n_steps=n_steps,
             omega=omega,
             omega_is=omega_is,
             n_continuous_vars=n_continuous_vars,
-            n_discrete_vars=n_discrete_vars,
-            n_discrete_vals=n_discrete_vals,
             learning_rate=learning_rate,
             adam_eps=adam_eps,
             beta_schedule=beta_schedule,
@@ -116,12 +103,12 @@ class VAE(VariationalModel):
         # @var encoder
         # Neural network that encodes observations into a distribution over
         # latent states.
-        self.encoder = self.get_encoder_network(self.latent_type)
+        self.encoder = self.get_encoder_network()
 
         # @var decoder
         # Neural network that decodes latent states into reconstructed
         # observations.
-        self.decoder = self.get_decoder_network(self.latent_type)
+        self.decoder = self.get_decoder_network()
 
         # @var optimizer
         # Adam optimizer for training both the encoder and decoder networks.
@@ -203,7 +190,7 @@ class VAE(VariationalModel):
         obs, actions, _, _, next_obs = self.buffer.sample()
 
         # Compute the model loss.
-        loss, log_likelihood, kl_div = self.model_loss(obs, actions, next_obs)
+        loss, log_likelihood, kl_div = self.vfe(obs, actions, next_obs)
 
         # Report the loss obtained for each sampled transition for potential
         # prioritization.
@@ -227,7 +214,7 @@ class VAE(VariationalModel):
         }
         # @endcond
 
-    def continuous_vfe(
+    def vfe(
         self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
@@ -241,61 +228,11 @@ class VAE(VariationalModel):
 
         # Compute required tensors.
         mean_hat, log_var_hat = self.encoder(obs)
-        state = self.reparam((mean_hat, log_var_hat))
+        state = gaussian_reparameterization(mean_hat, log_var_hat)
         reconstructed_obs = self.decoder(state)
 
         # Compute the variational free energy.
         kl_div_hs = gauss_kl(mean_hat, log_var_hat)
-        log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
-        vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
-        return vfe_loss, log_likelihood, kl_div_hs
-        # @endcond
-
-    def discrete_vfe(
-        self, obs: Tensor, actions: Tensor, next_obs: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        """!
-        Compute the variational free energy for a discrete latent space.
-        @param obs: the observations at time t
-        @param actions: the actions at time t
-        @param next_obs: the observations at time t + 1
-        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
-        """
-        # @cond IGNORED_BY_DOXYGEN
-
-        # Compute required tensors.
-        tau = self.tau(self.current_step)
-        logit_hats = self.encoder(obs)
-        states = self.reparam(logit_hats, tau)
-        reconstructed_obs = self.decoder(states)
-
-        # Compute the variational free energy.
-        kl_div = sum_cat_kl(logit_hats)
-        log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
-        vfe_loss = - log_likelihood  # TODO self.beta(self.current_step) * kl_div - log_likelihood
-        return vfe_loss, log_likelihood, kl_div
-        # @endcond
-
-    def mixed_vfe(
-        self, obs: Tensor, actions: Tensor, next_obs: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        """!
-        Compute the variational free energy for a mixed latent space.
-        @param obs: the observations at time t
-        @param actions: the actions at time t
-        @param next_obs: the observations at time t + 1
-        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
-        """
-        # @cond IGNORED_BY_DOXYGEN
-
-        # Compute required tensors.
-        tau = self.tau(self.current_step)
-        mean_hat, log_var_hat, logit_hats = self.encoder(obs)
-        states = self.reparam((mean_hat, log_var_hat, logit_hats), tau)
-        reconstructed_obs = self.decoder(states)
-
-        # Compute the variational free energy.
-        kl_div_hs = gauss_kl(mean_hat, log_var_hat) + sum_cat_kl(logit_hats)
         log_likelihood = self.likelihood_loss(obs, reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
@@ -336,8 +273,8 @@ class VAE(VariationalModel):
                 # Retrieve the ground truth and reconstructed images.
                 obs, _ = env.reset()
                 obs = torch.unsqueeze(obs, dim=0).to(self.device)
-                parameters = self.encoder(obs)
-                states = self.reparam(parameters, tau=tau)
+                mean_hat, log_var_hat = self.encoder(obs)
+                states = gaussian_reparameterization(mean_hat, log_var_hat)
                 reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
 
                 # Draw the ground truth image.
@@ -392,9 +329,9 @@ class VAE(VariationalModel):
             checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
 
             # Update the world model using the checkpoint.
-            self.encoder = self.get_encoder_network(self.latent_type)
+            self.encoder = self.get_encoder_network()
             safe_load_state_dict(self.encoder, checkpoint, "encoder")
-            self.decoder = self.get_decoder_network(self.latent_type)
+            self.decoder = self.get_decoder_network()
             safe_load_state_dict(self.decoder, checkpoint, "decoder")
 
             # Update the optimizer.

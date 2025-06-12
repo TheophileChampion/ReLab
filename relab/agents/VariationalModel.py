@@ -14,21 +14,9 @@ import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
 from relab.agents.AgentInterface import AgentInterface, ReplayType
-from relab.agents.networks.DecoderNetworks import (
-    ContinuousDecoderNetwork,
-    DiscreteDecoderNetwork,
-    MixedDecoderNetwork,
-)
-from relab.agents.networks.EncoderNetworks import (
-    ContinuousEncoderNetwork,
-    DiscreteEncoderNetwork,
-    MixedEncoderNetwork,
-)
-from relab.agents.networks.TransitionNetworks import (
-    ContinuousTransitionNetwork,
-    DiscreteTransitionNetwork,
-    MixedTransitionNetwork,
-)
+from relab.agents.networks.DecoderNetwork import ContinuousDecoderNetwork
+from relab.agents.networks.EncoderNetwork import ContinuousEncoderNetwork
+from relab.agents.networks.TransitionNetworks import ContinuousTransitionNetwork
 from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
@@ -36,30 +24,9 @@ from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Typing import ActionType, Checkpoint, ObservationType, Config, AttributeNames
 from relab.helpers.VariationalInference import (
     bernoulli_log_likelihood,
-    continuous_reparameterization,
-    discrete_reparameterization,
     gaussian_log_likelihood,
-    mixed_reparameterization,
 )
 from torch import Tensor, nn
-
-
-class LatentSpaceType(IntEnum):
-    """!
-    The type of latent spaces supported by the model-based agents.
-    """
-
-    # @var CONTINUOUS
-    # Latent space with continuous variables following a Gaussian distribution.
-    CONTINUOUS = 0
-
-    # @var DISCRETE
-    # Latent space with categorical variables using Gumbel-Softmax relaxation.
-    DISCRETE = 1
-
-    # @var MIXED
-    # Hybrid latent space combining both continuous and discrete variables.
-    MIXED = 2
 
 
 class LikelihoodType(IntEnum):
@@ -87,7 +54,6 @@ class VariationalModel(AgentInterface):
         n_actions: int = 18,
         training: bool = False,
         likelihood_type: LikelihoodType = LikelihoodType.BERNOULLI,
-        latent_space_type: LatentSpaceType = LatentSpaceType.CONTINUOUS,
         replay_type: ReplayType = ReplayType.DEFAULT,
         buffer_size: int = 1000000,
         batch_size: int = 32,
@@ -95,8 +61,6 @@ class VariationalModel(AgentInterface):
         omega: float = 1.0,
         omega_is: float = 1.0,
         n_continuous_vars: int = 10,
-        n_discrete_vars: int = 20,
-        n_discrete_vals: int = 10,
         learning_rate: float = 0.00001,
         adam_eps: float = 1.5e-4,
         beta_schedule: Any = None,
@@ -108,7 +72,6 @@ class VariationalModel(AgentInterface):
         @param n_actions: the number of actions available to the agent
         @param training: True if the agent is being trained, False otherwise
         @param likelihood_type: the type of likelihood used by the world model
-        @param latent_space_type: the type of latent space used by the world model
         @param replay_type: the type of replay buffer
         @param buffer_size: the size of the replay buffer
         @param batch_size: the size of the batches sampled from the replay buffer
@@ -116,9 +79,6 @@ class VariationalModel(AgentInterface):
         @param omega: the prioritization exponent
         @param omega_is: the important sampling exponent
         @param n_continuous_vars: the number of continuous latent variables
-        @param n_discrete_vars: the number of discrete latent variables
-        @param n_discrete_vals: the number of values taken by all the discrete latent variables,
-            or a list describing the number of values taken by each discrete latent variable
         @param learning_rate: the learning rate
         @param adam_eps: the epsilon parameter of the Adam optimizer
         @param beta_schedule: the piecewise linear schedule of the KL-divergence weight of beta-VAE
@@ -133,10 +93,6 @@ class VariationalModel(AgentInterface):
         # The type of likelihood function used in the world model (Gaussian or
         # Bernoulli).
         self.likelihood_type = likelihood_type
-
-        # @var latent_space_type
-        # The type of latent space used (continuous, discrete, or mixed).
-        self.latent_type = latent_space_type
 
         # @var learning_starts
         # The step count at which learning begins.
@@ -157,14 +113,6 @@ class VariationalModel(AgentInterface):
         # @var n_continuous_vars
         # Number of continuous variables in the latent space.
         self.n_cont_vars = n_continuous_vars
-
-        # @var n_discrete_vars
-        # Number of discrete variables in the latent space.
-        self.n_discrete_vars = n_discrete_vars
-
-        # @var n_discrete_vals
-        # Number of possible values for each discrete variable.
-        self.n_discrete_vals = n_discrete_vals
 
         # @var n_steps
         # Number of steps for multi-step learning.
@@ -202,17 +150,9 @@ class VariationalModel(AgentInterface):
         # Scheduler for the Gumbel-Softmax temperature.
         self.tau = ExponentialSchedule(self.tau_schedule)
 
-        # @var model_loss
-        # Function computing the world model's loss.
-        self.model_loss = self.get_model_loss(self.latent_type)
-
         # @var likelihood_loss
         # Function computing the reconstruction loss.
         self.likelihood_loss = self.get_likelihood_loss(self.likelihood_type)
-
-        # @var reparameterize
-        # Function for sampling latent states from the latent distribution.
-        self.reparam = self.get_reparameterization(self.latent_type)
 
     @abc.abstractmethod
     def learn(self) -> Optional[Dict[str, Any]]:
@@ -223,37 +163,11 @@ class VariationalModel(AgentInterface):
         ...
 
     @abc.abstractmethod
-    def continuous_vfe(
+    def vfe(
         self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
         Compute the variational free energy for a continuous latent space.
-        @param obs: the observations at time t
-        @param actions: the actions at time t
-        @param next_obs: the observations at time t + 1
-        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
-        """
-        ...
-
-    @abc.abstractmethod
-    def discrete_vfe(
-        self, obs: Tensor, actions: Tensor, next_obs: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        """!
-        Compute the variational free energy for a discrete latent space.
-        @param obs: the observations at time t
-        @param actions: the actions at time t
-        @param next_obs: the observations at time t + 1
-        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
-        """
-        ...
-
-    @abc.abstractmethod
-    def mixed_vfe(
-        self, obs: Tensor, actions: Tensor, next_obs: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        """!
-        Compute the variational free energy for a mixed latent space.
         @param obs: the observations at time t
         @param actions: the actions at time t
         @param next_obs: the observations at time t + 1
@@ -274,35 +188,6 @@ class VariationalModel(AgentInterface):
         """
         ...
 
-    def get_model_loss(self, latent_space_type: LatentSpaceType) -> Callable:
-        """!
-        Retrieve the model loss requested as parameters.
-        @param latent_space_type: the type of latent spaces used by the world model
-        @return the loss
-        """
-        # @cond IGNORED_BY_DOXYGEN
-        return {
-            LatentSpaceType.CONTINUOUS: self.continuous_vfe,
-            LatentSpaceType.DISCRETE: self.discrete_vfe,
-            LatentSpaceType.MIXED: self.mixed_vfe,
-        }[latent_space_type]
-        # @endcond
-
-    @staticmethod
-    def get_reparameterization(latent_space_type: LatentSpaceType) -> Callable:
-        """!
-        Retrieve the reparameterization function requested as parameters.
-        @param latent_space_type: the type of latent spaces used by the world model
-        @return the reparameterization function
-        """
-        # @cond IGNORED_BY_DOXYGEN
-        return {
-            LatentSpaceType.CONTINUOUS: continuous_reparameterization,
-            LatentSpaceType.DISCRETE: discrete_reparameterization,
-            LatentSpaceType.MIXED: mixed_reparameterization,
-        }[latent_space_type]
-        # @endcond
-
     @staticmethod
     def get_likelihood_loss(likelihood_type: LikelihoodType) -> Callable:
         """!
@@ -317,89 +202,40 @@ class VariationalModel(AgentInterface):
         }[likelihood_type]
         # @endcond
 
-    def get_encoder_network(self, latent_space_type: LatentSpaceType) -> nn.Module:
+    def get_encoder_network(self) -> nn.Module:
         """!
         Retrieve the encoder network requested as parameters.
-        @param latent_space_type: the type of latent spaces to use for the encoder network
         @return the encoder network
         """
         # @cond IGNORED_BY_DOXYGEN
-        encoder = {
-            LatentSpaceType.CONTINUOUS: partial(
-                ContinuousEncoderNetwork, n_continuous_vars=self.n_cont_vars
-            ),
-            LatentSpaceType.DISCRETE: partial(
-                DiscreteEncoderNetwork,
-                n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals,
-            ),
-            LatentSpaceType.MIXED: partial(
-                MixedEncoderNetwork,
-                n_continuous_vars=self.n_cont_vars,
-                n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals,
-            ),
-        }[latent_space_type]()
+        encoder = ContinuousEncoderNetwork(n_continuous_vars=self.n_cont_vars)
         encoder.train(self.training)
         encoder.to(self.device)
         return encoder
         # @endcond
 
-    def get_decoder_network(self, latent_space_type: LatentSpaceType) -> nn.Module:
+    def get_decoder_network(self) -> nn.Module:
         """!
         Retrieve the decoder network requested as parameters.
-        @param latent_space_type: the type of latent spaces to use for the decoder network
         @return the decoder network
         """
         # @cond IGNORED_BY_DOXYGEN
-        decoder = {
-            LatentSpaceType.CONTINUOUS: partial(
-                ContinuousDecoderNetwork, n_continuous_vars=self.n_cont_vars
-            ),
-            LatentSpaceType.DISCRETE: partial(
-                DiscreteDecoderNetwork,
-                n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals,
-            ),
-            LatentSpaceType.MIXED: partial(
-                MixedDecoderNetwork,
-                n_continuous_vars=self.n_cont_vars,
-                n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals,
-            ),
-        }[latent_space_type]()
+        decoder = ContinuousDecoderNetwork(n_continuous_vars=self.n_cont_vars)
         decoder.train(self.training)
         decoder.to(self.device)
         return decoder
         # @endcond
 
-    def get_transition_network(self, latent_space_type: LatentSpaceType) -> nn.Module:
+    def get_transition_network(self) -> nn.Module:
         """!
         Retrieve the transition network requested as parameters.
-        @param latent_space_type: the type of latent spaces to use for the transition network
         @return the transition network
         """
         # @cond IGNORED_BY_DOXYGEN
-        transition = {
-            LatentSpaceType.CONTINUOUS: partial(
-                ContinuousTransitionNetwork,
-                n_actions=self.n_actions,
-                n_continuous_vars=self.n_cont_vars,
-            ),
-            LatentSpaceType.DISCRETE: partial(
-                DiscreteTransitionNetwork,
-                n_actions=self.n_actions,
-                n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals,
-            ),
-            LatentSpaceType.MIXED: partial(
-                MixedTransitionNetwork,
-                n_actions=self.n_actions,
-                n_continuous_vars=self.n_cont_vars,
-                n_discrete_vars=self.n_discrete_vars,
-                n_discrete_vals=self.n_discrete_vals,
-            ),
-        }[latent_space_type]()
+        transition = ContinuousTransitionNetwork(
+            n_actions=self.n_actions,
+            n_continuous_vars=self.n_cont_vars
+        )
         transition.train(self.training)
         transition.to(self.device)
         return transition
@@ -515,9 +351,6 @@ class VariationalModel(AgentInterface):
         attr_names = [] if attr_names is None else list(attr_names)
         attr_names += list(VariationalModel.as_dict(self).keys())
         checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, attr_names)
-
-        # Get the reparameterization function to use with the world model.
-        self.reparam = self.get_reparameterization(self.latent_type)
         return checkpoint
 
     def as_dict(self) -> Config:
@@ -537,12 +370,9 @@ class VariationalModel(AgentInterface):
             "learning_rate": self.learning_rate,
             "adam_eps": self.adam_eps,
             "likelihood_type": self.likelihood_type,
-            "latent_type": self.latent_type,
             "beta_schedule": self.beta_schedule,
             "tau_schedule": self.tau_schedule,
             "n_cont_vars": self.n_cont_vars,
-            "n_discrete_vars": self.n_discrete_vars,
-            "n_discrete_vals": self.n_discrete_vals,
         }
 
     def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
