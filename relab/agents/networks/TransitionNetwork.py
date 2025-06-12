@@ -1,6 +1,7 @@
 import torch
 from relab.agents.networks.layers.DiagonalGaussian import DiagonalGaussian
 from torch import Tensor, nn
+from torch.nn.functional import one_hot
 
 
 class ContinuousTransitionNetwork(nn.Module):
@@ -41,6 +42,6 @@ class ContinuousTransitionNetwork(nn.Module):
         @param actions: the input actions
         @return the mean and the log of the variance of the diagonal Gaussian
         """
-        actions = torch.one_hot(actions.to(torch.int64), self.n_actions)
+        actions = one_hot(actions.to(torch.int64), self.n_actions)
         x = torch.cat((states, actions), dim=1)
         return self.net(x)

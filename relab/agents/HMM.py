@@ -193,7 +193,6 @@ class HMM(VariationalModel):
 
         # Iterate over the grid's rows.
         h = 0
-        tau = self.tau(model_index)
         while h < height:
 
             # Draw the ground truth label for each row.
@@ -208,7 +207,7 @@ class HMM(VariationalModel):
 
             # Retrieve the initial ground truth and reconstructed images.
             obs, _ = env.reset()
-            obs = torch.unsqueeze(obs, dim=0)
+            obs = torch.unsqueeze(obs, dim=0).to(self.device)
             mean, log_var = self.encoder(obs)
             states = gaussian_reparameterization(mean, log_var)
             reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
@@ -232,7 +231,7 @@ class HMM(VariationalModel):
                 obs, _, terminated, truncated, _ = env.step(action)
                 obs = torch.unsqueeze(obs, dim=0)
                 done = terminated or truncated
-                action = torch.tensor([action])
+                action = torch.tensor([action]).to(self.device)
 
                 # Simulate the agent's action to obtain the next reconstructed
                 # observation.

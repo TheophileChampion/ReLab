@@ -254,7 +254,6 @@ class VAE(VariationalModel):
         gs = fig.add_gridspec(height * 2, width + n_cols)
 
         # Iterate over the grid's rows.
-        tau = self.tau(model_index)
         for h in range(height):
 
             # Draw the ground truth label for each row.
