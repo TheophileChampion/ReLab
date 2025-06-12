@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.agents.networks.DecoderNetwork import ContinuousDecoderNetwork
 from relab.agents.networks.EncoderNetwork import ContinuousEncoderNetwork
-from relab.agents.networks.TransitionNetworks import ContinuousTransitionNetwork
+from relab.agents.networks.TransitionNetwork import ContinuousTransitionNetwork
 from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
