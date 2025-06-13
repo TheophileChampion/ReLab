@@ -233,11 +233,10 @@ class AgentInterface(ABC):
         self.last_time = -1
 
         # Load the replay buffer from the checkpoint.
-        self.buffer = (
-            self.get_buffer()
-            if self.get_buffer is not None and self.training is True
-            else None
-        )
+        if self.get_buffer is not None and self.training is True:
+            self.buffer = self.get_buffer()
+        else:
+            self.buffer = None
         self.buffer.load(checkpoint_path, buffer_checkpoint_name)
         return checkpoint
 
