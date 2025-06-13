@@ -54,7 +54,6 @@ class VAE(VariationalModel):
         learning_rate: float = 0.0001,
         adam_eps: float = 1e-8,
         beta_schedule: Any = None,
-        tau_schedule: Any = None,
         replay_type: ReplayType = ReplayType.PRIORITIZED,
         buffer_size: int = 1000000,
         batch_size: int = 50,
@@ -72,7 +71,6 @@ class VAE(VariationalModel):
         @param learning_rate: the learning rate
         @param adam_eps: the epsilon parameter of the Adam optimizer
         @param beta_schedule: the piecewise linear schedule of the KL-divergence weight of beta-VAE
-        @param tau_schedule: the exponential schedule of the temperature of the Gumbel-softmax
         @param replay_type: the type of replay buffer
         @param buffer_size: the size of the replay buffer
         @param batch_size: the size of the batches sampled from the replay buffer
@@ -97,7 +95,6 @@ class VAE(VariationalModel):
             learning_rate=learning_rate,
             adam_eps=adam_eps,
             beta_schedule=beta_schedule,
-            tau_schedule=tau_schedule,
         )
 
         # @var encoder

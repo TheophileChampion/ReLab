@@ -17,7 +17,6 @@ from relab.agents.AgentInterface import AgentInterface, ReplayType
 from relab.agents.networks.DecoderNetwork import ContinuousDecoderNetwork
 from relab.agents.networks.EncoderNetwork import ContinuousEncoderNetwork
 from relab.agents.networks.TransitionNetwork import ContinuousTransitionNetwork
-from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.MatPlotLib import MatPlotLib
@@ -64,7 +63,6 @@ class VariationalModel(AgentInterface):
         learning_rate: float = 0.00001,
         adam_eps: float = 1.5e-4,
         beta_schedule: Any = None,
-        tau_schedule: Any = None,
     ) -> None:
         """!
         Create an agent taking random actions.
@@ -82,7 +80,6 @@ class VariationalModel(AgentInterface):
         @param learning_rate: the learning rate
         @param adam_eps: the epsilon parameter of the Adam optimizer
         @param beta_schedule: the piecewise linear schedule of the KL-divergence weight of beta-VAE
-        @param tau_schedule: the exponential schedule of the temperature of the Gumbel-softmax
         """
 
         # Call the parent constructor.
@@ -141,14 +138,6 @@ class VariationalModel(AgentInterface):
         # @var beta
         # Scheduler for the KL-divergence weight in beta-VAE.
         self.beta = PiecewiseLinearSchedule(self.beta_schedule)
-
-        # @var tau_schedule
-        # Schedule for the Gumbel-Softmax temperature.
-        self.tau_schedule = (0.5, -3e-5) if tau_schedule is None else tau_schedule
-
-        # @var tau
-        # Scheduler for the Gumbel-Softmax temperature.
-        self.tau = ExponentialSchedule(self.tau_schedule)
 
         # @var likelihood_loss
         # Function computing the reconstruction loss.
@@ -371,7 +360,6 @@ class VariationalModel(AgentInterface):
             "adam_eps": self.adam_eps,
             "likelihood_type": self.likelihood_type,
             "beta_schedule": self.beta_schedule,
-            "tau_schedule": self.tau_schedule,
             "n_cont_vars": self.n_cont_vars,
         }
 
