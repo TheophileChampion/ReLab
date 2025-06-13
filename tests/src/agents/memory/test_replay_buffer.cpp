@@ -51,7 +51,7 @@ void TestReplayBuffer::SetUp() {
   this->observations = getObservations(n_observations, this->params.frame_skip, this->params.stack_size);
 }
 
-TEST_P(TestReplayBuffer, TestStoringAndRetrievalMultipleEpisodes) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestReplayBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, 2 * params.capacity - 1, params.capacity);
 
@@ -81,7 +81,7 @@ TEST_P(TestReplayBuffer, TestStoringAndRetrievalMultipleEpisodes) {  // cppcheck
   compareExperiences(batch, results.begin() + n_experiences - 1, n_experiences);
 }
 
-TEST_P(TestReplayBuffer, TestStoringAndRetrieval) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestReplayBuffer, TestStoringAndRetrieval) {
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -111,7 +111,7 @@ TEST_P(TestReplayBuffer, TestStoringAndRetrieval) {  // cppcheck-suppress[syntax
   compareExperiences(batch, results.begin() + params.capacity, params.capacity);
 }
 
-TEST_P(TestReplayBuffer, TestSaveAndLoad) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestReplayBuffer, TestSaveAndLoad) {
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -143,7 +143,7 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
-TEST(TestReplayBuffer, TestReport) {  // cppcheck-suppress[syntaxError]
+TEST(TestReplayBuffer, TestReport) {
   // Arrange.
   auto params = ReplayBufferParameters(true, 2);
   auto buffer = ReplayBuffer(
@@ -178,7 +178,7 @@ TEST(TestReplayBuffer, TestReport) {  // cppcheck-suppress[syntaxError]
  * Implementation of the TestReplayBuffer2 test suite.
  */
 
-TEST_P(TestReplayBuffer2, TestGetPrioritized) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestReplayBuffer2, TestGetPrioritized) {
   // Arrange.
   auto params = GetParam();
   auto buffer = ReplayBuffer(
@@ -206,7 +206,7 @@ void TestReplayBuffer3::SetUp() {
   this->experiences = getExperiences(observations, n_experiences);
 }
 
-TEST_P(TestReplayBuffer3, TestSize) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestReplayBuffer3, TestSize) {
   // Act.
   for (auto experience : experiences) {
     buffer->append(experience);
@@ -216,7 +216,7 @@ TEST_P(TestReplayBuffer3, TestSize) {  // cppcheck-suppress[syntaxError]
   EXPECT_EQ(buffer->size(), experiences.size());
 }
 
-TEST_P(TestReplayBuffer3, TestClear) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestReplayBuffer3, TestClear) {
   // Act.
   for (auto experience : experiences) {
     buffer->append(experience);

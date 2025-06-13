@@ -33,7 +33,7 @@ void TestDataBuffer::SetUp() {
   this->observations = getObservations(n_observations, 1, 4);
 }
 
-TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, 2 * params.capacity - 1, params.capacity);
 
@@ -72,7 +72,7 @@ TEST_P(TestDataBuffer, TestStoringAndRetrievalMultipleEpisodes) {  // cppcheck-s
   }
 }
 
-TEST_P(TestDataBuffer, TestStoringAndRetrieval) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestDataBuffer, TestStoringAndRetrieval) {
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 
@@ -110,7 +110,7 @@ TEST_P(TestDataBuffer, TestStoringAndRetrieval) {  // cppcheck-suppress[syntaxEr
   }
 }
 
-TEST_P(TestDataBuffer, TestSaveAndLoad) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestDataBuffer, TestSaveAndLoad) {
   // Create the experiences at time t.
   auto experiences = getExperiences(observations, observations.size() - 1);
 

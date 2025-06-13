@@ -27,7 +27,7 @@ void TestPriorityTree::SetUp() {
   this->priority_tree = std::make_unique<PriorityTree>(capacity, initial_priority, n_children);
 }
 
-TEST_P(TestPriorityTree, TestSum) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree, TestSum) {
   // Act.
   for (auto element : params.elements) {
     priority_tree->append(element);
@@ -37,7 +37,7 @@ TEST_P(TestPriorityTree, TestSum) {  // cppcheck-suppress[syntaxError]
   EXPECT_EQ(priority_tree->sum(), params.result);
 }
 
-TEST_P(TestPriorityTree, TestClear) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree, TestClear) {
   // Act.
   for (auto element : params.elements) {
     priority_tree->append(element);
@@ -50,7 +50,7 @@ TEST_P(TestPriorityTree, TestClear) {  // cppcheck-suppress[syntaxError]
   EXPECT_EQ(priority_tree->sumTreeToStr(), "[[0.0, 0.0], [0.0]]");
 }
 
-TEST_P(TestPriorityTree, TestSaveAndLoad) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree, TestSaveAndLoad) {
   // Add all elements to the priority tree.
   for (auto element : params.elements) {
     priority_tree->append(element);
@@ -77,7 +77,7 @@ INSTANTIATE_TEST_SUITE_P(
     )
 );
 
-TEST_P(TestPriorityTree2, TestMax) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree2, TestMax) {
   // Arrange.
   auto params = GetParam();
   int capacity = 4;
@@ -108,7 +108,7 @@ PriorityTreeParameters4::PriorityTreeParameters4(
     int length_result
 ) : elements(elements), sum_result(sum_result), max_result(max_result), length_result(length_result) {}
 
-TEST_P(TestPriorityTree4, TestAppend) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree4, TestAppend) {
   // Arrange.
   auto params = GetParam();
   int capacity = 4;
@@ -147,7 +147,7 @@ PriorityTreeParameters5::PriorityTreeParameters5(
     elements(elements), set_indices(set_indices), set_values(set_values), sum_result(sum_result),
     max_result(max_result), length_result(length_result) {}
 
-TEST_P(TestPriorityTree5, TestSetItem) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree5, TestSetItem) {
   // Arrange.
   auto params = GetParam();
   int capacity = 4;
@@ -189,7 +189,7 @@ PriorityTreeParameters6::PriorityTreeParameters6(
     const std::initializer_list<float> &elements, const std::initializer_list<float> &results, int length_result
 ) : elements(elements), results(results), length_result(length_result) {}
 
-TEST_P(TestPriorityTree6, TestGetItem) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree6, TestGetItem) {
   // Arrange.
   auto params = GetParam();
   int capacity = 4;
@@ -224,7 +224,7 @@ INSTANTIATE_TEST_SUITE_P(
 PriorityTreeParameters7::PriorityTreeParameters7(int index, int n_children, int result) :
     index(index), n_children(n_children), result(result) {}
 
-TEST_P(TestPriorityTree7, TestParentIndex) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree7, TestParentIndex) {
   // Arrange.
   auto params = GetParam();
   int capacity = 100;
@@ -252,7 +252,7 @@ PriorityTreeParameters8::PriorityTreeParameters8(
   std::iota(this->indices.begin(), this->indices.end(), 0);
 }
 
-TEST_P(TestPriorityTree8, TestUpdateSumTree) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree8, TestUpdateSumTree) {
   // Arrange.
   auto params = GetParam();
   int capacity = 8;
@@ -286,7 +286,7 @@ PriorityTreeParameters9::PriorityTreeParameters9(
     int capacity, int n_children, const std::vector<float> &elements, float priority, float result
 ) : capacity(capacity), n_children(n_children), elements(elements), priority(priority), result(result) {}
 
-TEST(TestPriorityTree, TestSampleIndices) {  // cppcheck-suppress[syntaxError]
+TEST(TestPriorityTree, TestSampleIndices) {
   // Arrange.
   int capacity = 4;
   int initial_priority = 1.0;
@@ -311,7 +311,7 @@ TEST(TestPriorityTree, TestSampleIndices) {  // cppcheck-suppress[syntaxError]
   }
 }
 
-TEST_P(TestPriorityTree9, TestTowerSampling) {  // cppcheck-suppress[syntaxError]
+TEST_P(TestPriorityTree9, TestTowerSampling) {
   // Arrange.
   auto params = GetParam();
   int initial_priority = 1.0;
