@@ -11,8 +11,11 @@ from relab.agents.VariationalModel import (
 )
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
-from relab.helpers.Typing import Checkpoint, Config, AttributeNames
-from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss, gaussian_reparameterization
+from relab.helpers.Typing import AttributeNames, Checkpoint, Config
+from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss
+from relab.helpers.VariationalInference import (
+    gaussian_reparameterization,
+)
 from torch import Tensor
 
 
@@ -253,7 +256,10 @@ class HMM(VariationalModel):
         return fig
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
     ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
@@ -265,7 +271,9 @@ class HMM(VariationalModel):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
+            checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name, self.as_dict().keys()
+            )
 
             # Update the world model using the checkpoint.
             self.encoder = self.get_encoder_network()
@@ -301,7 +309,12 @@ class HMM(VariationalModel):
             "optimizer": self.optimizer.state_dict(),
         }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

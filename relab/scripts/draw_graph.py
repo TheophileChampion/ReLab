@@ -11,9 +11,9 @@ import pandas as pd
 import relab
 import seaborn as sns
 from pandas import DataFrame
-from relab.helpers.TensorBoard import TensorBoard
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.TensorBoard import TensorBoard
 
 
 def display_name(metric: str) -> str:
@@ -99,24 +99,32 @@ def draw_graph(
 
         # Get the path where the summary statistics should be stored.
         relab.initialize(agent, env, paths_only=True)
-        summary_statistics_path = join(os.environ["STATISTICS_DIRECTORY"], f"{metric}.tsv")
+        summary_statistics_path = join(
+            os.environ["STATISTICS_DIRECTORY"], f"{metric}.tsv"
+        )
 
         # Compute the summary statistics for the current agent.
         if exists(summary_statistics_path) and overwrite is False:
-            logging.info(f"Using already computed summary statistics from: {summary_statistics_path}.")
+            logging.info(
+                f"Using already computed summary statistics from: {summary_statistics_path}."
+            )
             summary_statistics[agent] = pd.read_csv(summary_statistics_path, sep="\t")
         else:
             logging.info(
                 f"Computing summary statistics from TensorBoard files in: {os.environ["TENSORBOARD_DIRECTORY"]}."
             )
-            summary_statistics[agent] = compute_summary_statistics(agent, env, seeds, metric, summary_statistics_path)
+            summary_statistics[agent] = compute_summary_statistics(
+                agent, env, seeds, metric, summary_statistics_path
+            )
 
         # Draw the mean as a solid curve, and the standard deviation as the shaded area.
         statistics = summary_statistics[agent]
         lower_bound = statistics["mean"] - statistics["std"]
         upper_bound = statistics["mean"] + statistics["std"]
         ax = sns.lineplot(statistics, x="step", y="mean", ax=ax)
-        plt.fill_between(statistics["step"], lower_bound.values, upper_bound.values, alpha=0.1)
+        plt.fill_between(
+            statistics["step"], lower_bound.values, upper_bound.values, alpha=0.1
+        )
 
     # Set the legend of the figure, and the axis labels with labels sorted in natural order.
     ax.set_title(env)
@@ -125,7 +133,9 @@ def draw_graph(
     ax.set_ylabel(display_name(metric))
 
     # Save the figure comparing the agents.
-    MatPlotLib.save_figure(figure_path=join(os.environ["GRAPH_DIRECTORY"], f"{metric}.pdf"))
+    MatPlotLib.save_figure(
+        figure_path=join(os.environ["GRAPH_DIRECTORY"], f"{metric}.pdf")
+    )
 
 
 def main():

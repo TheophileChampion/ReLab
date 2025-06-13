@@ -30,7 +30,14 @@ from relab.agents.networks.RainbowDeepQNetwork import (
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
-from relab.helpers.Typing import ActionType, Checkpoint, Loss, ObservationType, Config, AttributeNames
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    Loss,
+    ObservationType,
+)
 from torch import Tensor, nn
 from torch.nn import CrossEntropyLoss, HuberLoss, MSELoss, SmoothL1Loss
 
@@ -198,7 +205,16 @@ class DQN(AgentInterface):
         """
 
         # Call the parent constructor.
-        buffer = partial(self.get_replay_buffer, buffer_size, batch_size, replay_type, omega, omega_is, n_steps, gamma)
+        buffer = partial(
+            self.get_replay_buffer,
+            buffer_size,
+            batch_size,
+            replay_type,
+            omega,
+            omega_is,
+            n_steps,
+            gamma,
+        )
         super().__init__(get_buffer=buffer, n_actions=n_actions, training=training)
 
         # @var gamma
@@ -300,7 +316,9 @@ class DQN(AgentInterface):
         # @var optimizer
         # Adam optimizer for training the value network.
         self.optimizer = get_optimizer(
-            [self.value_net], self.learning_rate, self.adam_eps,
+            [self.value_net],
+            self.learning_rate,
+            self.adam_eps,
         )
 
     def get_loss(self, loss_type: LossType) -> Callable:
@@ -805,7 +823,10 @@ class DQN(AgentInterface):
         # @endcond
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
     ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
@@ -817,7 +838,9 @@ class DQN(AgentInterface):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
+            checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name, self.as_dict().keys()
+            )
 
             # Load the epsilon scheduler and update the loss function using the checkpoint.
             self.epsilon = PiecewiseLinearSchedule(self.epsilon_schedule)
@@ -873,7 +896,12 @@ class DQN(AgentInterface):
             "optimizer": self.optimizer.state_dict(),
         }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

@@ -3,23 +3,25 @@ from typing import Any
 from relab.agents.AgentInterface import AgentInterface
 from relab.agents.BetaHMM import BetaHMM
 from relab.agents.BetaVAE import BetaVAE
-from relab.agents.DQNs import CDQN
-from relab.agents.DQNs import DDQN
 from relab.agents.DQN import DQN
-from relab.agents.DQNs import DuelingDDQN
-from relab.agents.DQNs import DuelingDQN
+from relab.agents.DQNs import (
+    CDQN,
+    DDQN,
+    IQN,
+    MDQN,
+    QRDQN,
+    DuelingDDQN,
+    DuelingDQN,
+    NoisyCDQN,
+    NoisyDDQN,
+    NoisyDQN,
+    PrioritizedDDQN,
+    PrioritizedDQN,
+    PrioritizedMDQN,
+    RainbowDQN,
+    RainbowIQN,
+)
 from relab.agents.HMM import HMM
-from relab.agents.DQNs import IQN
-from relab.agents.DQNs import MDQN
-from relab.agents.DQNs import NoisyCDQN
-from relab.agents.DQNs import NoisyDDQN
-from relab.agents.DQNs import NoisyDQN
-from relab.agents.DQNs import PrioritizedDDQN
-from relab.agents.DQNs import PrioritizedDQN
-from relab.agents.DQNs import PrioritizedMDQN
-from relab.agents.DQNs import QRDQN
-from relab.agents.DQNs import RainbowDQN
-from relab.agents.DQNs import RainbowIQN
 from relab.agents.Random import Random
 from relab.agents.VAE import VAE
 

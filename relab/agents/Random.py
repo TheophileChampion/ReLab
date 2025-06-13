@@ -6,7 +6,13 @@ import numpy as np
 import relab
 from gymnasium import Env
 from relab.agents.AgentInterface import AgentInterface
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType, AttributeNames, Config
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    ObservationType,
+)
 
 
 class Random(AgentInterface):
@@ -77,7 +83,10 @@ class Random(AgentInterface):
         # @endcond
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
     ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
@@ -102,7 +111,12 @@ class Random(AgentInterface):
         """
         return {}
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
