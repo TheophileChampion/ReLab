@@ -1,4 +1,4 @@
-from typing import Any, Dict, SupportsFloat, Tuple, TypeVar, Union, List, KeysView
+from typing import Any, Dict, KeysView, List, SupportsFloat, Tuple, TypeVar, Union
 
 import numpy
 import torch

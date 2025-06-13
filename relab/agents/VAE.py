@@ -1,26 +1,31 @@
 import logging
-from typing import Any, Dict, Optional, Tuple
-import numpy as np
 import os
 import re
 from datetime import datetime
 from os.path import join
+from typing import Any, Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
-from relab.cpp.agents.memory import Experience
-
 from relab import relab
 from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import LikelihoodType, VariationalModel
+from relab.cpp.agents.memory import Experience
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
-from relab.helpers.Typing import Checkpoint, Config, AttributeNames, ObservationType, ActionType
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    ObservationType,
+)
+from relab.helpers.VariationalInference import gaussian_kl_divergence as gauss_kl
 from relab.helpers.VariationalInference import (
-    gaussian_kl_divergence as gauss_kl,
-    gaussian_reparameterization
+    gaussian_reparameterization,
 )
 from torch import Tensor
 
@@ -235,7 +240,9 @@ class VAE(VariationalModel):
         return vfe_loss, log_likelihood, kl_div_hs
         # @endcond
 
-    def draw_reconstructed_images(self, env: Env, model_index: int, grid_size: Tuple[int, int]) -> Figure:
+    def draw_reconstructed_images(
+        self, env: Env, model_index: int, grid_size: Tuple[int, int]
+    ) -> Figure:
         """!
         Draw the ground truth and reconstructed images.
         @param env: the gym environment
@@ -310,7 +317,10 @@ class VAE(VariationalModel):
         MatPlotLib.close()
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
     ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
@@ -322,7 +332,9 @@ class VAE(VariationalModel):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
+            checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name, self.as_dict().keys()
+            )
 
             # Update the world model using the checkpoint.
             self.encoder = self.get_encoder_network()
@@ -355,7 +367,12 @@ class VAE(VariationalModel):
             "optimizer": self.optimizer.state_dict(),
         }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent

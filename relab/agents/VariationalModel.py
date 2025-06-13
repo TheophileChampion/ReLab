@@ -20,7 +20,13 @@ from relab.agents.networks.TransitionNetwork import ContinuousTransitionNetwork
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
 from relab.helpers.MatPlotLib import MatPlotLib
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType, Config, AttributeNames
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    ObservationType,
+)
 from relab.helpers.VariationalInference import (
     bernoulli_log_likelihood,
     gaussian_log_likelihood,
@@ -83,7 +89,15 @@ class VariationalModel(AgentInterface):
         """
 
         # Call the parent constructor.
-        get_buffer = partial(self.get_replay_buffer, buffer_size, batch_size, replay_type, omega, omega_is, n_steps)
+        get_buffer = partial(
+            self.get_replay_buffer,
+            buffer_size,
+            batch_size,
+            replay_type,
+            omega,
+            omega_is,
+            n_steps,
+        )
         super().__init__(get_buffer=get_buffer, n_actions=n_actions, training=training)
 
         # @var likelihood_type
@@ -222,8 +236,7 @@ class VariationalModel(AgentInterface):
         """
         # @cond IGNORED_BY_DOXYGEN
         transition = ContinuousTransitionNetwork(
-            n_actions=self.n_actions,
-            n_continuous_vars=self.n_cont_vars
+            n_actions=self.n_actions, n_continuous_vars=self.n_cont_vars
         )
         transition.train(self.training)
         transition.to(self.device)
@@ -326,7 +339,10 @@ class VariationalModel(AgentInterface):
         return function(decoder_output)
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
     ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
@@ -363,11 +379,20 @@ class VariationalModel(AgentInterface):
             "n_cont_vars": self.n_cont_vars,
         }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
         @param agent_conf: a dictionary representing the agent's attributes to be saved (for internal use only)
         """
-        super().save(checkpoint_name, buffer_checkpoint_name, agent_conf | VariationalModel.as_dict(self))
+        super().save(
+            checkpoint_name,
+            buffer_checkpoint_name,
+            agent_conf | VariationalModel.as_dict(self),
+        )

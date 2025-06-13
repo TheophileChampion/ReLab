@@ -22,7 +22,13 @@ from PIL import Image
 from relab.agents.memory.ReplayBuffer import ReplayBuffer
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.Serialization import safe_load
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType, Config, AttributeNames
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    ObservationType,
+)
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -54,7 +60,12 @@ class AgentInterface(ABC):
     @brief The interface that all agents must implement.
     """
 
-    def __init__(self, get_buffer: Optional[Callable] = None, n_actions: int = 18, training: bool = True) -> None:
+    def __init__(
+        self,
+        get_buffer: Optional[Callable] = None,
+        n_actions: int = 18,
+        training: bool = True,
+    ) -> None:
         """!
         Create an agent.
         @param get_buffer: a function returning the replay buffer used to store the agent's experiences
@@ -169,7 +180,10 @@ class AgentInterface(ABC):
         ...
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
     ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
@@ -188,18 +202,29 @@ class AgentInterface(ABC):
         # Check if the checkpoint can be loaded.
         if checkpoint_path is None:
             logging.info("Could not load the agent from the file system.")
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "checkpoint.pt")
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), "checkpoint.pt"
+            )
 
         # Load the checkpoint from the file system.
         logging.info(f"Loading agent from: {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+        checkpoint = torch.load(
+            checkpoint_path, map_location=self.device, weights_only=False
+        )
 
         # Retrieve the full list of attribute names.
         attr_names = [] if attr_names is None else list(attr_names)
         attr_names = list(AgentInterface.as_dict(self).keys()) + attr_names
 
         # Load the class attributes from the checkpoint.
-        exclude_names = ["optimizer", "encoder", "decoder", "transition_net", "value_net", "target_net"]
+        exclude_names = [
+            "optimizer",
+            "encoder",
+            "decoder",
+            "transition_net",
+            "value_net",
+            "target_net",
+        ]
         for name in attr_names:
             if name not in exclude_names:
                 setattr(self, name, safe_load(checkpoint, name))
@@ -208,11 +233,10 @@ class AgentInterface(ABC):
         self.last_time = -1
 
         # Load the replay buffer from the checkpoint.
-        self.buffer = (
-            self.get_buffer()
-            if self.get_buffer is not None and self.training is True
-            else None
-        )
+        if self.get_buffer is not None and self.training is True:
+            self.buffer = self.get_buffer()
+        else:
+            self.buffer = None
         self.buffer.load(checkpoint_path, buffer_checkpoint_name)
         return checkpoint
 
@@ -239,7 +263,12 @@ class AgentInterface(ABC):
             "tensorboard_dir": self.tensorboard_dir,
         }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
