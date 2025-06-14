@@ -3,6 +3,7 @@
 import argparse
 import os
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from copy import deepcopy
 from functools import partial
 from typing import List
 
@@ -70,9 +71,8 @@ def run_experiment(
                 "seeds": seeds,
                 "metric": "mean_episodic_reward",
             },
-            dependencies=job_indices,
-        )  # TODO is there a bug with the dependencies upon restarting the script?
-        job_indices.clear()
+            dependencies=deepcopy(job_indices),
+        )
 
     # Wait for all job to terminate.
     job_runner.wait()

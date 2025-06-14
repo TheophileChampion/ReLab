@@ -13,6 +13,8 @@ from relab.scripts.draw_graph import draw_graph
 from relab.scripts.run_demo import run_demo
 from relab.scripts.run_training import run_training
 
+logger = logging.getLogger("runner")  # TODO
+
 
 class JobRunnerInterface(abc.ABC):
     """!
@@ -171,7 +173,7 @@ class LocalJobRunner(JobRunnerInterface):
         @param job_index: the index of the job to run
         """
         # @cond IGNORED_BY_DOXYGEN
-        logging.info(
+        logger.info(
             f"Submitting job[{job_index}], it will start when worker becomes available: {task}, {kwargs}"
         )
         future = self.pool.submit(task, **kwargs)
@@ -189,7 +191,7 @@ class LocalJobRunner(JobRunnerInterface):
         """
 
         # Lock the object to avoid simultaneous access to the class attributes.
-        logging.info(f"Job {job_index} just finished.")
+        logger.info(f"Job {job_index} just finished.")
         self.lock(job_index)
 
         # Remove the index of completed job from the list of jobs not done.
@@ -198,7 +200,9 @@ class LocalJobRunner(JobRunnerInterface):
         # Submit jobs whose dependencies are now satisfied.
         jobs_to_submit = {}
         for index, (task, kwargs, dependencies) in self.jobs_to_submit.items():
+            print("# ", index, " depends on ", dependencies)
             if self.satisfied(dependencies):
+                print("## dependencies satisfied")
                 jobs_to_submit[index] = (task, kwargs, dependencies)
         for index, (task, kwargs, dependencies) in jobs_to_submit.items():
             del self.jobs_to_submit[index]
@@ -253,7 +257,7 @@ class LocalJobRunner(JobRunnerInterface):
         """
 
         # Wait for all jobs to be submitted to the pool.
-        while len(self.jobs_to_submit):
+        while len(self.jobs_to_submit) != 0:
             time.sleep(0.1)
 
         # Wait for all running jobs to terminate.

@@ -93,9 +93,9 @@ def config(key: Optional[str] = None, value: Any = None) -> ConfigInfo:
     # The ReLab configuration.
     conf = {
         # Maximum number of training iterations
-        "max_n_steps": 550000,  # TODO 50000000,
+        "max_n_steps": 50000000,
         # Number of training iterations between two checkpoints
-        "checkpoint_frequency": 50000,  # TODO 500000,
+        "checkpoint_frequency": 500000,
         # Number of training iterations between two tensorboard logging
         "tensorboard_log_interval": 5000,
         # Number of frames per observation
