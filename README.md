@@ -1,4 +1,4 @@
-# ![ReLab Logo](./relab-logo.png)
+# ![ReLab](./relab-logo.png)
 
 ---
 
@@ -114,7 +114,7 @@ After running the above command, ReLab will generate a GIF of the agent's behavi
 ./data/demos/Pong-v5/DQN/0/demo_1000000.gif
 ```
 
-<img alt="PrioritizedDDQN playing the Atari game Pong." width="175" src="./assets/demo_prioritized_ddqn_pong.gif">
+<img alt="" width="175" src="./assets/demo_prioritized_ddqn_pong.gif">
 
 ### Comparing the Performance of Various Agents
 
@@ -134,7 +134,7 @@ poetry run draw_graph --agents DQN RainbowDQN --env ALE/Pong-v5 --seeds 0 1 2 3 
 
 When multiple seeds are provided, the graph will display a solid line representing the average metric, along with a shaded area indicating the metric's standard deviation.
 
-<img alt="Graph comparing the performance of several agents." src="./assets/mean_episodic_reward.png" width="500"/>
+<img alt="" src="./assets/mean_episodic_reward.png" width="500"/>
 
 For a deeper dive into advanced use cases of ReLab and additional examples, check out our [In-Depth Tutorial](./TUTORIAL.md).
 

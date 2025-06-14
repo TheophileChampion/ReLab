@@ -11,9 +11,9 @@ import pandas as pd
 import relab
 import seaborn as sns
 from pandas import DataFrame
-from relab.helpers import TensorBoard
 from relab.helpers.FileSystem import FileSystem
 from relab.helpers.MatPlotLib import MatPlotLib
+from relab.helpers.TensorBoard import TensorBoard
 
 
 def display_name(metric: str) -> str:
@@ -24,7 +24,7 @@ def display_name(metric: str) -> str:
     """
     return {
         "mean_time_elapsed_ms": "Time Per Training Iteration (ms)",
-        "mean_residential_memory_gb": "Memory Usage (GB)",
+        "mean_memory_gb": "Memory Usage (GB)",
         "mean_episodic_reward": "Reward",
         "mean_episode_length": "Episode Length",
     }[metric]
@@ -127,6 +127,7 @@ def draw_graph(
         )
 
     # Set the legend of the figure, and the axis labels with labels sorted in natural order.
+    ax.set_title(env)
     ax.legend(handles=ax.lines, labels=agents)
     ax.set_xlabel("Training Iterations")
     ax.set_ylabel(display_name(metric))

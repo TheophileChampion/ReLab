@@ -1,9 +1,6 @@
-import math
-from typing import List, Optional, Tuple
-
 import torch
 from torch import Tensor
-from torch.nn.functional import binary_cross_entropy_with_logits, gumbel_softmax
+from torch.nn.functional import binary_cross_entropy_with_logits
 
 
 def gaussian_kl_divergence(
@@ -35,45 +32,6 @@ def gaussian_kl_divergence(
     kl_div = log_var - log_var_hat + torch.exp(log_var_hat - log_var)
     kl_div += (mean - mean_hat) ** 2 / var
     return 0.5 * kl_div.sum(dim=1)
-
-
-def categorical_kl_divergence(
-    log_alpha_hat: Tensor, log_alpha: Tensor = None
-) -> Tensor:
-    """!
-    Compute the KL-divergence between two categorical distributions.
-    @param log_alpha_hat: log-probabilities of the first distribution
-    @param log_alpha: log-probabilities of the second distribution
-    @return the KL-divergence
-    """
-    if log_alpha is None:
-        n = log_alpha_hat.shape[0]
-        log_alpha = -torch.ones_like(log_alpha_hat) * math.log(n)
-    return torch.softmax(log_alpha_hat - log_alpha, dim=1).sum(dim=1)
-
-
-def sum_categorical_kl_divergences(
-    log_alpha_hats: List[Tensor], log_alphas: Optional[List[Tensor]] = None
-) -> Tensor:
-    """!
-    Compute the sum of the KL-divergences between two list of categorical distributions.
-    @param log_alpha_hats: log-probabilities of the first list of distributions
-    @param log_alphas: log-probabilities of the second list of distributions
-    @return the sum of KL-divergences
-    """
-
-    # Ensure validity of the parameters of the second list of distributions.
-    if log_alphas is None:
-        log_alphas = [None] * len(log_alpha_hats)
-
-    # Compute the sum of KL-divergences.
-    sum_kl_div = None
-    for log_alpha_hat, log_alpha in zip(log_alpha_hats, log_alphas):
-        if sum_kl_div is None:
-            sum_kl_div = categorical_kl_divergence(log_alpha_hat, log_alpha)
-        else:
-            sum_kl_div += categorical_kl_divergence(log_alpha_hat, log_alpha)
-    return sum_kl_div
 
 
 def gaussian_log_likelihood(obs: Tensor, mean: Tensor) -> Tensor:
@@ -110,50 +68,3 @@ def gaussian_reparameterization(mean: Tensor, log_var: Tensor) -> Tensor:
     """
     epsilon = torch.normal(torch.zeros_like(mean), torch.ones_like(log_var))
     return epsilon * torch.exp(0.5 * log_var) + mean
-
-
-def concrete_reparameterization(log_alpha: Tensor, tau: float) -> Tensor:
-    """!
-    Implement the reparameterization trick for a categorical distribution using the concrete distribution.
-    @param log_alpha: the log-probabilities of the categorical
-    @param tau: the temperature of the Gumbel-softmax
-    @return the sampled state
-    """
-    return gumbel_softmax(log_alpha, tau)
-
-
-def continuous_reparameterization(gaussian_params: Tuple[Tensor, Tensor]) -> Tensor:
-    """!
-    Implement the reparameterization trick for a continuous latent space.
-    @param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution
-    @return the sampled state
-    """
-    mean, log_var = gaussian_params
-    return gaussian_reparameterization(mean, log_var)
-
-
-def discrete_reparameterization(log_alphas: List[Tensor], tau: float) -> Tensor:
-    """!
-    Implement the reparameterization trick for a discrete latent space.
-    @param log_alphas: the log-probabilities of the categorical distributions
-    @param tau: the temperature of the Gumbel-softmax
-    @return the sampled state
-    """
-    states = [concrete_reparameterization(log_alpha, tau) for log_alpha in log_alphas]
-    return torch.cat(states)
-
-
-def mixed_reparameterization(
-    gaussian_params: Tuple[Tensor, Tensor], log_alphas: List[Tensor], tau: float
-) -> Tensor:
-    """!
-    Implement the reparameterization trick for a categorical distribution using the concrete distribution.
-    @param gaussian_params: the mean and logarithm of the variance of the Gaussian distribution
-    @param log_alphas: the log-probabilities of the categorical distributions
-    @param tau: the temperature of the Gumbel-softmax
-    @return the sampled state
-    """
-    mean, log_var = gaussian_params
-    states = [concrete_reparameterization(log_alpha, tau) for log_alpha in log_alphas]
-    states.append(gaussian_reparameterization(mean, log_var))
-    return torch.cat(states)

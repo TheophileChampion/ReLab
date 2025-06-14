@@ -1,4 +1,4 @@
-from typing import Any, Dict, SupportsFloat, Tuple, TypeVar, Union
+from typing import Any, Dict, KeysView, List, SupportsFloat, Tuple, TypeVar, Union
 
 import numpy
 import torch
@@ -10,6 +10,9 @@ Config = Dict[str, Any]
 # - the full configuration, or
 # - the value associated to a specific key.
 ConfigInfo = Union[Config, Any]
+
+# An alias representing a list of agent's attribute names.
+AttributeNames = Union[List[str], KeysView]
 
 # An alias representing a torch device.
 Device = Any

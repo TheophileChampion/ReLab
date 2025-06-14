@@ -253,7 +253,7 @@ class LocalJobRunner(JobRunnerInterface):
         """
 
         # Wait for all jobs to be submitted to the pool.
-        while len(self.jobs_to_submit):
+        while len(self.jobs_to_submit) != 0:
             time.sleep(0.1)
 
         # Wait for all running jobs to terminate.

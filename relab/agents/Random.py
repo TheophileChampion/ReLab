@@ -1,16 +1,18 @@
 import logging
 from datetime import datetime
-from os.path import join
-from typing import Tuple
+from typing import Optional
 
 import numpy as np
 import relab
-import torch
 from gymnasium import Env
 from relab.agents.AgentInterface import AgentInterface
-from relab.helpers.FileSystem import FileSystem
-from relab.helpers.Serialization import safe_load
-from relab.helpers.Typing import ActionType, Checkpoint, ObservationType
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    ObservationType,
+)
 
 
 class Random(AgentInterface):
@@ -18,19 +20,14 @@ class Random(AgentInterface):
     @brief Implements an agent taking random actions.
     """
 
-    def __init__(self, n_actions: int = 18, training: bool = True) -> None:
+    def __init__(self, n_actions: int = 18) -> None:
         """!
         Create an agent taking random actions.
         @param n_actions: the number of actions available to the agent
-        @param training: True if the agent is being training, False otherwise
         """
 
         # Call the parent constructor.
-        super().__init__(training=training)
-
-        # @var n_actions
-        # Number of possible actions available to the agent.
-        self.n_actions = n_actions
+        super().__init__(n_actions=n_actions, training=True)
 
     def step(self, obs: ObservationType) -> ActionType:
         """!
@@ -86,49 +83,44 @@ class Random(AgentInterface):
         # @endcond
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = ""
-    ) -> Tuple[str, Checkpoint]:
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
+    ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
         @param checkpoint_name: the name of the agent checkpoint to load
         @param buffer_checkpoint_name: the name of the replay buffer checkpoint to load (None for default name)
-        @return a tuple containing the checkpoint path and the checkpoint object
+        @param attr_names: a list of attribute names to load from the checkpoint (load all attributes by default)
+        @return the loaded checkpoint object
         """
-        # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint_path, checkpoint = super().load(
-                checkpoint_name, buffer_checkpoint_name
-            )
-
-            # Load the class attributes from the checkpoint.
-            self.n_actions = safe_load(checkpoint, "n_actions")
-            return checkpoint_path, checkpoint
+            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name)
+            return checkpoint
 
         # Catch the exception raise if the checkpoint could not be located.
         except FileNotFoundError:
-            return "", None
-        # @endcond
+            return None
 
     def as_dict(self):
         """!
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
-        return {"n_actions": self.n_actions} | super().as_dict()
+        return super().as_dict()
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "") -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
         @param buffer_checkpoint_name: the name of the checkpoint to save the replay buffer (None for default name)
+        @param agent_conf: a dictionary representing the agent's attributes to be saved (for internal use only)
         """
-        # @cond IGNORED_BY_DOXYGEN
-        # Create the checkpoint directory and file, if they do not exist.
-        checkpoint_path = join(self.checkpoint_dir, checkpoint_name)
-        FileSystem.create_directory_and_file(checkpoint_path)
-
-        # Save the model.
-        logging.info(f"Saving agent to the following file: {checkpoint_path}")
-        torch.save(self.as_dict(), checkpoint_path)
-        # @endcond
+        super().save(checkpoint_name, buffer_checkpoint_name, self.as_dict())
