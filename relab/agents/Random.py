@@ -109,7 +109,7 @@ class Random(AgentInterface):
         Convert the agent into a dictionary that can be saved on the filesystem.
         @return the dictionary
         """
-        return {}
+        return super().as_dict()
 
     def save(
         self,

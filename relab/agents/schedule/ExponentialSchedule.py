@@ -33,5 +33,6 @@ class ExponentialSchedule:
         @param current_step: the step for which the scheduled value must be computed
         @return the current scheduled value
         """
-        return self.minimum_value + (self.maximum_value - self.minimum_value) * \
-            math.exp(-1. * current_step / self.decay)
+        return self.minimum_value + (
+            self.maximum_value - self.minimum_value
+        ) * math.exp(-1.0 * current_step / self.decay)
