@@ -3,6 +3,7 @@ from typing import Any
 from relab.agents.AgentInterface import AgentInterface
 from relab.agents.BetaHMM import BetaHMM
 from relab.agents.BetaVAE import BetaVAE
+from relab.agents.CHMM import CHMM
 from relab.agents.DQN import DQN
 from relab.agents.DQNs import (
     CDQN,
@@ -57,6 +58,7 @@ def make(agent_name: str, **kwargs: Any) -> AgentInterface:
         "VAE": VAE,
         "BetaHMM": BetaHMM,
         "HMM": HMM,
+        "CHMM": CHMM,
     }
 
     # Check if the agent is supported, raise an error if it isn't.

@@ -166,19 +166,6 @@ class VariationalModel(AgentInterface):
         ...
 
     @abc.abstractmethod
-    def vfe(
-        self, obs: Tensor, actions: Tensor, next_obs: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        """!
-        Compute the variational free energy for a continuous latent space.
-        @param obs: the observations at time t
-        @param actions: the actions at time t
-        @param next_obs: the observations at time t + 1
-        @return a tuple containing the variational free energy, log-likelihood and KL-divergence
-        """
-        ...
-
-    @abc.abstractmethod
     def draw_reconstructed_images(
         self, env: Env, model_index: int, grid_size: Tuple[int, int]
     ) -> Figure:
@@ -207,7 +194,7 @@ class VariationalModel(AgentInterface):
 
     def get_encoder_network(self) -> nn.Module:
         """!
-        Retrieve the encoder network requested as parameters.
+        Retrieve the encoder network.
         @return the encoder network
         """
         # @cond IGNORED_BY_DOXYGEN
@@ -219,7 +206,7 @@ class VariationalModel(AgentInterface):
 
     def get_decoder_network(self) -> nn.Module:
         """!
-        Retrieve the decoder network requested as parameters.
+        Retrieve the decoder network.
         @return the decoder network
         """
         # @cond IGNORED_BY_DOXYGEN
@@ -231,7 +218,7 @@ class VariationalModel(AgentInterface):
 
     def get_transition_network(self) -> nn.Module:
         """!
-        Retrieve the transition network requested as parameters.
+        Retrieve the transition network.
         @return the transition network
         """
         # @cond IGNORED_BY_DOXYGEN
@@ -356,6 +343,9 @@ class VariationalModel(AgentInterface):
         attr_names = [] if attr_names is None else list(attr_names)
         attr_names += list(VariationalModel.as_dict(self).keys())
         checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, attr_names)
+
+        # Ensure the beta parameter follows the loaded beta schedule.
+        self.beta = PiecewiseLinearSchedule(self.beta_schedule)
         return checkpoint
 
     def as_dict(self) -> Config:
