@@ -10,8 +10,8 @@ class LinearCriticNetwork(nn.Module):
         self,
         n_actions: int = 18,
         n_continuous_vars: int = 10,
-        n_latents : int = 512,
-        n_layers : int = 4
+        n_latents: int = 512,
+        n_layers: int = 4,
     ) -> None:
         """!
         Constructor.

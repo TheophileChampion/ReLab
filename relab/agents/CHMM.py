@@ -1,23 +1,33 @@
+import random
 from copy import deepcopy
 from typing import Any, Dict, Optional, Tuple
-import random
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
 from relab.agents.AgentInterface import ReplayType
+from relab.agents.networks.CriticNetwork import LinearCriticNetwork
+from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
 from relab.agents.VariationalModel import (
     LikelihoodType,
     VariationalModel,
 )
-from relab.agents.networks.CriticNetwork import LinearCriticNetwork
-from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_adam_optimizer, safe_load_state_dict
-from relab.helpers.Typing import Checkpoint, Config, AttributeNames, ActionType, ObservationType
-from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss, gaussian_reparameterization
-from torch import Tensor, unsqueeze, nn
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    ObservationType,
+)
+from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss
+from relab.helpers.VariationalInference import (
+    gaussian_reparameterization,
+)
+from torch import Tensor, nn, unsqueeze
 
 
 class CHMM(VariationalModel):
@@ -61,7 +71,7 @@ class CHMM(VariationalModel):
         gamma: float = 0.99,
         reward_only: bool = True,
         n_steps_between_synchro: int = 10000,
-        reward_coefficient: int = 500
+        reward_coefficient: int = 500,
     ) -> None:
         """!
         Create a Critical Hidden Markov Model agent taking actions based on the
@@ -108,7 +118,9 @@ class CHMM(VariationalModel):
 
         # @var epsilon_schedule
         # Schedule for the epsilon threshold used by the epsilon greedy algorithm.
-        self.epsilon_schedule = (1.0, 0.0, 1e5) if epsilon_schedule is None else epsilon_schedule
+        self.epsilon_schedule = (
+            (1.0, 0.0, 1e5) if epsilon_schedule is None else epsilon_schedule
+        )
 
         # @var epsilon_threshold
         # Scheduler for the epsilon threshold used by the epsilon greedy algorithm.
@@ -174,8 +186,7 @@ class CHMM(VariationalModel):
         """
         # @cond IGNORED_BY_DOXYGEN
         critic = LinearCriticNetwork(
-            n_actions=self.n_actions,
-            n_continuous_vars=self.n_cont_vars
+            n_actions=self.n_actions, n_continuous_vars=self.n_cont_vars
         )
         critic.train(self.training)
         critic.to(self.device)
@@ -291,7 +302,12 @@ class CHMM(VariationalModel):
         return vfe_loss, log_likelihood, kl_div_hs
 
     def efe_loss(
-        self, obs: Tensor, actions: Tensor, rewards: Tensor, dones: Tensor, next_obs: Tensor
+        self,
+        obs: Tensor,
+        actions: Tensor,
+        rewards: Tensor,
+        dones: Tensor,
+        next_obs: Tensor,
     ) -> Tensor:
         """!
         Compute the critic's loss function.
@@ -311,13 +327,16 @@ class CHMM(VariationalModel):
 
         # Compute the G-values of each action in the current state.
         critic_pred = self.critic(mean_hat)
-        critic_pred = critic_pred.gather(dim=1, index=unsqueeze(actions.to(torch.int64), dim=1))
+        critic_pred = critic_pred.gather(
+            dim=1, index=unsqueeze(actions.to(torch.int64), dim=1)
+        )
 
         # For each batch entry where the simulation did not stop,
         # compute the value of the next states.
         future_gval = torch.zeros(self.batch_size, device=self.device)
-        future_gval[torch.logical_not(dones)] = \
-            self.target(next_mean_hat[torch.logical_not(dones)]).max(1)[0]
+        future_gval[torch.logical_not(dones)] = self.target(
+            next_mean_hat[torch.logical_not(dones)]
+        ).max(1)[0]
 
         # Compute the discounted G values.
         immediate_gval = self.reward_coefficient * rewards
@@ -409,7 +428,10 @@ class CHMM(VariationalModel):
         return fig
 
     def load(
-        self, checkpoint_name: str = "", buffer_checkpoint_name: str = "", attr_names: Optional[AttributeNames] = None
+        self,
+        checkpoint_name: str = "",
+        buffer_checkpoint_name: str = "",
+        attr_names: Optional[AttributeNames] = None,
     ) -> Checkpoint:
         """!
         Load an agent from the filesystem.
@@ -421,7 +443,9 @@ class CHMM(VariationalModel):
         # @cond IGNORED_BY_DOXYGEN
         try:
             # Call the parent load function.
-            checkpoint = super().load(checkpoint_name, buffer_checkpoint_name, self.as_dict().keys())
+            checkpoint = super().load(
+                checkpoint_name, buffer_checkpoint_name, self.as_dict().keys()
+            )
 
             # Ensure the epsilon threshold follows the loaded schedule.
             self.epsilon_threshold = ExponentialSchedule(self.epsilon_schedule)
@@ -450,7 +474,7 @@ class CHMM(VariationalModel):
                 self.learning_rate,
                 self.adam_eps,
                 checkpoint,
-                "optimizer_efe"
+                "optimizer_efe",
             )
             return checkpoint
 
@@ -479,7 +503,12 @@ class CHMM(VariationalModel):
             "reward_coefficient": self.reward_coefficient,
         }
 
-    def save(self, checkpoint_name: str, buffer_checkpoint_name: str = "", agent_conf: Optional[Config] = None) -> None:
+    def save(
+        self,
+        checkpoint_name: str,
+        buffer_checkpoint_name: str = "",
+        agent_conf: Optional[Config] = None,
+    ) -> None:
         """!
         Save the agent on the filesystem.
         @param checkpoint_name: the name of the checkpoint in which to save the agent
