@@ -83,7 +83,7 @@ class SpritesEnv(Env):
     metadata = {"render_modes": ["rgb_array"], "render_fps": 30}
 
     def __init__(
-        self, max_episode_length: int = 1000, difficulty: str = "hard", **kwargs: Any
+        self, max_episode_length: int = 100, difficulty: str = "hard", **kwargs: Any
     ) -> None:
         """!
         Constructor (compatible with OpenAI gym environment)

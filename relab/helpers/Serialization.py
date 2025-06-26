@@ -33,11 +33,12 @@ def safe_load_state_dict(obj: Any, checkpoint: Checkpoint, key: str) -> None:
     obj.load_state_dict(checkpoint[key])
 
 
-def get_optimizer(
+def get_adam_optimizer(
     modules: List[Module],
     learning_rate: float,
     adam_eps: float,
     checkpoint: Checkpoint = None,
+    key: str = "optimizer",
 ) -> Optimizer:
     """!
     Create an Adam optimizer and try to load its internal states from the checkpoint.
@@ -45,6 +46,7 @@ def get_optimizer(
     @param learning_rate: the learning rate
     @param adam_eps: the epsilon parameter of the Adam optimizer
     @param checkpoint: the checkpoint (None if the optimizer must only be created but not loaded)
+    @param key: the checkpoint key where the optimizer states are stored
     @return the loaded Adam optimizer
     """
 
@@ -55,5 +57,32 @@ def get_optimizer(
 
     # Create the optimizer and load its internal states.
     optimizer = optim.Adam(params, lr=learning_rate, eps=adam_eps)
-    safe_load_state_dict(optimizer, checkpoint, "optimizer")
+    safe_load_state_dict(optimizer, checkpoint, key)
+    return optimizer
+
+
+def get_sgd_optimizer(
+    modules: List[Module],
+    learning_rate: float,
+    checkpoint: Checkpoint = None,
+    key: str = "optimizer",
+) -> Optimizer:
+    """!
+    Create a Stochastic Gradient descent optimizer and try to load its internal states
+    from the checkpoint.
+    @param modules: the modules whose parameters must be optimized
+    @param learning_rate: the learning rate
+    @param checkpoint: the checkpoint (None if the optimizer must only be created but not loaded)
+    @param key: the checkpoint key where the optimizer states are stored
+    @return the loaded Adam optimizer
+    """
+
+    # Collect the parameters.
+    params = []
+    for module in modules:
+        params += list(module.parameters())
+
+    # Create the optimizer and load its internal states.
+    optimizer = optim.SGD(params, lr=learning_rate)
+    safe_load_state_dict(optimizer, checkpoint, key)
     return optimizer

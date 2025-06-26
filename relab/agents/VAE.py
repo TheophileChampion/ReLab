@@ -15,7 +15,7 @@ from relab.agents.AgentInterface import ReplayType
 from relab.agents.VariationalModel import LikelihoodType, VariationalModel
 from relab.cpp.agents.memory import Experience
 from relab.helpers.MatPlotLib import MatPlotLib
-from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
+from relab.helpers.Serialization import get_adam_optimizer, safe_load_state_dict
 from relab.helpers.Typing import (
     ActionType,
     AttributeNames,
@@ -114,7 +114,7 @@ class VAE(VariationalModel):
 
         # @var optimizer
         # Adam optimizer for training both the encoder and decoder networks.
-        self.optimizer = get_optimizer(
+        self.optimizer = get_adam_optimizer(
             [self.encoder, self.decoder], self.learning_rate, self.adam_eps
         )
 
@@ -343,7 +343,7 @@ class VAE(VariationalModel):
             safe_load_state_dict(self.decoder, checkpoint, "decoder")
 
             # Update the optimizer.
-            self.optimizer = get_optimizer(
+            self.optimizer = get_adam_optimizer(
                 [self.encoder, self.decoder],
                 self.learning_rate,
                 self.adam_eps,

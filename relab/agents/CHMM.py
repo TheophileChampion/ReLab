@@ -1,41 +1,54 @@
+import random
+from copy import deepcopy
 from typing import Any, Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from gymnasium import Env
 from matplotlib.figure import Figure
 from relab.agents.AgentInterface import ReplayType
+from relab.agents.networks.CriticNetwork import LinearCriticNetwork
+from relab.agents.schedule.ExponentialSchedule import ExponentialSchedule
 from relab.agents.VariationalModel import (
     LikelihoodType,
     VariationalModel,
 )
 from relab.helpers.MatPlotLib import MatPlotLib
 from relab.helpers.Serialization import get_adam_optimizer, safe_load_state_dict
-from relab.helpers.Typing import AttributeNames, Checkpoint, Config
+from relab.helpers.Typing import (
+    ActionType,
+    AttributeNames,
+    Checkpoint,
+    Config,
+    ObservationType,
+)
 from relab.helpers.VariationalInference import gaussian_kl_divergence as kl_gauss
 from relab.helpers.VariationalInference import (
     gaussian_reparameterization,
 )
-from torch import Tensor
+from torch import Tensor, nn, unsqueeze
 
 
-class HMM(VariationalModel):
+class CHMM(VariationalModel):
     """!
-    @brief Implements a Hidden Markov Model.
+    @brief Implements a Critical Hidden Markov Model.
 
     @details
-    This implementation extends upon the paper:
+    This implementation is based on the paper:
 
-    <b>Auto-Encoding Variational Bayes</b>,
-    published in ICLR, 2014.
+    <b>Deconstructing Deep Active Inference: A Contrarian Information Gatherer</b>,
+    published in Neural Computation, 2024.
 
     Authors:
-    - Kingma D.
-    - Welling M.
+    - Champion T.
+    - Grześ M.
+    - Bonheme L.
+    - Bowman H.
 
-    More precisely, the HMM extends the VAE framework to sequential data
-    by modeling temporal dependencies using a transition network.
-    Note, this agent takes random actions.
+    More precisely, the CHMM extends the HMM framework by introducing a critic
+    network for action selection. Note, this agent takes actions based on the
+    expected reward or expected free energy.
     """
 
     def __init__(
@@ -54,9 +67,15 @@ class HMM(VariationalModel):
         n_steps: int = 1,
         omega: float = 1.0,
         omega_is: float = 1.0,
+        epsilon_schedule: Any = None,
+        gamma: float = 0.99,
+        reward_only: bool = True,
+        n_steps_between_synchro: int = 10000,
+        reward_coefficient: int = 500,
     ) -> None:
         """!
-        Create a Hidden Markov Model agent taking random actions.
+        Create a Critical Hidden Markov Model agent taking actions based on the
+        expected reward or expected free energy.
         @param learning_starts: the step at which learning starts
         @param n_actions: the number of actions available to the agent
         @param training: True if the agent is being trained, False otherwise
@@ -71,6 +90,12 @@ class HMM(VariationalModel):
         @param n_steps: the number of steps for which rewards are accumulated in multistep Q-learning
         @param omega: the prioritization exponent
         @param omega_is: the important sampling exponent
+        @param epsilon_schedule: the exponential schedule used by the epsilon greedy algorithm
+        @param gamma: the discount factor from reinforcement learning
+        @param reward_only: whether the agent must maximize reward only or expected free energy
+        @param n_steps_between_synchro: the number of steps between two synchronisations
+            of the target and the critic
+        @param reward_coefficient: the coefficient by which the reward is multiplied
         """
 
         # Call the parent constructor.
@@ -91,6 +116,32 @@ class HMM(VariationalModel):
             beta_schedule=beta_schedule,
         )
 
+        # @var epsilon_schedule
+        # Schedule for the epsilon threshold used by the epsilon greedy algorithm.
+        self.epsilon_schedule = (
+            (1.0, 0.0, 1e5) if epsilon_schedule is None else epsilon_schedule
+        )
+
+        # @var epsilon_threshold
+        # Scheduler for the epsilon threshold used by the epsilon greedy algorithm.
+        self.epsilon_threshold = ExponentialSchedule(self.epsilon_schedule)
+
+        # @var gamma
+        # Discount factor from reinforcement learning.
+        self.gamma = gamma
+
+        # @var reward_only
+        # Whether the agent must maximize reward only or expected free energy.
+        self.reward_only = reward_only
+
+        # @var n_steps_between_synchro
+        # The number of steps between two synchronisations of the target and the critic.
+        self.n_steps_between_synchro = n_steps_between_synchro
+
+        # @var reward_coefficient
+        # The coefficient by which the reward is multiplied in the critic loss.
+        self.reward_coefficient = reward_coefficient
+
         # @var encoder
         # Neural network that encodes observations into latent states.
         self.encoder = self.get_encoder_network()
@@ -103,6 +154,15 @@ class HMM(VariationalModel):
         # Neural network that models the transition dynamics in latent space.
         self.transition_net = self.get_transition_network()
 
+        # @var critic
+        # Neural network that predict the expected reward or expected free energy.
+        self.critic = self.get_critic_network()
+
+        # @var target
+        # Neural network that predict the expected reward or expected free energy.
+        self.target = deepcopy(self.critic)
+        self.target.eval()
+
         # @var optimizer
         # Adam optimizer for training the encoder, decoder, and transition networks.
         self.optimizer = get_adam_optimizer(
@@ -111,6 +171,46 @@ class HMM(VariationalModel):
             self.adam_eps,
         )
 
+        # @var optimizer_efe
+        # Adam optimizer for training the critic network.
+        self.optimizer_efe = get_adam_optimizer(
+            [self.encoder, self.critic],
+            self.learning_rate,
+            self.adam_eps,
+        )
+
+    def get_critic_network(self):
+        """!
+        Retrieve the critic network.
+        @return the critic network
+        """
+        # @cond IGNORED_BY_DOXYGEN
+        critic = LinearCriticNetwork(
+            n_actions=self.n_actions, n_continuous_vars=self.n_cont_vars
+        )
+        critic.train(self.training)
+        critic.to(self.device)
+        return critic
+        # @endcond
+
+    def step(self, obs: ObservationType) -> ActionType:
+        """!
+        Select the next action to perform in the environment.
+        @param obs: the observation available to make the decision
+        @return the next action to perform
+        """
+
+        # Extract the current state quality from the current observation.
+        obs = torch.unsqueeze(obs, dim=0)
+        state, _ = self.encoder(obs)
+        quality = self.critic(state)
+
+        # Sample a number between 0 and 1, and either execute a random action or
+        # the reward maximizing action according to the sampled value.
+        if random.random() > self.epsilon_threshold(self.current_step):
+            return quality.max(1)[1].item()
+        return np.random.choice(quality.shape[1])
+
     def learn(self) -> Optional[Dict[str, Any]]:
         """!
         Perform one step of gradient descent on the world model.
@@ -118,21 +218,25 @@ class HMM(VariationalModel):
         """
         # @cond IGNORED_BY_DOXYGEN
 
-        # Sample the replay buffer.
-        obs, actions, _, _, next_obs = self.buffer.sample()
+        # Synchronize the target with the critic (if needed).
+        if self.current_step % self.n_steps_between_synchro == 0:
+            self.synchronize_target()
 
-        # Compute the model loss.
-        loss, log_likelihood, kl_div = self.vfe(obs, actions, next_obs)
+        # Sample the replay buffer.
+        obs, actions, rewards, dones, next_obs = self.buffer.sample()
+
+        # Compute the variational free energy.
+        vfe, log_likelihood, kl_div = self.vfe(obs, actions, next_obs)
 
         # Report the loss obtained for each sampled transition for potential
         # prioritization.
-        loss = self.buffer.report(loss)
-        loss = loss.mean()
+        vfe = self.buffer.report(vfe)
 
         # Perform one step of gradient descent on the encoder, decoder, and transition
         # networks with gradient clipping.
         self.optimizer.zero_grad()
-        loss.backward()
+        vfe = vfe.mean()
+        vfe.backward()
         for param in self.encoder.parameters():
             param.grad.data.clamp_(-1, 1)
         for param in self.decoder.parameters():
@@ -140,23 +244,44 @@ class HMM(VariationalModel):
         for param in self.transition_net.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
+
+        # Compute the expected free energy loss.
+        efe_loss = self.efe_loss(obs, actions, rewards, dones, next_obs)
+
+        # Perform one step of gradient descent on the encoder and critic
+        # networks with gradient clipping on the critic.
+        self.optimizer_efe.zero_grad()
+        efe_loss = efe_loss.mean()
+        efe_loss.backward()
+        for param in self.critic.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer_efe.step()
+
         return {
-            "vfe": loss,
+            "vfe": vfe.mean(),
             "beta": self.beta(self.current_step),
             "log_likelihood": log_likelihood.mean(),
             "kl_divergence": kl_div.mean(),
+            "efe_loss": efe_loss.mean(),
         }
         # @endcond
+
+    def synchronize_target(self):
+        """
+        Synchronize the target with the critic.
+        """
+        self.target = deepcopy(self.critic)
+        self.target.eval()
 
     def vfe(
         self, obs: Tensor, actions: Tensor, next_obs: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """!
-        Compute the variational free energy for a continuous (Gaussian) latent space.
+        Compute the variational free energy of the Critical HMM.
         @param obs: the observations at time t
         @param actions: the actions at time t
         @param next_obs: the observations at time t + 1
-        @return the variational free energy
+        @return a triple containing the (variational free energy, log-likelihood, kl-divergence)
         """
 
         # Compute required vectors.
@@ -175,6 +300,54 @@ class HMM(VariationalModel):
         log_likelihood += self.likelihood_loss(next_obs, next_reconstructed_obs)
         vfe_loss = self.beta(self.current_step) * kl_div_hs - log_likelihood
         return vfe_loss, log_likelihood, kl_div_hs
+
+    def efe_loss(
+        self,
+        obs: Tensor,
+        actions: Tensor,
+        rewards: Tensor,
+        dones: Tensor,
+        next_obs: Tensor,
+    ) -> Tensor:
+        """!
+        Compute the critic's loss function.
+        @param obs: the observations at time t
+        @param actions: the actions at time t
+        @param rewards: the rewards received
+        @param dones: whether the environment stop after performing the actions
+        @param next_obs: the observations at time t + 1
+        @return the loss function
+        """
+
+        # Compute required vectors.
+        mean_hat, log_var_hat = self.encoder(obs)
+        states = gaussian_reparameterization(mean_hat, log_var_hat)
+        next_mean_hat, next_log_var_hat = self.encoder(next_obs)
+        mean, log_var = self.transition_net(states, actions)
+
+        # Compute the G-values of each action in the current state.
+        critic_pred = self.critic(mean_hat)
+        critic_pred = critic_pred.gather(
+            dim=1, index=unsqueeze(actions.to(torch.int64), dim=1)
+        )
+
+        # For each batch entry where the simulation did not stop,
+        # compute the value of the next states.
+        future_gval = torch.zeros(self.batch_size, device=self.device)
+        future_gval[torch.logical_not(dones)] = self.target(
+            next_mean_hat[torch.logical_not(dones)]
+        ).max(1)[0]
+
+        # Compute the discounted G values.
+        immediate_gval = self.reward_coefficient * rewards
+        if self.reward_only is False:
+            immediate_gval += kl_gauss(next_mean_hat, next_log_var_hat, mean, log_var)
+        gval = immediate_gval.to(torch.float32) + self.gamma * future_gval
+
+        # Compute the expected free energy loss.
+        loss = nn.SmoothL1Loss()
+        efe_loss = loss(critic_pred, gval.detach().unsqueeze(dim=1))
+        return efe_loss
 
     def draw_reconstructed_images(
         self, env: Env, model_index: int, grid_size: Tuple[int, int]
@@ -209,7 +382,7 @@ class HMM(VariationalModel):
 
             # Retrieve the initial ground truth and reconstructed images.
             obs, _ = env.reset()
-            obs = torch.unsqueeze(obs, dim=0).to(self.device)
+            obs = obs.to(self.device)
             mean, log_var = self.encoder(obs)
             states = gaussian_reparameterization(mean, log_var)
             reconstructed_obs = self.reconstructed_image_from(self.decoder(states))
@@ -231,7 +404,7 @@ class HMM(VariationalModel):
                 # next ground truth observation.
                 action = self.step(obs)
                 obs, _, terminated, truncated, _ = env.step(action)
-                obs = torch.unsqueeze(obs, dim=0)
+                obs = obs.to(self.device)
                 done = terminated or truncated
                 action = torch.tensor([action]).to(self.device)
 
@@ -274,6 +447,9 @@ class HMM(VariationalModel):
                 checkpoint_name, buffer_checkpoint_name, self.as_dict().keys()
             )
 
+            # Ensure the epsilon threshold follows the loaded schedule.
+            self.epsilon_threshold = ExponentialSchedule(self.epsilon_schedule)
+
             # Update the world model using the checkpoint.
             self.encoder = self.get_encoder_network()
             safe_load_state_dict(self.encoder, checkpoint, "encoder")
@@ -281,13 +457,24 @@ class HMM(VariationalModel):
             safe_load_state_dict(self.decoder, checkpoint, "decoder")
             self.transition_net = self.get_transition_network()
             safe_load_state_dict(self.transition_net, checkpoint, "transition_net")
+            self.critic = self.get_critic_network()
+            safe_load_state_dict(self.critic, checkpoint, "critic")
+            self.target = deepcopy(self.critic)
+            safe_load_state_dict(self.target, checkpoint, "target")
 
-            # Update the optimizer.
+            # Update the optimizers.
             self.optimizer = get_adam_optimizer(
                 [self.encoder, self.decoder, self.transition_net],
                 self.learning_rate,
                 self.adam_eps,
                 checkpoint,
+            )
+            self.optimizer_efe = get_adam_optimizer(
+                [self.encoder, self.critic],
+                self.learning_rate,
+                self.adam_eps,
+                checkpoint,
+                "optimizer_efe",
             )
             return checkpoint
 
@@ -305,7 +492,15 @@ class HMM(VariationalModel):
             "encoder": self.encoder.state_dict(),
             "decoder": self.decoder.state_dict(),
             "transition_net": self.transition_net.state_dict(),
+            "critic": self.critic.state_dict(),
+            "target": self.target.state_dict(),
             "optimizer": self.optimizer.state_dict(),
+            "optimizer_efe": self.optimizer_efe.state_dict(),
+            "gamma": self.gamma,
+            "reward_only": self.reward_only,
+            "epsilon_schedule": self.epsilon_schedule,
+            "n_steps_between_synchro": self.n_steps_between_synchro,
+            "reward_coefficient": self.reward_coefficient,
         }
 
     def save(

@@ -109,6 +109,10 @@ class AgentInterface(ABC):
         # Queue containing the last KL-divergence values.
         self.kl_divergences = deque(maxlen=self.max_queue_len)
 
+        # @var efe_losses
+        # Queue containing the last EFE loss values.
+        self.efe_losses = deque(maxlen=self.max_queue_len)
+
         # @var process
         # Object representing the current process, used to track memory usage.
         self.process = psutil.Process()
@@ -214,7 +218,7 @@ class AgentInterface(ABC):
 
         # Retrieve the full list of attribute names.
         attr_names = [] if attr_names is None else list(attr_names)
-        attr_names = list(AgentInterface.as_dict(self).keys()) + attr_names
+        attr_names += list(AgentInterface.as_dict(self).keys())
 
         # Load the class attributes from the checkpoint.
         exclude_names = [
@@ -255,6 +259,7 @@ class AgentInterface(ABC):
             "betas": self.betas,
             "log_likelihoods": self.log_likelihoods,
             "kl_divergences": self.kl_divergences,
+            "efe_losses": self.efe_losses,
             "residential_mem": self.residential_mem,
             "episodic_rewards": self.episodic_rewards,
             "time_elapsed": self.time_elapsed,
@@ -357,6 +362,8 @@ class AgentInterface(ABC):
             self.betas.append(model_losses["beta"])
             self.log_likelihoods.append(model_losses["log_likelihood"].item())
             self.kl_divergences.append(model_losses["kl_divergence"].item())
+            if "efe_loss" in model_losses.keys():
+                self.efe_losses.append(model_losses["efe_loss"].item())
 
         # Keep track of the current episodic reward and episode length.
         if done:
@@ -393,6 +400,10 @@ class AgentInterface(ABC):
             self.log_mean_metric("beta", self.betas)
             self.log_mean_metric("log_likelihood", self.log_likelihoods)
             self.log_mean_metric("kl_divergence", self.kl_divergences)
+
+        # Log the expected free energy loss, if needed.
+        if len(self.efe_losses) >= 2:
+            self.log_mean_metric("efe_loss", self.efe_losses)
 
     def log_mean_metric(self, name: str, values: deque, scale: float = 1) -> None:
         """!

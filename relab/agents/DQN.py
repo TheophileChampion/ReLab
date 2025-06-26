@@ -29,7 +29,7 @@ from relab.agents.networks.RainbowDeepQNetwork import (
 )
 from relab.agents.schedule.PiecewiseLinearSchedule import PiecewiseLinearSchedule
 from relab.cpp.agents.memory import Experience
-from relab.helpers.Serialization import get_optimizer, safe_load_state_dict
+from relab.helpers.Serialization import get_adam_optimizer, safe_load_state_dict
 from relab.helpers.Typing import (
     ActionType,
     AttributeNames,
@@ -315,7 +315,7 @@ class DQN(AgentInterface):
 
         # @var optimizer
         # Adam optimizer for training the value network.
-        self.optimizer = get_optimizer(
+        self.optimizer = get_adam_optimizer(
             [self.value_net],
             self.learning_rate,
             self.adam_eps,
@@ -856,7 +856,7 @@ class DQN(AgentInterface):
                 param.requires_grad = False
 
             # Update the optimizer.
-            self.optimizer = get_optimizer(
+            self.optimizer = get_adam_optimizer(
                 [self.value_net], self.learning_rate, self.adam_eps, checkpoint
             )
             return checkpoint

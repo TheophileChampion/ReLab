@@ -157,12 +157,9 @@ Here’s a table summarizing the supported agents in ReLab. It includes their fu
 | **Random**          | Random Agent                           | ✖️              | ✖️                 | ✅                                 | ✖️              |
 | **VAE**             | Variational Autoencoder                | ✖️              | ✖️                 | ✅                                 | ✅               |
 | **BetaVAE**         | Beta Variational Autoencoder           | ✖️              | ✖️                 | ✅                                 | ✅               |
-| **DiscreteVAE**     | Discrete Variational Autoencoder       | ✖️              | ✖️                 | ✅                                 | ✅               |
-| **JointVAE**        | Joint Variational Autoencoder          | ✖️              | ✖️                 | ✅                                 | ✅               |
 | **HMM**             | Hidden Markov Model                    | ✖️              | ✖️                 | ✅                                 | ✅               |
 | **BetaHMM**         | Beta Hidden Markov Model               | ✖️              | ✖️                 | ✅                                 | ✅               |
-| **DiscreteHMM**     | Discrete Hidden Markov Model           | ✖️              | ✖️                 | ✅                                 | ✅               |
-| **JointHMM**        | Joint Hidden Markov Model              | ✖️              | ✖️                 | ✅                                 | ✅               |
+| **CHMM**            | Critical Hidden Markov Model           | ✅               | ✖️                 | ✖️                                | ✅               |
 
 **Notes:**
 
