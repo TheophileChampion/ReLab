@@ -405,7 +405,6 @@ class AgentInterface(ABC):
         if len(self.efe_losses) >= 2:
             self.log_mean_metric("efe_loss", self.efe_losses)
 
-
     def log_mean_metric(self, name: str, values: deque, scale: float = 1) -> None:
         """!
         Log the mean metric value in TensorBoard.

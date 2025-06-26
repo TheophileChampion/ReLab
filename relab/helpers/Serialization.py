@@ -38,7 +38,7 @@ def get_adam_optimizer(
     learning_rate: float,
     adam_eps: float,
     checkpoint: Checkpoint = None,
-    key: str = "optimizer"
+    key: str = "optimizer",
 ) -> Optimizer:
     """!
     Create an Adam optimizer and try to load its internal states from the checkpoint.
@@ -65,7 +65,7 @@ def get_sgd_optimizer(
     modules: List[Module],
     learning_rate: float,
     checkpoint: Checkpoint = None,
-    key: str = "optimizer"
+    key: str = "optimizer",
 ) -> Optimizer:
     """!
     Create a Stochastic Gradient descent optimizer and try to load its internal states
