@@ -207,7 +207,7 @@ class SpritesEnv(Env):
         """!
         Execute one time step within the environment.
         @param action: the action to perform
-        @return next observation, reward, is the trial done?, information
+        @return next observation, reward, is the trial done?, is the trial truncated?, information
         """
 
         # Increase the frame index, that count the number of frames since
@@ -278,7 +278,7 @@ class SpritesEnv(Env):
         Retrieve the meaning of the environment's actions.
         @return the meaning of the environment's actions
         """
-        return ["NOOP", "FIRE", "Down", "Up", "Left", "Right"]
+        return ["NOOP", "FIRE", "Down", "Up", "Left", "Right"] + ["Idle"] * 12
 
     #
     # Actions

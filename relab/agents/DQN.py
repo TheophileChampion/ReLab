@@ -883,7 +883,6 @@ class DQN(AgentInterface):
             "n_atoms": self.n_atoms,
             "v_min": self.v_min,
             "v_max": self.v_max,
-            "n_actions": self.n_actions,
             "n_steps": self.n_steps,
             "omega": self.omega,
             "omega_is": self.omega_is,

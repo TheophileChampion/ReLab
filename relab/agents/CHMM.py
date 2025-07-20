@@ -179,7 +179,7 @@ class CHMM(VariationalModel):
             self.adam_eps,
         )
 
-    def get_critic_network(self):
+    def get_critic_network(self) -> nn.Module:
         """!
         Retrieve the critic network.
         @return the critic network

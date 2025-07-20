@@ -23,6 +23,9 @@ from relab.agents.DQNs import (
     RainbowIQN,
 )
 from relab.agents.HMM import HMM
+from relab.agents.Human import Human
+from relab.agents.PG import PG
+from relab.agents.PPO import PPO
 from relab.agents.Random import Random
 from relab.agents.VAE import VAE
 
@@ -59,6 +62,9 @@ def make(agent_name: str, **kwargs: Any) -> AgentInterface:
         "BetaHMM": BetaHMM,
         "HMM": HMM,
         "CHMM": CHMM,
+        "PPO": PPO,
+        "PG": PG,
+        "Human": Human,
     }
 
     # Check if the agent is supported, raise an error if it isn't.

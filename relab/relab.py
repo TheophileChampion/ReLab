@@ -10,6 +10,8 @@ import gymnasium as gym
 import numpy as np
 import torch
 from relab.cpp.agents.memory import CompressorType as Compressor
+
+from relab.environments.SimplestEnv import SimplestEnv
 from relab.environments.SpritesEnv import SpritesEnv
 from relab.helpers.Typing import ConfigInfo, Device
 
@@ -61,6 +63,7 @@ def initialize(
     # Register the Atari and dSprites environments.
     gym.register_envs(ale_py)
     gym.register(id="Sprites-v5", entry_point=SpritesEnv)
+    gym.register(id="Simplest-v5", entry_point=SimplestEnv)
 
     # Set the random seed of all the framework used.
     seed = int(seed)

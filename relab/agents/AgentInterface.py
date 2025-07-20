@@ -222,12 +222,9 @@ class AgentInterface(ABC):
 
         # Load the class attributes from the checkpoint.
         exclude_names = [
-            "optimizer",
-            "encoder",
-            "decoder",
-            "transition_net",
-            "value_net",
-            "target_net",
+            "optimizer", "optimizer_efe", "policy_optimizer", "critic_optimizer",
+            "encoder", "decoder", "transition_net",
+            "value_net", "target_net", "policy_net", "critic_net",
         ]
         for name in attr_names:
             if name not in exclude_names:
@@ -239,9 +236,9 @@ class AgentInterface(ABC):
         # Load the replay buffer from the checkpoint.
         if self.get_buffer is not None and self.training is True:
             self.buffer = self.get_buffer()
+            self.buffer.load(checkpoint_path, buffer_checkpoint_name)
         else:
             self.buffer = None
-        self.buffer.load(checkpoint_path, buffer_checkpoint_name)
         return checkpoint
 
     def as_dict(self) -> Config:
@@ -250,6 +247,7 @@ class AgentInterface(ABC):
         @return the dictionary
         """
         return {
+            "n_actions": self.n_actions,
             "training": self.training,
             "current_step": self.current_step,
             "max_queue_len": self.max_queue_len,
