@@ -66,10 +66,10 @@ class ConvCriticNetwork(nn.Module):
     @brief Class implementing a critic network based on images.
     """
 
-    def __init__(self, n_actions: int = 18, stack_size: Optional[int] = None) -> None:
+    def __init__(self, n_outputs: int = 18, stack_size: Optional[int] = None) -> None:
         """!
         Constructor.
-        @param n_actions: the number of actions available to the agent
+        @param n_outputs: the number of output neurons in the last layer
         @param stack_size: the number of stacked frame in each observation, if None use the configuration
         """
 
@@ -92,7 +92,7 @@ class ConvCriticNetwork(nn.Module):
             nn.Flatten(start_dim=1),
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
-            nn.Linear(1024, n_actions),
+            nn.Linear(1024, n_outputs),
         )
 
         # Initialize the weights.

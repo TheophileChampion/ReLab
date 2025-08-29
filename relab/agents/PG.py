@@ -51,7 +51,7 @@ class PG(AgentInterface):
     published in NeurIPS, 1999.
 
     Authors:
-    - Richard S. Sutton,
+    - Richard S. Sutton
     - David A. McAllester
     - Satinder P. Singh
     - Yishay Mansour

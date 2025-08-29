@@ -235,7 +235,7 @@ class DQN(AgentInterface):
 
         # @var target_update_interval
         # Number of training steps between target network updates.
-        self.target_update_rate = target_update_interval
+        self.target_update_interval = target_update_interval
 
         # @var learning_starts
         # Step count at which learning begins.
@@ -480,7 +480,7 @@ class DQN(AgentInterface):
         """
 
         # Synchronize the target with the value network (if needed).
-        if self.current_step % self.target_update_rate == 0:
+        if self.current_step % self.target_update_interval == 0:
             self.update_target_network()
 
         # Sample the replay buffer.
@@ -876,7 +876,7 @@ class DQN(AgentInterface):
             "learning_rate": self.learning_rate,
             "buffer_size": self.buffer_size,
             "batch_size": self.batch_size,
-            "target_update_rate": self.target_update_rate,
+            "target_update_interval": self.target_update_interval,
             "learning_starts": self.learning_starts,
             "kappa": self.kappa,
             "adam_eps": self.adam_eps,
