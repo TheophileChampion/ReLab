@@ -23,16 +23,16 @@ applications, ReLab simplifies the process, saving you time and effort.
 
 ## Installation
 
-### Install Poetry
+### Install zlib and python development libraries
 
-Linux, macOS, Windows (WSL):
 ```console
-curl -sSL https://install.python-poetry.org | python3 -
+sudo apt-get install zlib1g-dev python3-dev
 ```
 
-Windows (Powershell)
+### Install Poetry
+
 ```console
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 ### Install ReLab and its dependencies

@@ -223,7 +223,7 @@ class AgentInterface(ABC):
         # Load the class attributes from the checkpoint.
         exclude_names = [
             "optimizer", "optimizer_efe", "policy_optimizer", "critic_optimizer",
-            "encoder", "decoder", "transition_net",
+            "value_optimizer", "encoder", "decoder", "transition_net",
             "value_net", "target_net", "policy_net", "critic_net",
         ]
         for name in attr_names:

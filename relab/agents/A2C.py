@@ -188,8 +188,8 @@ class A2C(AgentInterface):
 
     def get_value_network(self):
         """
-        Retrieve the critic network of the A2C agent.
-        :return: the critic network.
+        Retrieve the value network of the A2C agent.
+        :return: the value network.
         """
         network = ConvCriticNetwork(n_outputs=1)
         network.train(self.training)
