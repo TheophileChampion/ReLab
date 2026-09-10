@@ -28,6 +28,7 @@ from relab.helpers.Typing import (
     Loss,
 )
 
+
 class A2C(AgentInterface):
     """!
     @brief Implements an advantage actor critic (A2C) agent.
@@ -181,15 +182,15 @@ class A2C(AgentInterface):
         Retrieve the policy network of the A2C agent.
         @return the policy network
         """
-        network = ConvPolicyNetwork()
+        network = ConvPolicyNetwork(n_actions=self.n_actions)
         network.train(self.training)
         network.to(self.device)
         return network
 
-    def get_value_network(self):
+    def get_value_network(self) -> nn.Module:
         """
         Retrieve the value network of the A2C agent.
-        :return: the value network.
+        @return the value network.
         """
         network = ConvCriticNetwork(n_outputs=1)
         network.train(self.training)
@@ -215,16 +216,24 @@ class A2C(AgentInterface):
             future_returns.insert(0, future_return)
         return future_returns
 
-    def step(self, obs: ObservationType) -> Tuple[ActionType, Tensor]:
+    def step_with_log_prob(self, obs: ObservationType) -> Tuple[ActionType, Tensor]:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
         @return a tuple containing the next action to perform and its log-probability
         """
-        probs = self.policy_net(obs)
-        distribution = Categorical(probs)
+        logits = self.policy_net(obs)
+        distribution = Categorical(logits=logits)
         action = distribution.sample()
-        return action, distribution.log_prob(action)
+        return action.item(), distribution.log_prob(action)
+
+    def step(self, obs: ObservationType) -> ActionType:
+        """!
+        Select the next action to perform in the environment.
+        @param obs: the observation available to make the decision
+        @return the next action to perform
+        """
+        return self.step_with_log_prob(obs)[0]
 
     def rollouts(self, env: Env, config: ConfigInfo) -> Tuple[Tensor, Tensor, Tensor]:
         """
@@ -238,7 +247,7 @@ class A2C(AgentInterface):
         future_returns = []
         observations = []
         log_probs = []
-        for i in range(self.n_episodes):
+        for _ in range(self.n_episodes):
 
             # Retrieve the initial observation from the environment.
             obs, _ = env.reset()
@@ -252,7 +261,7 @@ class A2C(AgentInterface):
                 observations.append(torch.unsqueeze(obs, dim=0))
 
                 # Perform one step in the environment.
-                action, log_prob = self.step(obs.to(self.device))
+                action, log_prob = self.step_with_log_prob(obs.to(self.device))
                 old_obs = obs
                 obs, reward, terminated, truncated, _ = env.step(action)
                 done = terminated or truncated
@@ -299,12 +308,11 @@ class A2C(AgentInterface):
             self.update_target_network()
 
         # Sample the replay buffer.
-        obs, actions, rewards, done, next_obs = self.buffer.sample()
+        obs, _, rewards, done, next_obs = self.buffer.sample()
 
-        # Compute the Q-value loss.
+        # Compute the value loss.
         loss = self.compute_value_loss(
-            obs, actions, rewards, done, next_obs,
-            loss_fc=MSELoss(reduction="none")
+            obs, rewards, done, next_obs, loss_fc=MSELoss(reduction="none")
         )
 
         # Report the loss of the sampled transitions for prioritization.
@@ -322,32 +330,29 @@ class A2C(AgentInterface):
     def compute_value_loss(
         self,
         obs: Tensor,
-        actions: Tensor,
         rewards: Tensor,
         done: Tensor,
         next_obs: Tensor,
         loss_fc: Loss,
     ) -> Tensor:
         """!
-        Compute the loss of the standard or double Q-learning algorithm.
+        Compute the loss of the value network.
         @param obs: the observations at time t
-        @param actions: the actions at time t
         @param rewards: the reward obtained when taking the actions while seeing the observations at time t
         @param done: whether the episodes ended
         @param next_obs: the observation at time t + 1
         @param loss_fc: the loss function to use to compare target and prediction
-        @return the Q-value loss
+        @return the loss of the value network
         """
 
-        # Chose and evaluate the best actions using the target network.
-        next_values = self.target_net(next_obs)
-        next_values = torch.max(next_values, dim=1).values
-        next_values = next_values.detach()
+        # Evaluate the next observations using the target network.
+        with torch.no_grad():
+            next_values = torch.squeeze(self.target_net(next_obs), dim=1)
 
-        # Compute the Q-value loss.
+        # Compute the value loss.
         mask = torch.logical_not(done).float()
         y = rewards + mask * math.pow(self.gamma, self.n_steps) * next_values
-        return loss_fc(torch.squeeze(self.value_net(obs)), y)
+        return loss_fc(torch.squeeze(self.value_net(obs), dim=1), y)
 
     def compute_policy_loss(
         self,
@@ -362,7 +367,9 @@ class A2C(AgentInterface):
         :param future_returns: the future returns obtained by following the current policy
         :return: the loss
         """
-        return -log_probs * (future_returns - self.value_net(observations).detach())
+        with torch.no_grad():
+            values = self.value_net(observations).squeeze(dim=1)
+        return -log_probs * (future_returns - values)
 
     def train(self, env: Env) -> None:
         """!
@@ -429,7 +436,7 @@ class A2C(AgentInterface):
                 [self.value_net], self.learning_rate, self.adam_eps, checkpoint
             )
             self.policy_optimizer = get_adam_optimizer(
-                [self.policy_net], self.learning_rate, self.adam_eps, checkpoint
+                [self.policy_net], self.learning_rate, self.adam_eps, checkpoint, key="policy_optimizer",
             )
             return checkpoint
 

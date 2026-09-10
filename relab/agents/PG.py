@@ -122,7 +122,7 @@ class PG(AgentInterface):
         Retrieve the policy network of the policy gradient agent.
         @return the policy network
         """
-        network = ConvPolicyNetwork()
+        network = ConvPolicyNetwork(n_actions=self.n_actions)
         network.train(self.training)
         network.to(self.device)
         return network
@@ -140,16 +140,24 @@ class PG(AgentInterface):
             future_returns.insert(0, future_return)
         return future_returns
 
-    def step(self, obs: ObservationType) -> Tuple[ActionType, Tensor]:
+    def step_with_log_prob(self, obs: ObservationType) -> Tuple[ActionType, Tensor]:
         """!
         Select the next action to perform in the environment.
         @param obs: the observation available to make the decision
         @return a tuple containing the next action to perform and its log-probability
         """
-        probs = self.policy_net(obs)
-        distribution = Categorical(probs)
+        logits = self.policy_net(obs)
+        distribution = Categorical(logits=logits)
         action = distribution.sample()
-        return action, distribution.log_prob(action)
+        return action.item(), distribution.log_prob(action)
+
+    def step(self, obs: ObservationType) -> ActionType:
+        """!
+        Select the next action to perform in the environment.
+        @param obs: the observation available to make the decision
+        @return the next action to perform
+        """
+        return self.step_with_log_prob(obs)[0]
 
     def rollouts(self, env: Env, config: ConfigInfo) -> Tuple[Tensor, Tensor]:
         """
@@ -174,7 +182,7 @@ class PG(AgentInterface):
             while not done:
 
                 # Perform one step in the environment.
-                action, log_prob = self.step(obs)
+                action, log_prob = self.step_with_log_prob(obs)
                 obs, reward, terminated, truncated, _ = env.step(action)
                 obs = obs.to(self.device)
                 done = terminated or truncated

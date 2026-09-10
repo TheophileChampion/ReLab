@@ -26,7 +26,7 @@ class ConvPolicyNetwork(nn.Module):
         self.stack_size = relab.config("stack_size", stack_size)
 
         # @var net
-        # Complete network that processes images and outputs Q-values.
+        # Complete network that processes images and outputs action log-probabilities.
         self.net = nn.Sequential(
             nn.Conv2d(self.stack_size, 32, 8, stride=4),
             nn.LeakyReLU(0.01),
@@ -38,7 +38,6 @@ class ConvPolicyNetwork(nn.Module):
             nn.Linear(3136, 1024),
             nn.LeakyReLU(0.01),
             nn.Linear(1024, n_actions),
-            nn.Softmax(dim=1),
         )
 
         # Initialize the weights.
